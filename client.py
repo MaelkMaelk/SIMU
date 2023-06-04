@@ -190,7 +190,7 @@ def main():
                                     menuRoulant.kill()
                                     menuRoulant.generate((Idp, avion.Id), avion.indicatifBouton.get_abs_rect()[0],
                                                          avion.indicatifBouton.get_abs_rect()[1], "Heading",
-                                                         avion.targetHead)
+                                                         round(avion.heading))
                                 elif event.mouse_button == 3:
                                     avion.drawRoute = True
                                 elif event.mouse_button == 2 and not p.pilote:
