@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<aircrafts>
+
+    <aircraft name="B720">
+        <speed>480</speed>
+        <maxSpeed>540</maxSpeed>
+        <ceiling>390</ceiling>
+        <ROC>1100</ROC>
+        <ROD>2000</ROD>
+    </aircraft>
+    <aircraft name="B744">
+        <speed>484</speed>
+        <maxSpeed>540</maxSpeed>
+        <ceiling>450</ceiling>
+        <ROC>1500</ROC>
+        <ROD>3000</ROD>
+    </aircraft>
+    <aircraft name="B772">
+        <speed>480</speed>
+        <maxSpeed>540</maxSpeed>
+        <ceiling>430</ceiling>
+        <ROC>1500</ROC>
+        <ROD>3000</ROD>
+    </aircraft>
+    <aircraft name="A342">
+        <speed>490</speed>
+        <maxSpeed>540</maxSpeed>
+        <ceiling>410</ceiling>
+        <ROC>1000</ROC>
+        <ROD>2000</ROD>
+    </aircraft>
+    <aircraft name="B763">
+        <speed>460</speed>
+        <maxSpeed>540</maxSpeed>
+        <ceiling>450</ceiling>
+        <ROC>2000</ROC>
+        <ROD>3000</ROD>
+    </aircraft>
+
+
+</aircrafts>
