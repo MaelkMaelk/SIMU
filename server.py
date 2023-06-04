@@ -4,7 +4,7 @@ from player import *
 import pickle
 import xml.etree.ElementTree as ET
 
-server = "10.1.102.173"
+server = "IP"
 port = 5555
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
