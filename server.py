@@ -80,6 +80,8 @@ def threaded_client(conn, caca):
     global requests
     global map
     global aircraftType
+
+    nombre = 0
     players.append(Player(game.playerNb, False))
     requests.append([])
     game.connection()
@@ -103,8 +105,12 @@ def threaded_client(conn, caca):
                 print("Sending : ", reply)
                 '''
             conn.sendall(pickle.dumps(reply))
+            nombre = 0
         except:
-            break
+            if nombre >= 200:
+                break
+            else:
+                nombre+=1
 
     print("Lost connection")
     players[playerId].listeAvions=[]

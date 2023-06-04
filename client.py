@@ -382,5 +382,4 @@ def main():
             print('Paquet perdu')
         pygame.display.update()
 
-
 main()
