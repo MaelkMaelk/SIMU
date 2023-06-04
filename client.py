@@ -375,8 +375,11 @@ def main():
         for avionId in listeAvion[p.Id]:
             p.listeAvions.get(avionId).update(listeAvion[p.Id].get(avionId))
 
-        packet = Packet(game, p, localRequests)
-        packet = n.send(packet)
+        try:
+            packet = Packet(game, p, localRequests)
+            packet = n.send(packet)
+        except:
+            print('Paquet perdu')
         pygame.display.update()
 
 
