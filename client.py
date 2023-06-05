@@ -29,6 +29,11 @@ def main():
     menuOptionsATC.kill()
     n = Network()
     packet = n.getP()
+    i = 0
+    while packet == None and i < 2000:
+        n = Network()
+        packet = n.getP()
+        i +=1
     players = packet.getPlayers()
     perfos = packet.getPerfos()
     p = players[-1]
@@ -67,9 +72,12 @@ def main():
 
     #pour qu'on ai qu'un seul appui par touche
     pressing = False
+
+
     while run:
         toBeRemoved = []
         localRequests = []
+        tempoPacket = packet
 
         time_delta = clock.tick(40) / 1000.0
         clock.tick(40)
@@ -380,6 +388,7 @@ def main():
             packet = n.send(packet)
         except:
             print('Paquet perdu')
+            packet = tempoPacket
         pygame.display.update()
 
 main()
