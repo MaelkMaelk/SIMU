@@ -520,7 +520,7 @@ class Avion:
             container=self.etiquetteCont, anchors={'top': 'top', 'top_target': self.altitudeBouton},
             object_id=pygame_gui.core.ObjectID('@etiquette', 'autre'))
 
-        self.PFLbouton = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((3, 0), (-1, 17)), text=str(self.PFL),
+        self.PFLbouton = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((3, 0), (32, 18)), text=str(self.PFL),
                                                       container=self.etiquetteCont, anchors={'left': 'left',
                                                                                              'left_target': self.routeBouton,
                                                                                              'top': 'top',

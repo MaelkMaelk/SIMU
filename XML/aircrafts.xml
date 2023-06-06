@@ -2,12 +2,12 @@
 
 <aircrafts>
 
-    <aircraft name="B720">
-        <speed>480</speed>
-        <maxSpeed>540</maxSpeed>
-        <ceiling>390</ceiling>
-        <ROC>1100</ROC>
-        <ROD>2000</ROD>
+    <aircraft name="B738">
+        <speed>460</speed>
+        <maxSpeed>500</maxSpeed>
+        <ceiling>410</ceiling>
+        <ROC>2500</ROC>
+        <ROD>3000</ROD>
     </aircraft>
     <aircraft name="B744">
         <speed>484</speed>
@@ -23,7 +23,7 @@
         <ROC>1500</ROC>
         <ROD>3000</ROD>
     </aircraft>
-    <aircraft name="A342">
+    <aircraft name="A343">
         <speed>490</speed>
         <maxSpeed>540</maxSpeed>
         <ceiling>410</ceiling>
@@ -37,6 +37,61 @@
         <ROC>2000</ROC>
         <ROD>3000</ROD>
     </aircraft>
-
+    <aircraft name="A320">
+        <speed>460</speed>
+        <maxSpeed>490</maxSpeed>
+        <ceiling>450</ceiling>
+        <ROC>2500</ROC>
+        <ROD>3000</ROD>
+    </aircraft>
+    <aircraft name="E135">
+        <speed>450</speed>
+        <maxSpeed>500</maxSpeed>
+        <ceiling>370</ceiling>
+        <ROC>2000</ROC>
+        <ROD>3000</ROD>
+    </aircraft>
+    <aircraft name="TBM7">
+        <speed>300</speed>
+        <maxSpeed>350</maxSpeed>
+        <ceiling>450</ceiling>
+        <ROC>1500</ROC>
+        <ROD>1500</ROD>
+    </aircraft>
+    <aircraft name="A3ST">
+        <speed>400</speed>
+        <maxSpeed>540</maxSpeed>
+        <ceiling>410</ceiling>
+        <ROC>1500</ROC>
+        <ROD>2000</ROD>
+    </aircraft>
+    <aircraft name="MD11">
+        <speed>460</speed>
+        <maxSpeed>540</maxSpeed>
+        <ceiling>450</ceiling>
+        <ROC>2000</ROC>
+        <ROD>3000</ROD>
+    </aircraft>
+    <aircraft name="A319">
+        <speed>460</speed>
+        <maxSpeed>490</maxSpeed>
+        <ceiling>450</ceiling>
+        <ROC>2500</ROC>
+        <ROD>3000</ROD>
+    </aircraft>
+    <aircraft name="FA50">
+        <speed>480</speed>
+        <maxSpeed>490</maxSpeed>
+        <ceiling>550</ceiling>
+        <ROC>2500</ROC>
+        <ROD>3000</ROD>
+    </aircraft>
+    <aircraft name="B753">
+        <speed>470</speed>
+        <maxSpeed>490</maxSpeed>
+        <ceiling>450</ceiling>
+        <ROC>2000</ROC>
+        <ROD>2500</ROD>
+    </aircraft>
 
 </aircrafts>
