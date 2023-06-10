@@ -4,7 +4,7 @@
            "normal_bg": "#00000000",
            "hovered_bg": "#00000000",
            "disabled_bg": "#00000000",
-           "selected_bg": "rgb(200, 110, 50)",
+           "selected_bg": "rgb(204, 85, 0)",
            "normal_text":"rgb(0,0,0)",
            "hovered_text":"rgb(0,0,0)",
             "selected_text":"rgb(0,0,0)",

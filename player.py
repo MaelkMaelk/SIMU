@@ -56,7 +56,8 @@ class Player:
     def getId(self):
         return self.Id
 
-    def add(self, indicatif, aircraft, perfo, x, y, heading, altitude, route, PFL=None):
+    def add(self, indicatif, aircraft, perfo, x, y, altitude, route, heading=None, PFL=None):
+        print(heading)
         if PFL is None:
             PFL = altitude
         if len(self.emptyId) != 0:
@@ -125,7 +126,6 @@ class Avion:
         self.x = Papa.x
         self.y = Papa.y
         self.comete = Papa.comete
-        self.heading = Papa.heading
         self.speedDis = str(Papa.speed)[0:2]
         self.speedPacket = Papa.speed
         self.speed = Papa.speed / mapScale * timeConstant
@@ -134,8 +134,6 @@ class Avion:
         self.bouton = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((self.x, self.y), (20, 20)), text='')
         self.bouton.generate_click_events_from: Iterable[int] = frozenset(
             [pygame.BUTTON_LEFT, pygame.BUTTON_RIGHT, pygame.BUTTON_MIDDLE])
-
-        self.headingRad = (self.heading - 90) / 180 * math.pi
 
         # size
         self.eHeight = 68
@@ -146,16 +144,14 @@ class Avion:
         self.warning = Papa.warning
         self.part = Papa.part
         self.coordination = 0  # 0 = noir, 1 = blanc, 2 = bleu
+        self.onFrequency = False
+        self.PFLaff = False
 
         # etiquette
         self.etiquetteX = self.x + 60
         self.etiquetteY = self.y - 60
         self.etiquetteRect = pygame.Rect(self.etiquetteX, self.etiquetteY - 60, self.eWidth, self.eHeight)
         self.etiquettePos = 0
-
-        # TARGETS and spd for altitude/heading etc...
-        self.targetFL = self.altitude
-        self.targetHead = self.heading
 
         # perfo
         self.turnRate = 12
@@ -186,18 +182,37 @@ class Avion:
         if self.nextPointValue < len(self.route):
             self.nextPoint = list(self.route.keys())[self.nextPointValue]
         self.pointHeading = 0
-        # drawRoute
 
+        # heading
+        if Papa.heading is not None:
+            print('caca')
+            self.heading = Papa.heading
+        else:
+            self.heading = calculateHeading(self.x, self.y, self.route[self.nextPoint][0],
+                                            self.route[self.nextPoint][1])
+        self.headingRad = (self.heading - 90) / 180 * math.pi
+
+        # TARGETS and spd for altitude/heading etc...
+        self.targetFL = self.altitude
+        self.targetHead = self.heading
+
+        # drawRoute
         self.drawRoute = False
+
         # Zoom & scroll
 
         self.affX = 0
         self.affY = 0
 
-    def draw(self, win, zoom, scroll, vecteurs, vecteurSetting):
+    def draw(self, win, zoom, scroll, vecteurs, vecteurSetting, typeAff):
         # updates
         self.affX = self.x * zoom + scroll[0]
         self.affY = self.y * zoom + scroll[1]
+
+        if typeAff:
+            self.typeBouton.show()
+        else:
+            self.typeBouton.hide()
 
         value = 60
         if self.etiquettePos % 4 == 0:
@@ -280,7 +295,7 @@ class Avion:
             pygame.draw.line(win, (0, 255, 0), (self.affX + self.size, self.affY + self.size),
                              (self.route[self.nextPoint][0] + self.size, self.route[self.nextPoint][1] + self.size))
 
-    def drawPilote(self, win, zoom, scroll, vecteurs, vecteurSetting):
+    def drawPilote(self, win, zoom, scroll, vecteurs, vecteurSetting, typeAff):
         # updates
         self.affX = self.x * zoom + scroll[0]
         self.affY = self.y * zoom + scroll[1]
@@ -315,7 +330,15 @@ class Avion:
         self.altitudeEvoTxtDis.rebuild()
 
         # Vrai dessin
-        color = (0, 255, 0)
+        if self.onFrequency:
+            color = (0, 255, 0)
+        else:
+            color = (204, 85, 0)
+
+        if typeAff:
+            self.typeBouton.show()
+        else:
+            self.typeBouton.hide()
         if vecteurs:
             pygame.draw.rect(win, color, (self.affX, self.affY, self.size * 2, self.size * 2), 1)
             pygame.draw.line(win, color, (self.affX + self.size, self.affY + self.size), (
@@ -504,7 +527,7 @@ class Avion:
             object_id=pygame_gui.core.ObjectID('@etiquette', 'autre'))
 
         self.altitudeBouton = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((0, 0), (32, 18)), text=str(self.altitude),
+            relative_rect=pygame.Rect((0, 0), (30, 18)), text=str(self.altitude),
             container=self.etiquetteCont, anchors={'top': 'top', 'top_target': self.indicatifBouton},
             object_id=pygame_gui.core.ObjectID('@etiquette', 'autre'))
 
@@ -520,7 +543,7 @@ class Avion:
             container=self.etiquetteCont, anchors={'top': 'top', 'top_target': self.altitudeBouton},
             object_id=pygame_gui.core.ObjectID('@etiquette', 'autre'))
 
-        self.PFLbouton = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((3, 0), (32, 18)), text=str(self.PFL),
+        self.PFLbouton = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((1, 0), (28, 17)), text=str(self.PFL),
                                                       container=self.etiquetteCont, anchors={'left': 'left',
                                                                                              'left_target': self.routeBouton,
                                                                                              'top': 'top',
@@ -585,7 +608,7 @@ class menuDeroulant:
         self.y = y + 50
         self.what = what
         if what == 'Heading':
-            self.value = (value + 50) % 360
+            self.value = (value + 25) % 360
         else:
             self.value = value + 50
         self.cont = pygame_gui.elements.UIWindow(pygame.Rect((self.x, self.y), (100, 250)))
@@ -594,7 +617,7 @@ class menuDeroulant:
             container=self.cont, object_id=pygame_gui.core.ObjectID('caca', '@menu')))
         for i in range(9):
             if what == 'Heading':
-                self.value = (self.value - 10) % 360
+                self.value = (self.value - 5) % 360
             else:
                 self.value -= 10
             self.boutonList.append(pygame_gui.elements.UIButton(
@@ -603,6 +626,7 @@ class menuDeroulant:
         self.boutonList.append(pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (100, 17)), text='-',
             container=self.cont, anchors={'top': 'top', 'top_target': self.boutonList[-1]}))
+        self.boutonList[5].select()
 
     def kill(self):
         if self.cont != 0:
@@ -656,7 +680,7 @@ class NouvelAvionWindow:
         self.routes = [route[2] for route in routes]
         self.avions = avions
 
-        self.window = pygame_gui.elements.UIWindow(pygame.Rect((250, 250), (600, 300)))
+        self.window = pygame_gui.elements.UIWindow(pygame.Rect((250, 250), (600, 340)))
         self.scrollRoutes = pygame_gui.elements.UIScrollingContainer(pygame.Rect((0, 0), (200, 200)),
                                                                      container=self.window)
         self.scrollAvions = pygame_gui.elements.UIScrollingContainer(pygame.Rect((0, 0), (200, 200)),
@@ -687,12 +711,17 @@ class NouvelAvionWindow:
                 relative_rect=pygame.Rect((0, 0), (200, 17)),
                 text=avion,
                 container=self.scrollAvions, anchors={'top': 'top', 'top_target': self.avionsBoutons[-1]}))
-
-        self.validationBouton = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((0, 0), (200, 17)),
-            text='Ok',
+        self.conflitsBouton = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((0, 20), (200, 17)),
+            text='Générateur de conflits',
             container=self.window, anchors={'top': 'top', 'top_target': self.scrollAvions, 'left': 'left',
                                             'left_target': self.scrollRoutes})
+        self.validationBouton = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((0, 5), (200, 17)),
+            text='Ok',
+            container=self.window, anchors={'top': 'top', 'top_target': self.conflitsBouton, 'left': 'left',
+                                            'left_target': self.scrollRoutes})
+
         self.indicatiflabel = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, 0), (200, 17)),
                                                           container=self.window,
                                                           anchors={'left': 'left', 'left_target': self.scrollAvions},
@@ -714,6 +743,17 @@ class NouvelAvionWindow:
                                                           anchors={'left': 'left', 'left_target': self.scrollAvions,
                                                                    'top': 'top',
                                                                    'top_target': self.FLlabel})
+        self.PFLlabel = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, 0), (200, 17)),
+                                                   container=self.window,
+                                                   anchors={'left': 'left', 'left_target': self.scrollAvions,
+                                                            'top': 'top',
+                                                            'top_target': self.FLinput},
+                                                   text='PFL')
+        self.PFLinput = pygame_gui.elements.UITextEntryBox(relative_rect=pygame.Rect((0, 0), (200, 30)),
+                                                          container=self.window,
+                                                          anchors={'left': 'left', 'left_target': self.scrollAvions,
+                                                                   'top': 'top',
+                                                                   'top_target': self.PFLlabel})
 
     def kill(self):
         self.window.kill()

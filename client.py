@@ -13,6 +13,7 @@ manager = pygame_gui.UIManager((width, height),'theme.json')
 
 pygame.display.set_caption("Client")
 temps = pygame.time.get_ticks()
+
 clock = pygame.time.Clock()
 
 
@@ -59,19 +60,28 @@ def main():
     alidadPos = (0, 0)
     alidadStart = False
 
-    # vecteurs
+    # vecteurs et type
     vecteurs = False
+    typeAff = False
     vecteurSetting = 6
+
+    # fenetre nouvel avion
     nouvelAvionWin = None
     selectedRoute = None
     selectedAircraft = None
     selectedAircraftButton = None
     selectedRouteButton = None
     selectedFL = 310
+    selectedPFL = 310
     selectedIndicatif = 'FCACA'
+    conflitGen = False
+    conflitAvion = None  # l'avion avec lequel on veut un conflit
+    conflitPoint = None  # le point ou on veut le conflit
+    selectConflitState = 0  # états possibles : inactif 0, avion 1, point 2, spawn 3
 
-    #pour qu'on ai qu'un seul appui par touche
+    # pour qu'on ai qu'un seul appui par touche
     pressing = False
+    delaiPressage = pygame.time.get_ticks()
 
 
     while run:
@@ -151,7 +161,7 @@ def main():
                 pygame.quit()
             if event.type == pygame.MOUSEWHEEL:
                 zoom = zoom+event.y/14
-            if event.type == pygame_gui.UI_BUTTON_START_PRESS and not alidadStart:
+            if event.type == pygame_gui.UI_BUTTON_START_PRESS and not alidadStart and selectConflitState == 0:
                 triggered = True
 
                 if event.ui_element in menuRoulant.boutonList:
@@ -178,6 +188,8 @@ def main():
                             if event.ui_element == avion.bouton:
                                 if event.mouse_button == 2 and not p.pilote:
                                     localRequests.append(((Idp, avion.Id), 'Warning'))
+                                elif event.mouse_button == 2:
+                                    avion.onFrequency = not avion.onFrequency
                                 elif event.mouse_button == 1 and Idp == p.Id:
                                     avion.etiquettePos +=1
                                 elif event.mouse_button == 1:
@@ -187,11 +199,10 @@ def main():
                                     toBeRemoved.append((Idp, avion.Id))
                                     localRequests.append(((Idp, avion.Id), 'Remove'))
                             elif event.ui_element == avion.PFLbouton:
-                                if event.mouse_button == 1 and not p.pilote:
-                                    menuRoulant.kill()
-                                    menuRoulant.generate((Idp, avion.Id), avion.PFLbouton.get_abs_rect()[0],
-                                                         avion.PFLbouton.get_abs_rect()[1], "PFL",
-                                                         avion.PFL)
+                                menuRoulant.kill()
+                                menuRoulant.generate((Idp, avion.Id), avion.PFLbouton.get_abs_rect()[0],
+                                                     avion.PFLbouton.get_abs_rect()[1], "PFL",
+                                                     avion.PFL)
 
                             elif event.ui_element == avion.indicatifBouton:
                                 if event.mouse_button == 1 and p.pilote:
@@ -205,7 +216,7 @@ def main():
                                     localRequests.append(((Idp, avion.Id), 'Part'))
                                 elif event.mouse_button == 1 and not p.pilote:
                                     menuOptionsATC = MenuATC((Idp, avion.Id), avion.indicatifBouton.get_abs_rect()[0],
-                                                         avion.indicatifBouton.get_abs_rect()[1])
+                                                             avion.indicatifBouton.get_abs_rect()[1])
                             elif event.ui_element == avion.altitudeBouton and p.pilote:
                                 if event.mouse_button == 1:
                                     menuRoulant.kill()
@@ -241,20 +252,52 @@ def main():
                             else:
                                 nouvelAvionWin.routesBoutons[bouton].unselect()
 
-                    elif event.ui_element == nouvelAvionWin.validationBouton:
+                    elif event.ui_element == nouvelAvionWin.validationBouton and not conflitGen:
                         nouvelAvionWin.kill()
                         nouvelAvionWin = None
                         if selectedRoute is not None and selectedAircraft is not None:
                             p.add(selectedIndicatif, selectedAircraft, perfos[selectedAircraft],
-                                  selectedRoute[0][0], selectedRoute[0][1], calculateHeading(selectedRoute[0][0],
-                                  selectedRoute[0][1], list(selectedRoute[2].values())[1][0],
-                                  list(selectedRoute[2].values())[1][1]), selectedFL,selectedRoute)
+                                  selectedRoute[0][0], selectedRoute[0][1], selectedFL, selectedRoute, PFL=selectedPFL)
                             selectedRoute = None
                             selectedAircraft = None
                             selectedRouteButton = None
                             selectedAircraftButton = None
                             selectedFL = 310
                             selectedIndicatif = 'FCACA'
+                    elif event.ui_element == nouvelAvionWin.validationBouton:
+                        selectConflitState = 1
+                        pygame.mouse.set_cursor(pygame.cursors.diamond)
+                        conflitGen = False
+                        nouvelAvionWin.kill()
+                        nouvelAvionWin = None
+                    elif event.ui_element == nouvelAvionWin.conflitsBouton:
+                        conflitGen = not conflitGen
+                        if nouvelAvionWin.conflitsBouton.is_selected:
+                            nouvelAvionWin.conflitsBouton.unselect()
+                        else:
+                            nouvelAvionWin.conflitsBouton.select()
+
+            elif event.type == pygame_gui.UI_BUTTON_START_PRESS and not alidadStart and selectConflitState == 1:
+                for player in listeAvion:
+                    for avion in player.values():
+                        if event.ui_element == avion.bouton and event.mouse_button == 3 and selectConflitState == 1:
+                            conflitAvion = avion
+                            selectConflitState = 2
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 3 and selectConflitState == 2:
+                conflitPoint = ((pygame.mouse.get_pos()[0] - plotSize - scroll[0])/zoom,
+                                (pygame.mouse.get_pos()[1] - plotSize - scroll[1])/zoom)
+                speedRatio = conflitAvion.speedPacket/perfos[selectedAircraft][0]
+                conflitRadius = math.sqrt((conflitPoint[0] - conflitAvion.x)**2 + (conflitPoint[1] - conflitAvion.y)**2)\
+                                /speedRatio
+                selectConflitState = 3
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 3 and selectConflitState == 3:
+                spawnPoint = ((pygame.mouse.get_pos()[0] - plotSize - scroll[0])/zoom,
+                                (pygame.mouse.get_pos()[1] - plotSize - scroll[1])/zoom)
+                selectConflitState = 0
+                p.add(selectedIndicatif, selectedAircraft, perfos[selectedAircraft],
+                      spawnPoint[0], spawnPoint[1],selectedFL, selectedRoute, PFL=selectedPFL)
+                pygame.mouse.set_cursor(pygame.cursors.arrow)
+
 
             elif event.type == pygame_gui.UI_TEXT_ENTRY_CHANGED:
                 if event.ui_element == nouvelAvionWin.FLinput:
@@ -262,6 +305,11 @@ def main():
                         selectedFL = int(event.text)
                     except:
                         selectedFL = 310
+                elif event.ui_element == nouvelAvionWin.PFLinput:
+                    try:
+                        selectedPFL = int(event.text)
+                    except:
+                        selectedPFL = selectedFL
                 elif event.ui_element == nouvelAvionWin.indicatifinput:
                     selectedIndicatif = event.text
 
@@ -286,8 +334,6 @@ def main():
                 alidad = False
                 alidadStart = False
                 pygame.mouse.set_cursor(pygame.cursors.arrow)
-
-
 
             manager.process_events(event)
         if selectedRouteButton is not None:
@@ -320,31 +366,44 @@ def main():
                 zoom = 0.5
                 scroll = [-100, 20]
                 pressing = True
-            if keys[pygame.K_a]: #alidad start
+                delaiPressage = pygame.time.get_ticks()
+            if keys[pygame.K_a]:  # alidad start
                 alidadStart = True
                 pygame.mouse.set_cursor(pygame.cursors.broken_x)
                 pressing = True
-            if keys[pygame.K_3]: #vecteurs
+                delaiPressage = pygame.time.get_ticks()
+            if keys[pygame.K_3]:  # vecteurs
                 vecteurSetting = 3
                 pressing = True
+                delaiPressage = pygame.time.get_ticks()
+            if keys[pygame.K_t]:  # type avions
+                typeAff = not typeAff
+                pressing = True
+                delaiPressage = pygame.time.get_ticks()
             if keys[pygame.K_6]:
                 vecteurSetting = 6
                 pressing = True
+                delaiPressage = pygame.time.get_ticks()
             if keys[pygame.K_9]:
                 vecteurSetting = 9
                 pressing = True
+                delaiPressage = pygame.time.get_ticks()
             if keys[pygame.K_v]:
                 vecteurs = not vecteurs
                 pressing = True
+                delaiPressage = pygame.time.get_ticks()
             if keys[pygame.K_n] and nouvelAvionWin is None and p.pilote:
                 nouvelAvionWin = NouvelAvionWindow(listeRoutes, perfos)
                 pressing = True
+                delaiPressage = pygame.time.get_ticks()
             if keys[pygame.K_DOWN]:
                 p.pilote = False
             if keys[pygame.K_UP]:
                 p.pilote = True
-        elif True not in pygame.key.ScancodeWrapper():
+        elif True not in pygame.key.ScancodeWrapper() and pygame.time.get_ticks() - delaiPressage >= 150:
             pressing = False
+
+
 
         win.fill((70, 70, 70))
         affListeSecteur = []
@@ -364,11 +423,11 @@ def main():
         if p.pilote:
             for joueur in listeAvion:
                 for avion in joueur.values():
-                    avion.drawPilote(win, zoom, scroll, vecteurs, vecteurSetting)
+                    avion.drawPilote(win, zoom, scroll, vecteurs, vecteurSetting, typeAff)
         else:
             for joueur in listeAvion:
                 for avion in joueur.values():
-                    avion.draw(win, zoom, scroll, vecteurs, vecteurSetting)
+                    avion.draw(win, zoom, scroll, vecteurs, vecteurSetting, typeAff)
 
         manager.draw_ui(win)
         manager.update(time_delta)
@@ -379,6 +438,17 @@ def main():
                                  (alidadPos[1] - pygame.mouse.get_pos()[1])**2)/zoom*mapScale, 1)
             img = font.render(str(distance), True, (255,105,180))
             win.blit(img, (pygame.mouse.get_pos()[0] + 20, pygame.mouse.get_pos()[1]))
+
+        if selectConflitState == 3:
+            pygame.draw.circle(win, (255, 0, 0), (conflitPoint[0]*zoom + scroll[0]+plotSize,
+                                                  conflitPoint[1]*zoom + scroll[1]+plotSize),
+                               conflitRadius*zoom, 1)
+            pygame.draw.circle(win, (71, 123, 146), (conflitPoint[0] * zoom + scroll[0] + plotSize,
+                                                  conflitPoint[1] * zoom + scroll[1] + plotSize),
+                               (conflitRadius - 15/mapScale) * zoom, 1)
+            pygame.draw.circle(win, (71, 123, 146), (conflitPoint[0] * zoom + scroll[0] + plotSize,
+                                                  conflitPoint[1] * zoom + scroll[1] + plotSize),
+                               (conflitRadius + 15/mapScale) * zoom, 1)
 
         for avionId in listeAvion[p.Id]:
             p.listeAvions.get(avionId).update(listeAvion[p.Id].get(avionId))
