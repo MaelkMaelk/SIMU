@@ -4,7 +4,7 @@ from player import *
 import pickle
 import xml.etree.ElementTree as ET
 
-server = "IP"
+server = "10.1.102.173"
 port = 5555
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -17,8 +17,8 @@ except socket.error as e:
 s.listen(2)
 print("Waiting for a connection, Server Started")
 
-
-players = []
+playerId = 0
+dictAvion = {}
 requests = []
 gameMap = [{}, [], [], []]
 # XML map loading
@@ -72,38 +72,61 @@ for aircraft in root:
     aircraftType.update({aircraft.attrib['name']:(int(aircraft.find('speed').text), int(aircraft.find('maxSpeed').text),
                                                   int(aircraft.find('ceiling').text), int(aircraft.find('ROC').text),
                                                   int(aircraft.find('ROD').text)) })
-game = Game(0)
+game = Game()
 # format map : [points, secteur, segments, routes]
 
+
 def threaded_client(conn, caca):
-    global players
+    global dictAvion
     global requests
     global map
     global aircraftType
+    global playerId
 
     nombre = 0
-    players.append(Player(game.playerNb, False))
+    localPlayerId = playerId
+    playerId += 1
     requests.append([])
-    game.connection()
-    packet = Packet(game, players, requests, gameMap, aircraftType)
+    packet = Packet(game=game, dictAvions=dictAvion, map=gameMap, perfos=aircraftType)
     conn.send(pickle.dumps(packet))
     reply = ""
     while True:
         try:
             data = pickle.loads(conn.recv(2048*16))
-            playerId = data.getPlayers().getId()
-            players[playerId] = data.getPlayers()
-            requests[playerId] = data.getRequests()
-
+            requests[localPlayerId] = data.requests
+            if data.requests != []:
+                print(data.requests)
+                print(requests)
+            for reqSublist in requests:
+                for req in reqSublist:  # [Id avion, type requete, data]
+                    print(req)
+                    if req[1] == 'Add':
+                        dictAvion.update({len(dictAvion): req[2]})
+                    elif req[1] == 'Remove':
+                        dictAvion.pop(req[0])
+                    elif req[1] == 'Altitude':
+                        dictAvion[req[0]].targetFL = req[2]
+                    elif req[1] == 'Heading':
+                        dictAvion[req[0]].headingMode = True
+                        dictAvion[req[0]].targetHead = req[2]
+                    elif req[1] == 'Warning':
+                        dictAvion[req[0]].Cwarning()
+                    elif req[1] == 'Part':
+                        dictAvion[req[0]].Cpart()
+                    elif req[1] == 'Direct':
+                        dictAvion[req[0]].headingMode = False
+                        dictAvion[req[0]].CnextPoint(req[2])
+                    elif req[1] == 'PFL':
+                        dictAvion[req[0]].PFL = req[2]
+                    elif req[1] == 'Mouvement':
+                        dictAvion[req[0]].Cmouvement()
+                    print(dictAvion)
             if not data:
                 print("Disconnected")
                 break
             else:
-                reply = Packet(game, players, requests)
-                '''
-                print("Received: ", data)
-                print("Sending : ", reply)
-                '''
+                reply = Packet(game=game, dictAvions=dictAvion, requests=requests)
+
             conn.sendall(pickle.dumps(reply))
             nombre = 0
         except:
@@ -113,11 +136,15 @@ def threaded_client(conn, caca):
                 nombre+=1
 
     print("Lost connection")
-    players[playerId].listeAvions=[]
     conn.close()
 
+def threaded_waiting():
+    while True:
+        conn, addr = s.accept()
+        print("Connected to:", addr)
+        start_new_thread(threaded_client, (conn, 0))
 
-while True:
-    conn, addr = s.accept()
-    print("Connected to:", addr)
-    start_new_thread(threaded_client, (conn , 0))
+
+start_new_thread(threaded_waiting())
+
+

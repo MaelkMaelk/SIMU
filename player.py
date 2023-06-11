@@ -3,7 +3,6 @@ from typing import Iterable
 import pygame
 import math
 import pygame_gui
-import json
 
 plotSize = 8
 timeConstant = 8 / 3600
@@ -28,57 +27,25 @@ def calculateHeading(x, y, xPoint, yPoint):
 
 
 class Game:
-    def __init__(self, playerNb):
+    def __init__(self):
         self.ready = False
         self.paused = True
-        self.playerNb = playerNb
-
-    def getPlayerNb(self):
-        return self.playerNb
-
-    def connection(self):
-        self.playerNb += 1
-
-    def getPaused(self):
-        return self.paused
 
 
-class Player:
-    def __init__(self, Id, pilote):
-        self.Id = Id
-        self.pilote = pilote
-        self.listeAvions = {}
-        self.emptyId = []
+class Packet:
 
-    def getListe(self):
-        return self.listeAvions
-
-    def getId(self):
-        return self.Id
-
-    def add(self, indicatif, aircraft, perfo, x, y, altitude, route, heading=None, PFL=None):
-        print(heading)
-        if PFL is None:
-            PFL = altitude
-        if len(self.emptyId) != 0:
-            avion = AvionPacket(self.Id, self.emptyId[0], indicatif, aircraft, perfo,
-                                x, y, heading, altitude, route, PFL)
-            self.listeAvions.update({self.emptyId[0]: avion})
-            self.emptyId.pop(0)
-        else:
-            avion = AvionPacket(self.Id, len(self.listeAvions), indicatif, aircraft, perfo,
-                                x, y, heading, altitude, route, PFL)
-            self.listeAvions.update({len(self.listeAvions): avion})
-
-    def remove(self, avion):
-        self.emptyId.append(avion.Id)
-        self.listeAvions.pop(avion.Id)
+    def __init__(self, game=None, dictAvions=None, requests=None, map=None, perfos=None):
+        self.game = game
+        self.dictAvions = dictAvions
+        self.requests = requests
+        self.map = map
+        self.perfos = perfos
 
 
 class AvionPacket:
+    global timeConstant
 
-    def __init__(self, playerId, Id, indicatif, aircraft, perfos, x, y, heading, altitude, route, PFL):
-        self.playerId = playerId
+    def __init__(self, mapScale, Id, indicatif, aircraft, perfos, x, y, altitude, route, heading=None, PFL=None):
         self.Id = Id
         self.indicatif = indicatif
         self.aircraft = aircraft
@@ -86,17 +53,56 @@ class AvionPacket:
         self.y = y
         self.comete = []
         self.heading = heading
-        self.speed = perfos[0]
+        self.speedDis = perfos[0]
+        self.speed = perfos[0] / mapScale * timeConstant
         self.altitude = altitude
         self.warning = False
         self.part = False
         self.altitudeEvoTxt = '-'
-        self.last = route[1]
-        self.routeFull = list(route)
-        self.route = dict(route[2])
-        self.PFL = PFL
         self.perfos = perfos
         self.coordination = 0
+
+        # perfo
+        self.turnRate = 12
+        self.ROC = perfos[-1] / 6000 * 8
+        self.ROD = perfos[-2] / 6000 * 8
+
+        # ROUTE
+        self.routeFull = list(route)
+        self.route = dict(route[2])
+        self.last = route[1]
+        self.PFL = PFL
+        for sortie in self.routeFull[3]:
+            if sortie[1] < self.PFL < sortie[2]:
+                self.sortie = sortie[0]
+        self.headingMode = False
+        self.nextPointValue = 0
+        if list(self.route.values())[0][1] < list(self.route.values())[1][
+            1]:  # on trouve l'endroit ou se situe l'avion pour savoir quel est son premier point
+            for point in list(self.route.values()):
+                if point[1] > self.y:
+                    break
+                self.nextPointValue += 1
+        else:
+            for point in list(self.route.values()):
+                if point[1] < self.y:
+                    break
+                self.nextPointValue += 1
+        if self.nextPointValue < len(self.route):
+            self.nextPoint = list(self.route.keys())[self.nextPointValue]
+        self.pointHeading = 0
+
+        # heading
+        if heading is not None:
+            self.heading = heading
+        else:
+            self.heading = calculateHeading(self.x, self.y, self.route[self.nextPoint][0],
+                                            self.route[self.nextPoint][1])
+        self.headingRad = (self.heading - 90) / 180 * math.pi
+
+        # TARGETS and spd for altitude/heading etc...
+        self.targetFL = self.altitude
+        self.targetHead = self.heading
 
     def update(self, Papa):
         self.indicatif = Papa.indicatif
@@ -113,6 +119,87 @@ class AvionPacket:
         self.part = Papa.part
         self.coordination = Papa.coordination
 
+    def Cwarning(self):
+        self.warning = not self.warning
+
+    def Cpart(self):
+        self.part = not self.part
+
+    def Cmouvement(self):
+        if self.coordination == 0:
+            self.coordination = 1
+        else:
+            self.coordination = 2
+
+    def CnextPoint(self, nextPoint):
+        self.nextPoint = nextPoint
+        for i in range(len(self.route.keys())):
+            if list(self.route.keys())[i] == nextPoint:
+                break
+        self.nextPointValue = i
+
+    def move(self, zoom, scroll):
+        # heading update
+        if self.headingMode:
+            if self.heading != self.targetHead:
+                if abs(self.heading - self.targetHead) <= self.turnRate:
+                    self.heading = self.targetHead
+                elif abs(self.heading - self.targetHead) > 180:
+                    self.heading = (self.heading + self.turnRate * (self.heading - self.targetHead) / abs(
+                        self.heading - self.targetHead)) % 360
+                else:
+                    self.heading -= self.turnRate * (self.heading - self.targetHead) / abs(
+                        self.heading - self.targetHead)
+
+        else:
+            if math.sqrt((self.x - self.route[self.nextPoint][0]) ** 2 + (
+                    self.y - self.route[self.nextPoint][1]) ** 2) <= 2 * self.speed:
+
+                if self.nextPointValue + 1 == len(self.route):
+                    self.headingMode = True
+                else:
+                    self.nextPointValue += 1
+                    self.nextPoint = list(self.route.keys())[self.nextPointValue]
+            self.pointHeading = calculateHeading(self.x, self.y, self.route[self.nextPoint][0],
+                                                 self.route[self.nextPoint][1])
+
+            if self.heading != self.pointHeading:
+                if abs(self.heading - self.pointHeading) <= self.turnRate:
+                    self.heading = self.pointHeading
+                elif abs(self.heading - self.pointHeading) > 180:
+                    self.heading = (self.heading + self.turnRate * (self.heading - self.pointHeading) / abs(
+                        self.heading - self.pointHeading)) % 360
+                else:
+                    self.heading -= self.turnRate * (self.heading - self.pointHeading) / abs(
+                        self.heading - self.pointHeading)
+
+        # altitude update
+        if self.altitude != self.targetFL:
+            if self.altitude - self.targetFL > 0:
+                if abs(self.altitude - self.targetFL) <= self.ROD:
+                    self.altitude = self.targetFL
+                    self.altitudeEvoTxt = '-'
+                else:
+                    self.altitude -= self.ROD
+                    self.altitudeEvoTxt = '↘'
+            else:
+                if abs(self.altitude - self.targetFL) <= self.ROC:
+                    self.altitude = self.targetFL
+                    self.altitudeEvoTxt = '-'
+                else:
+                    self.altitude += self.ROC
+                    self.altitudeEvoTxt = '↗'
+
+        self.headingRad = (self.heading - 90) / 180 * math.pi
+
+        # comete
+        if len(self.comete) >= 6:
+            self.comete = self.comete[1:6]
+        self.comete.append((self.x , self.y ))
+
+        # movement
+        self.x += self.speed * math.cos(self.headingRad)
+        self.y += self.speed * math.sin(self.headingRad)
 
 class Avion:
     global timeConstant
@@ -127,13 +214,18 @@ class Avion:
         self.y = Papa.y
         self.comete = Papa.comete
         self.speedDis = str(Papa.speed)[0:2]
+        self.PFL = Papa.PFL
         self.speedPacket = Papa.speed
-        self.speed = Papa.speed / mapScale * timeConstant
         self.altitude = Papa.altitude
         self.altitudeEvoTxt = '-'
         self.bouton = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((self.x, self.y), (20, 20)), text='')
         self.bouton.generate_click_events_from: Iterable[int] = frozenset(
             [pygame.BUTTON_LEFT, pygame.BUTTON_RIGHT, pygame.BUTTON_MIDDLE])
+
+
+        # sortie
+        self.last = Papa.last
+        self.sortie = Papa.sortie
 
         # size
         self.eHeight = 68
@@ -152,49 +244,6 @@ class Avion:
         self.etiquetteY = self.y - 60
         self.etiquetteRect = pygame.Rect(self.etiquetteX, self.etiquetteY - 60, self.eWidth, self.eHeight)
         self.etiquettePos = 0
-
-        # perfo
-        self.turnRate = 12
-        self.ROC = Papa.perfos[-1] / 6000 * 8
-        self.ROD = Papa.perfos[-2] / 6000 * 8
-
-        # ROUTE
-        self.routeFull = Papa.routeFull
-        self.route = Papa.route
-        self.PFL = Papa.PFL
-        for sortie in self.routeFull[3]:
-            if sortie[1] < self.PFL < sortie[2]:
-                self.sortie = sortie[0]
-        self.headingMode = False
-        self.last = Papa.last
-        self.nextPointValue = 0
-        if list(self.route.values())[0][1] < list(self.route.values())[1][
-            1]:  # on trouve l'endroit ou se situe l'avion pour savoir quel est son premier point
-            for point in list(self.route.values()):
-                if point[1] > self.y:
-                    break
-                self.nextPointValue += 1
-        else:
-            for point in list(self.route.values()):
-                if point[1] < self.y:
-                    break
-                self.nextPointValue += 1
-        if self.nextPointValue < len(self.route):
-            self.nextPoint = list(self.route.keys())[self.nextPointValue]
-        self.pointHeading = 0
-
-        # heading
-        if Papa.heading is not None:
-            print('caca')
-            self.heading = Papa.heading
-        else:
-            self.heading = calculateHeading(self.x, self.y, self.route[self.nextPoint][0],
-                                            self.route[self.nextPoint][1])
-        self.headingRad = (self.heading - 90) / 180 * math.pi
-
-        # TARGETS and spd for altitude/heading etc...
-        self.targetFL = self.altitude
-        self.targetHead = self.heading
 
         # drawRoute
         self.drawRoute = False
@@ -290,11 +339,6 @@ class Avion:
         elif self.coordination == 1:
             self.sortieBouton.select()
 
-        # route
-        if self.drawRoute:
-            pygame.draw.line(win, (0, 255, 0), (self.affX + self.size, self.affY + self.size),
-                             (self.route[self.nextPoint][0] + self.size, self.route[self.nextPoint][1] + self.size))
-
     def drawPilote(self, win, zoom, scroll, vecteurs, vecteurSetting, typeAff):
         # updates
         self.affX = self.x * zoom + scroll[0]
@@ -369,118 +413,15 @@ class Avion:
             self.sortieBouton.select()
 
 
-    def move(self, zoom, scroll):
-        # heading update
-        if self.headingMode:
-            if self.heading != self.targetHead:
-                if abs(self.heading - self.targetHead) <= self.turnRate:
-                    self.heading = self.targetHead
-                elif abs(self.heading - self.targetHead) > 180:
-                    self.heading = (self.heading + self.turnRate * (self.heading - self.targetHead) / abs(
-                        self.heading - self.targetHead)) % 360
-                else:
-                    self.heading -= self.turnRate * (self.heading - self.targetHead) / abs(
-                        self.heading - self.targetHead)
 
-        else:
-            if math.sqrt((self.x - self.route[self.nextPoint][0]) ** 2 + (
-                    self.y - self.route[self.nextPoint][1]) ** 2) <= 2 * self.speed:
-
-                if self.nextPointValue + 1 == len(self.route):
-                    self.headingMode = True
-                else:
-                    self.nextPointValue += 1
-                    self.nextPoint = list(self.route.keys())[self.nextPointValue]
-            self.pointHeading = calculateHeading(self.x, self.y, self.route[self.nextPoint][0],
-                                                 self.route[self.nextPoint][1])
-
-            if self.heading != self.pointHeading:
-                if abs(self.heading - self.pointHeading) <= self.turnRate:
-                    self.heading = self.pointHeading
-                elif abs(self.heading - self.pointHeading) > 180:
-                    self.heading = (self.heading + self.turnRate * (self.heading - self.pointHeading) / abs(
-                        self.heading - self.pointHeading)) % 360
-                else:
-                    self.heading -= self.turnRate * (self.heading - self.pointHeading) / abs(
-                        self.heading - self.pointHeading)
-
-        # altitude update
-        if self.altitude != self.targetFL:
-            if self.altitude - self.targetFL > 0:
-                if abs(self.altitude - self.targetFL) <= self.ROD:
-                    self.altitude = self.targetFL
-                    self.altitudeEvoTxt = '-'
-                    self.altitudeEvoTxtDis.text = '-'
-                else:
-                    self.altitude -= self.ROD
-                    self.altitudeEvoTxtDis.text = '↘'
-                    self.altitudeEvoTxt = '↘'
-            else:
-                if abs(self.altitude - self.targetFL) <= self.ROC:
-                    self.altitude = self.targetFL
-                    self.altitudeEvoTxtDis.text = '-'
-                    self.altitudeEvoTxt = '-'
-                else:
-                    self.altitude += self.ROC
-                    self.altitudeEvoTxtDis.text = '↗'
-                    self.altitudeEvoTxt = '↗'
-            self.altitudeEvoTxtDis.rebuild()
-
-        self.headingRad = (self.heading - 90) / 180 * math.pi
-
-        # zoom & scroll
-
-        self.affX = self.x * zoom + scroll[0]
-        self.affY = self.y * zoom + scroll[1]
-
-        # comete
-        if len(self.comete) >= 6:
-            self.comete = self.comete[1:6]
-        self.comete.append((self.x + self.size, self.y + self.size))
-
-        # movement
-        self.x += self.speed * math.cos(self.headingRad)
-        self.y += self.speed * math.sin(self.headingRad)
-        # zoom & scroll
-
-        self.affX = self.x * zoom + scroll[0]
-        self.affY = self.y * zoom + scroll[1]
-
-        self.bouton.rect = pygame.Rect((self.affX, self.affY), (20, 20))
-        self.bouton.rebuild()
-
-        # etiquette
-
-        self.altitudeBouton.text = str(self.altitude)
-        self.altitudeBouton.rebuild()
-
-    def Cwarning(self):
-        self.warning = not self.warning
-
-    def Cpart(self):
-        self.part = not self.part
-
-    def Cmouvement(self):
-        if self.coordination == 0:
-            self.coordination = 1
-        else:
-            self.coordination = 2
-
-    def CnextPoint(self, nextPoint):
-        self.nextPoint = nextPoint
-        for i in range(len(self.route.keys())):
-            if list(self.route.keys())[i] == nextPoint:
-                break
-        self.nextPointValue = i
 
     def update(self, Papa, zoom, scroll, mapScale):
-        self.headingRad = (self.heading - 90) / 180 * math.pi
+        self.heading = Papa.heading
+        self.headingRad = Papa.headingRad
         self.indicatif = Papa.indicatif
         self.x = Papa.x
         self.y = Papa.y
         self.comete = Papa.comete
-        self.heading = Papa.heading
-
         self.speed = Papa.speed / mapScale * timeConstant
         self.speedPacket = Papa.speed
 
@@ -507,6 +448,13 @@ class Avion:
         self.bouton.rebuild()
         self.PFLbouton.text = str(Papa.PFL)
         self.PFLbouton.rebuild()
+        self.altitudeEvoTxtDis.text = Papa.altitudeEvoTxt
+
+        self.bouton.rect = pygame.Rect((self.affX, self.affY), (20, 20))
+        self.bouton.rebuild()
+
+        self.altitudeBouton.text = str(self.altitude)
+        self.altitudeBouton.rebuild()
 
         # etiquette
 
@@ -565,32 +513,6 @@ class Avion:
         self.bouton.kill()
         self.etiquetteCont.kill()
 
-
-class Packet:
-
-    def __init__(self, game, players, requests, map=None, perfos=None):
-        self.game = game
-        self.players = players
-        self.requests = requests
-        self.map = map
-        self.perfos = perfos
-
-    def getPlayers(self):
-        return self.players
-
-    def getGame(self):
-        return self.game
-
-    def getRequests(self):
-        return self.requests
-
-    def getMap(self):
-        return self.map
-
-    def getPerfos(self):
-        return self.perfos
-
-
 class menuDeroulant:
 
     def __init__(self, x, y, what, value):
@@ -600,7 +522,7 @@ class menuDeroulant:
         self.what = what
         self.value = value - 100
         self.boutonList = []
-        self.cont = 0
+        self.cont = None
 
     def generate(self, Idtuple, x, y, what, value):
         self.Idtuple = Idtuple
@@ -629,7 +551,7 @@ class menuDeroulant:
         self.boutonList[5].select()
 
     def kill(self):
-        if self.cont != 0:
+        if self.cont is not None:
             self.cont.kill()
             self.boutonList = []
             self.cont = 0
