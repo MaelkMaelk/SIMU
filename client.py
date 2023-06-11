@@ -270,12 +270,13 @@ def main():
                         conflitGen = False
                         nouvelAvionWin.kill()
                         nouvelAvionWin = None
-                    elif event.ui_element == nouvelAvionWin.conflitsBouton:
-                        conflitGen = not conflitGen
-                        if nouvelAvionWin.conflitsBouton.is_selected:
-                            nouvelAvionWin.conflitsBouton.unselect()
-                        else:
-                            nouvelAvionWin.conflitsBouton.select()
+            elif event.type == pygame_gui.UI_BUTTON_PRESSED and nouvelAvionWin is not None:
+                if event.ui_element == nouvelAvionWin.conflitsBouton:
+                    conflitGen = not conflitGen
+                    if nouvelAvionWin.conflitsBouton.is_selected:
+                        nouvelAvionWin.conflitsBouton.unselect()
+                    else:
+                        nouvelAvionWin.conflitsBouton.select()
 
             elif event.type == pygame_gui.UI_BUTTON_START_PRESS and not alidadStart and selectConflitState == 1:
                 for player in listeAvion:
