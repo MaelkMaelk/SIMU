@@ -1,5 +1,6 @@
 import socket
 from _thread import *
+from queue import Queue
 from player import *
 import pickle
 import xml.etree.ElementTree as ET
@@ -78,7 +79,6 @@ game = Game()
 
 def threaded_client(conn, caca):
     global dictAvion
-    global requests
     global map
     global aircraftType
     global playerId
@@ -86,46 +86,23 @@ def threaded_client(conn, caca):
     nombre = 0
     localPlayerId = playerId
     playerId += 1
-    requests.append([])
-    packet = Packet(game=game, dictAvions=dictAvion, map=gameMap, perfos=aircraftType)
+    packetId = 0
+    packet = Packet(packetId, game=game, dictAvions=dictAvion, map=gameMap, perfos=aircraftType)
     conn.send(pickle.dumps(packet))
     reply = ""
     while True:
         try:
             data = pickle.loads(conn.recv(2048*16))
-            requests[localPlayerId] = data.requests
-            if data.requests != []:
-                print(data.requests)
-                print(requests)
-            for reqSublist in requests:
-                for req in reqSublist:  # [Id avion, type requete, data]
-                    print(req)
-                    if req[1] == 'Add':
-                        dictAvion.update({len(dictAvion): req[2]})
-                    elif req[1] == 'Remove':
-                        dictAvion.pop(req[0])
-                    elif req[1] == 'Altitude':
-                        dictAvion[req[0]].targetFL = req[2]
-                    elif req[1] == 'Heading':
-                        dictAvion[req[0]].headingMode = True
-                        dictAvion[req[0]].targetHead = req[2]
-                    elif req[1] == 'Warning':
-                        dictAvion[req[0]].Cwarning()
-                    elif req[1] == 'Part':
-                        dictAvion[req[0]].Cpart()
-                    elif req[1] == 'Direct':
-                        dictAvion[req[0]].headingMode = False
-                        dictAvion[req[0]].CnextPoint(req[2])
-                    elif req[1] == 'PFL':
-                        dictAvion[req[0]].PFL = req[2]
-                    elif req[1] == 'Mouvement':
-                        dictAvion[req[0]].Cmouvement()
-                    print(dictAvion)
+            if packetId != data.Id:
+                if data.requests is not []:
+                    print(data.requests)
+                reqQ.put(data.requests)
+                packetId = data.Id
             if not data:
                 print("Disconnected")
                 break
             else:
-                reply = Packet(game=game, dictAvions=dictAvion, requests=requests)
+                reply = Packet(packetId, game=game, dictAvions=dictAvion)
 
             conn.sendall(pickle.dumps(reply))
             nombre = 0
@@ -145,6 +122,34 @@ def threaded_waiting():
         start_new_thread(threaded_client, (conn, 0))
 
 
-start_new_thread(threaded_waiting())
+reqQ = Queue()
+start_new_thread(threaded_waiting, ())
 
-
+while True:
+    inReq = reqQ.get()
+    requests.append(inReq)
+    for reqSublist in requests:
+        for req in reqSublist:  # [Id avion, type requete, data]
+            print(req)
+            print(dictAvion)
+            if req[1] == 'Add':
+                dictAvion.update({len(dictAvion): req[2]})
+            elif req[1] == 'Remove':
+                dictAvion.pop(req[0])
+            elif req[1] == 'Altitude':
+                dictAvion[req[0]].targetFL = req[2]
+            elif req[1] == 'Heading':
+                dictAvion[req[0]].headingMode = True
+                dictAvion[req[0]].targetHead = req[2]
+            elif req[1] == 'Warning':
+                dictAvion[req[0]].Cwarning()
+            elif req[1] == 'Part':
+                dictAvion[req[0]].Cpart()
+            elif req[1] == 'Direct':
+                dictAvion[req[0]].headingMode = False
+                dictAvion[req[0]].CnextPoint(req[2])
+            elif req[1] == 'PFL':
+                dictAvion[req[0]].PFL = req[2]
+            elif req[1] == 'Mouvement':
+                dictAvion[req[0]].Cmouvement()
+    requests = []

@@ -5,7 +5,7 @@ import pygame_gui
 import math
 
 pygame.init()
-width = 1800
+width = 1200
 height = 1000
 
 win = pygame.display.set_mode((width, height))
@@ -31,6 +31,8 @@ def main():
     n = Network()
     packet = n.getP()
     i = 0
+
+    packetId = 0
     while packet == None and i < 2000:
         n = Network()
         packet = n.getP()
@@ -104,21 +106,20 @@ def main():
                 dictAvionsAff.update({avionId: Avion(avionId, avion, mapScale)})
                 dictAvionsAff[avionId].etiquetteGen(manager)
 
-            if len(dictAvionsAff) >= len(packet.dictAvions):  # si on a plus d'avions local qu'on en reçoi
-                toBeRemovedOther = []
+        if len(dictAvionsAff) > len(packet.dictAvions):  # si on a plus d'avions local qu'on en reçoi
+            toBeRemovedOther = []
+            print(dictAvionsAff.keys())
 
-                for avionId in dictAvionsAff.keys():  # on itere sur la boucle locale
-                    # si on trouve un avion local qui n'est pas dans les données reçues
-                    print(packet.dictAvions.keys())
-                    print(avionId)
-                    if avionId not in list(packet.dictAvions.keys()):
-                        print('caca')
-                        toBeRemovedOther.append(avionId)
-                for avionId in toBeRemovedOther:
-                    # 2eme boucle pour supprimer car on peut pas delete en pleine iteration
-                    dictAvionsAff[avionId].kill()
-                    dictAvionsAff.pop(avionId)
-
+            for avionId in dictAvionsAff.keys():  # on itere sur la boucle locale
+                # si on trouve un avion local qui n'est pas dans les données reçues
+                if avionId not in list(packet.dictAvions.keys()):
+                    print('caca')
+                    toBeRemovedOther.append(avionId)
+            print(toBeRemovedOther)
+            for avionId in toBeRemovedOther:
+                # 2eme boucle pour supprimer car on peut pas delete en pleine iteration
+                dictAvionsAff[avionId].kill()
+                dictAvionsAff.pop(avionId)
         game = packet.game
         dictAvions = packet.dictAvions
 
@@ -407,11 +408,14 @@ def main():
                                (conflitRadius + 15/mapScale) * zoom, 1)
 
         try:
-            if localRequests != {}:
-                packet = Packet(game, requests=localRequests)
+            if localRequests is not []:
+                packetId = (packetId + 1) % 100
+                packet = Packet(packetId, game=game, requests=localRequests)
             else:
                 packet = Packet(game)
+                packetId = packet.Id
             packet = n.send(packet)
+
         except:
             print('Paquet perdu')
             packet = tempoPacket

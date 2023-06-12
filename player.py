@@ -34,7 +34,8 @@ class Game:
 
 class Packet:
 
-    def __init__(self, game=None, dictAvions=None, requests=None, map=None, perfos=None):
+    def __init__(self, Id, game=None, dictAvions=None, requests=None, map=None, perfos=None):
+        self.Id = Id
         self.game = game
         self.dictAvions = dictAvions
         self.requests = requests
