@@ -4,6 +4,7 @@ from queue import Queue
 from player import *
 import pickle
 import xml.etree.ElementTree as ET
+import time
 
 server = "10.1.102.173"
 port = 5555
@@ -94,8 +95,6 @@ def threaded_client(conn, caca):
         try:
             data = pickle.loads(conn.recv(2048*16))
             if packetId != data.Id:
-                if data.requests is not []:
-                    print(data.requests)
                 reqQ.put(data.requests)
                 packetId = data.Id
             if not data:
@@ -124,14 +123,13 @@ def threaded_waiting():
 
 reqQ = Queue()
 start_new_thread(threaded_waiting, ())
-
+temps = time.time()
+print(temps)
 while True:
     inReq = reqQ.get()
     requests.append(inReq)
     for reqSublist in requests:
         for req in reqSublist:  # [Id avion, type requete, data]
-            print(req)
-            print(dictAvion)
             if req[1] == 'Add':
                 dictAvion.update({len(dictAvion): req[2]})
             elif req[1] == 'Remove':
@@ -152,4 +150,8 @@ while True:
                 dictAvion[req[0]].PFL = req[2]
             elif req[1] == 'Mouvement':
                 dictAvion[req[0]].Cmouvement()
+    if time.time() - temps >= 2:
+        temps = time.time()
+        for avion in list(dictAvion.values()):
+            avion.move()
     requests = []

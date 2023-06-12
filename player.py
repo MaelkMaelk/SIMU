@@ -45,6 +45,7 @@ class Packet:
 
 class AvionPacket:
     global timeConstant
+    global plotSize
 
     def __init__(self, mapScale, Id, indicatif, aircraft, perfos, x, y, altitude, route, heading=None, PFL=None):
         self.Id = Id
@@ -105,21 +106,6 @@ class AvionPacket:
         self.targetFL = self.altitude
         self.targetHead = self.heading
 
-    def update(self, Papa):
-        self.indicatif = Papa.indicatif
-        self.x = Papa.x
-        self.y = Papa.y
-        self.comete = Papa.comete
-        self.heading = Papa.heading
-        self.speed = Papa.speedPacket
-        self.altitude = Papa.altitude
-        self.warning = Papa.warning
-        self.altitudeEvoTxt = Papa.altitudeEvoTxt
-        self.route = Papa.route
-        self.PFL = Papa.PFL
-        self.part = Papa.part
-        self.coordination = Papa.coordination
-
     def Cwarning(self):
         self.warning = not self.warning
 
@@ -139,7 +125,7 @@ class AvionPacket:
                 break
         self.nextPointValue = i
 
-    def move(self, zoom, scroll):
+    def move(self):
         # heading update
         if self.headingMode:
             if self.heading != self.targetHead:
@@ -196,7 +182,7 @@ class AvionPacket:
         # comete
         if len(self.comete) >= 6:
             self.comete = self.comete[1:6]
-        self.comete.append((self.x , self.y ))
+        self.comete.append((self.x + plotSize, self.y + plotSize))
 
         # movement
         self.x += self.speed * math.cos(self.headingRad)
@@ -214,15 +200,17 @@ class Avion:
         self.x = Papa.x
         self.y = Papa.y
         self.comete = Papa.comete
-        self.speedDis = str(Papa.speed)[0:2]
+        self.speedDis = str(Papa.speedDis)[0:2]
         self.PFL = Papa.PFL
-        self.speedPacket = Papa.speed
+        self.speed = Papa.speed
         self.altitude = Papa.altitude
         self.altitudeEvoTxt = '-'
         self.bouton = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((self.x, self.y), (20, 20)), text='')
         self.bouton.generate_click_events_from: Iterable[int] = frozenset(
             [pygame.BUTTON_LEFT, pygame.BUTTON_RIGHT, pygame.BUTTON_MIDDLE])
 
+        self.heading = Papa.heading
+        self.headingRad = Papa.headingRad
 
         # sortie
         self.last = Papa.last
@@ -423,8 +411,7 @@ class Avion:
         self.x = Papa.x
         self.y = Papa.y
         self.comete = Papa.comete
-        self.speed = Papa.speed / mapScale * timeConstant
-        self.speedPacket = Papa.speed
+        self.speed = Papa.speed
 
         self.altitude = Papa.altitude
         self.altitudeEvoTxt = Papa.altitudeEvoTxt

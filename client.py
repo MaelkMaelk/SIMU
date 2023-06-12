@@ -250,7 +250,7 @@ def main():
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 3 and selectConflitState == 2:
                 conflitPoint = ((pygame.mouse.get_pos()[0] - plotSize - scroll[0])/zoom,
                                 (pygame.mouse.get_pos()[1] - plotSize - scroll[1])/zoom)
-                speedRatio = conflitAvion.speedPacket/perfos[selectedAircraft][0]
+                speedRatio = conflitAvion.speed/perfos[selectedAircraft][0]
                 conflitRadius = math.sqrt((conflitPoint[0] - conflitAvion.x)**2 + (conflitPoint[1] - conflitAvion.y)**2)\
                                 /speedRatio
                 selectConflitState = 3
