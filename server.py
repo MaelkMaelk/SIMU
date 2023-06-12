@@ -124,7 +124,6 @@ def threaded_waiting():
 reqQ = Queue()
 start_new_thread(threaded_waiting, ())
 temps = time.time()
-print(temps)
 while True:
     inReq = reqQ.get()
     requests.append(inReq)
@@ -150,7 +149,7 @@ while True:
                 dictAvion[req[0]].PFL = req[2]
             elif req[1] == 'Mouvement':
                 dictAvion[req[0]].Cmouvement()
-    if time.time() - temps >= 2:
+    if time.time() - temps >= 8:
         temps = time.time()
         for avion in list(dictAvion.values()):
             avion.move()

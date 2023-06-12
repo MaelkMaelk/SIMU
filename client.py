@@ -108,14 +108,11 @@ def main():
 
         if len(dictAvionsAff) > len(packet.dictAvions):  # si on a plus d'avions local qu'on en reçoi
             toBeRemovedOther = []
-            print(dictAvionsAff.keys())
-
             for avionId in dictAvionsAff.keys():  # on itere sur la boucle locale
                 # si on trouve un avion local qui n'est pas dans les données reçues
                 if avionId not in list(packet.dictAvions.keys()):
                     print('caca')
                     toBeRemovedOther.append(avionId)
-            print(toBeRemovedOther)
             for avionId in toBeRemovedOther:
                 # 2eme boucle pour supprimer car on peut pas delete en pleine iteration
                 dictAvionsAff[avionId].kill()
@@ -250,7 +247,7 @@ def main():
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 3 and selectConflitState == 2:
                 conflitPoint = ((pygame.mouse.get_pos()[0] - plotSize - scroll[0])/zoom,
                                 (pygame.mouse.get_pos()[1] - plotSize - scroll[1])/zoom)
-                speedRatio = conflitAvion.speed/perfos[selectedAircraft][0]
+                speedRatio = conflitAvion.speedKt/perfos[selectedAircraft][0]
                 conflitRadius = math.sqrt((conflitPoint[0] - conflitAvion.x)**2 + (conflitPoint[1] - conflitAvion.y)**2)\
                                 /speedRatio
                 selectConflitState = 3

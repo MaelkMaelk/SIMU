@@ -55,7 +55,7 @@ class AvionPacket:
         self.y = y
         self.comete = []
         self.heading = heading
-        self.speedDis = perfos[0]
+        self.speedKt = perfos[0]
         self.speed = perfos[0] / mapScale * timeConstant
         self.altitude = altitude
         self.warning = False
@@ -200,9 +200,10 @@ class Avion:
         self.x = Papa.x
         self.y = Papa.y
         self.comete = Papa.comete
-        self.speedDis = str(Papa.speedDis)[0:2]
+        self.speedDis = str(Papa.speedKt)[0:2]
         self.PFL = Papa.PFL
         self.speed = Papa.speed
+        self.speedKt = Papa.speedKt
         self.altitude = Papa.altitude
         self.altitudeEvoTxt = '-'
         self.bouton = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((self.x, self.y), (20, 20)), text='')
@@ -411,6 +412,7 @@ class Avion:
         self.x = Papa.x
         self.y = Papa.y
         self.comete = Papa.comete
+        self.speedKt = Papa.speedKt
         self.speed = Papa.speed
 
         self.altitude = Papa.altitude
