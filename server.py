@@ -6,7 +6,7 @@ import pickle
 import xml.etree.ElementTree as ET
 import time
 
-server = "10.1.102.173"
+server = "IP"
 port = 5555
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -42,11 +42,7 @@ for limite in root.find('secteur'):
     gameMap[1].append((x, y))
 
 for route in root.find('routes'): #construction des routes
-    routeAdd = []
-    routeAdd.append(gameMap[0][route.find('spawn').text])
-    routeAdd.append(route.find('last').text)
-    routeAdd.append({})
-
+    routeAdd = [gameMap[0][route.find('spawn').text], route.find('last').text, {}]
     sorties = []
     for sortie in route.findall('sortie'):
         sorties.append((sortie.text, int(sortie.attrib['min']), int(sortie.attrib['max'])))
@@ -74,12 +70,13 @@ for aircraft in root:
     aircraftType.update({aircraft.attrib['name']:(int(aircraft.find('speed').text), int(aircraft.find('maxSpeed').text),
                                                   int(aircraft.find('ceiling').text), int(aircraft.find('ROC').text),
                                                   int(aircraft.find('ROD').text)) })
-game = Game()
+
 # format map : [points, secteur, segments, routes]
-
-
+mapScale = 0.0814
+game = Game()
 def threaded_client(conn, caca):
     global dictAvion
+    global game
     global map
     global aircraftType
     global playerId
@@ -95,6 +92,8 @@ def threaded_client(conn, caca):
         try:
             data = pickle.loads(conn.recv(2048*16))
             if packetId != data.Id:
+                if data.game.paused != game.paused:
+                    game = data.game
                 reqQ.put(data.requests)
                 packetId = data.Id
             if not data:
@@ -124,13 +123,17 @@ def threaded_waiting():
 reqQ = Queue()
 start_new_thread(threaded_waiting, ())
 temps = time.time()
+STCAtriggered = False
+planeId = 0
 while True:
     inReq = reqQ.get()
     requests.append(inReq)
     for reqSublist in requests:
         for req in reqSublist:  # [Id avion, type requete, data]
             if req[1] == 'Add':
-                dictAvion.update({len(dictAvion): req[2]})
+                req[2].Id = planeId
+                dictAvion.update({planeId: req[2]})
+                planeId += 1
             elif req[1] == 'Remove':
                 dictAvion.pop(req[0])
             elif req[1] == 'Altitude':
@@ -149,8 +152,42 @@ while True:
                 dictAvion[req[0]].PFL = req[2]
             elif req[1] == 'Mouvement':
                 dictAvion[req[0]].Cmouvement()
-    if time.time() - temps >= 8:
+
+    if time.time() - temps >= 8 and game.paused:
         temps = time.time()
         for avion in list(dictAvion.values()):
             avion.move()
+        for avion in list(dictAvion.values()):
+            # tout les calculs de distances sont ici effectués en pixel, la conversion se fait avec le mapScale
+            STCAtriggered = False
+            predictedPos = []
+            if avion.evolution == 1:
+                VspeedOne = avion.ROC
+            elif avion.evolution == 2:
+                VspeedOne = -avion.ROD
+            else:
+                VspeedOne = 0
+            AltitudeOne = avion.altitude
+            for i in range(12):
+                predictedPos.append((avion.x + avion.speed * 15 / 8 * (i+1) * math.cos(avion.headingRad),
+                                        avion.y + avion.speed * 15 / 8 * (i+1) * math.sin(avion.headingRad),
+                                     AltitudeOne + VspeedOne * (i+1) * 15 / 8))
+            for avion2 in list(dictAvion.values()):
+                if avion != avion2:
+                    if avion2.evolution == 1:
+                        VspeedTwo = avion2.ROC
+                    elif avion2.evolution == 2:
+                        VspeedTwo = -avion2.ROD
+                    else:
+                        VspeedTwo = 0
+                    AltitudeTwo = avion2.altitude
+                    for i in range(12):
+                        if math.sqrt((predictedPos[i][0] - (avion2.x + avion2.speed * 15 / 8 * (i+1) * math.cos(avion2.headingRad)))**2 +
+                                     (predictedPos[i][1] - (avion2.y + avion2.speed * 15 / 8 * (i+1) * math.sin(avion2.headingRad)))**2) <= 5 / mapScale and abs(predictedPos[i][2] - AltitudeTwo - VspeedTwo * (i+1) * 15 / 8) < float(1000):
+                            STCAtriggered = True
+                            avion.STCA = True
+                            avion2.STCA = True
+            if not STCAtriggered:
+                avion.STCA = False
+
     requests = []

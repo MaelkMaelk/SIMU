@@ -57,17 +57,21 @@ class AvionPacket:
         self.heading = heading
         self.speedKt = perfos[0]
         self.speed = perfos[0] / mapScale * timeConstant
-        self.altitude = altitude
-        self.warning = False
-        self.part = False
+        self.altitude = altitude * 100
         self.altitudeEvoTxt = '-'
         self.perfos = perfos
+
+        # RADAR display
+        self.warning = False
+        self.part = False
         self.coordination = 0
+        self.STCA = False
 
         # perfo
         self.turnRate = 12
-        self.ROC = perfos[-1] / 6000 * 8
-        self.ROD = perfos[-2] / 6000 * 8
+        self.ROC = perfos[-1] / 60 * 8
+        self.ROD = perfos[-2] / 60 * 8
+        self.evolution = 0  # 0 stable, 1 montée, 2 descente
 
         # ROUTE
         self.routeFull = list(route)
@@ -166,16 +170,20 @@ class AvionPacket:
                 if abs(self.altitude - self.targetFL) <= self.ROD:
                     self.altitude = self.targetFL
                     self.altitudeEvoTxt = '-'
+                    self.evolution = 0
                 else:
                     self.altitude -= self.ROD
                     self.altitudeEvoTxt = '↘'
+                    self.evolution = 2
             else:
                 if abs(self.altitude - self.targetFL) <= self.ROC:
                     self.altitude = self.targetFL
                     self.altitudeEvoTxt = '-'
+                    self.evolution = 0
                 else:
                     self.altitude += self.ROC
                     self.altitudeEvoTxt = '↗'
+                    self.evolution = 1
 
         self.headingRad = (self.heading - 90) / 180 * math.pi
 
@@ -228,6 +236,7 @@ class Avion:
         self.coordination = 0  # 0 = noir, 1 = blanc, 2 = bleu
         self.onFrequency = False
         self.PFLaff = False
+        self.STCA = Papa.STCA
 
         # etiquette
         self.etiquetteX = self.x + 60
@@ -237,11 +246,16 @@ class Avion:
 
         # drawRoute
         self.drawRoute = False
+        self.route = Papa.route
 
         # Zoom & scroll
 
         self.affX = 0
         self.affY = 0
+
+        # TARGETS and spd for altitude/heading etc...
+        self.targetFL = Papa.targetFL
+        self.targetHead = Papa.targetHead
 
     def draw(self, win, zoom, scroll, vecteurs, vecteurSetting, typeAff):
         # updates
@@ -273,12 +287,13 @@ class Avion:
             self.etiquetteY = self.affY + self.size - value
             self.etiquetteCont.relative_rect = pygame.Rect(
                 (self.etiquetteX - self.etiquetteCont.rect[2], self.etiquetteY - self.etiquetteCont.rect[3]), (-1, -1))
-        self.altitudeBouton.text = str(round(self.altitude))
+        self.altitudeBouton.text = str(round(self.altitude))[0:3]
         self.altitudeBouton.rebuild()
         self.etiquetteCont.rebuild()
         self.etiquetteCont.update_containing_rect_position()
 
         # altitude evo
+
         self.altitudeEvoTxtDis.text = self.altitudeEvoTxt
         self.altitudeEvoTxtDis.rebuild()
 
@@ -329,6 +344,13 @@ class Avion:
         elif self.coordination == 1:
             self.sortieBouton.select()
 
+        if self.STCA:
+            self.STCAlabel.show()
+            self.speedBouton.hide()
+        else:
+            self.STCAlabel.hide()
+            self.speedBouton.show()
+
     def drawPilote(self, win, zoom, scroll, vecteurs, vecteurSetting, typeAff):
         # updates
         self.affX = self.x * zoom + scroll[0]
@@ -354,7 +376,7 @@ class Avion:
             self.etiquetteY = self.affY + self.size - value
             self.etiquetteCont.relative_rect = pygame.Rect(
                 (self.etiquetteX - self.etiquetteCont.rect[2], self.etiquetteY - self.etiquetteCont.rect[3]), (-1, -1))
-        self.altitudeBouton.text = str(round(self.altitude))
+        self.altitudeBouton.text = str(round(self.altitude))[0:3]
         self.altitudeBouton.rebuild()
         self.etiquetteCont.rebuild()
         self.etiquetteCont.update_containing_rect_position()
@@ -402,10 +424,14 @@ class Avion:
         elif self.coordination == 1:
             self.sortieBouton.select()
 
+        if self.STCA:
+            self.STCAlabel.show()
+            self.speedBouton.hide()
+        else:
+            self.STCAlabel.hide()
+            self.speedBouton.show()
 
-
-
-    def update(self, Papa, zoom, scroll, mapScale):
+    def update(self, Papa, zoom, scroll):
         self.heading = Papa.heading
         self.headingRad = Papa.headingRad
         self.indicatif = Papa.indicatif
@@ -422,6 +448,7 @@ class Avion:
         self.warning = Papa.warning
         self.part = Papa.part
         self.coordination = Papa.coordination
+        self.STCA = Papa.STCA
 
         # zoom & scroll
 
@@ -429,9 +456,12 @@ class Avion:
         self.affY = self.y * zoom + scroll[1]
 
         # ROUTE
-
         self.route = Papa.route
         self.PFL = Papa.PFL
+
+        # TARGETS and spd for altitude/heading etc...
+        self.targetFL = Papa.targetFL
+        self.targetHead = Papa.targetHead
 
         # bouton
         self.bouton.rect = pygame.Rect((self.affX, self.affY), (20, 20))
@@ -443,20 +473,20 @@ class Avion:
         self.bouton.rect = pygame.Rect((self.affX, self.affY), (20, 20))
         self.bouton.rebuild()
 
-        self.altitudeBouton.text = str(self.altitude)
-        self.altitudeBouton.rebuild()
-
-        # etiquette
-
     def etiquetteGen(self, manager):
         self.etiquetteCont = pygame_gui.core.ui_container.UIContainer(pygame.Rect((0, 0), (94, 68)), manager=manager)
         self.speedBouton = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, 17)), text=str(self.speedDis),
             container=self.etiquetteCont, object_id=pygame_gui.core.ObjectID('@etiquette', 'autre'))
 
+        self.STCAlabel = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((3, 0), (32, 17)), text='ALRT',
+                                                     container=self.etiquetteCont,
+                                                     object_id=pygame_gui.core.ObjectID('@etiquette', 'STCA'))
+        self.STCAlabel.hide()
+
         self.typeBouton = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((5, 0), (-1, 17)), text=self.aircraft,
-            container=self.etiquetteCont, anchors={'left': 'left', 'left_target': self.speedBouton},
+            relative_rect=pygame.Rect((2, 0), (-1, 17)), text=self.aircraft,
+            container=self.etiquetteCont, anchors={'left': 'left', 'left_target': self.STCAlabel},
             object_id=pygame_gui.core.ObjectID('@etiquette', 'autre'))
 
         self.indicatifBouton = pygame_gui.elements.UIButton(
@@ -544,7 +574,6 @@ class menuDeroulant:
         if self.cont is not None:
             self.cont.kill()
             self.boutonList = []
-            self.cont = 0
         return self.Idtuple
 
     def increase(self):

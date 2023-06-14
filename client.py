@@ -39,6 +39,7 @@ def main():
         i +=1
 
     perfos = packet.perfos
+    game = packet.game
     dictAvionsAff = {}
     dictAvions = packet.dictAvions
 
@@ -52,9 +53,11 @@ def main():
     listeRoutes = map[3]
     mapScale = 0.0814
     # scroll and zoom
-    zoom = 0.5
-    scroll = [-100, 20]
-    drag = [0,0]
+    zoomDef = 0.5
+    scrollDef = [-700+width/2, 20]
+    zoom = zoomDef
+    scroll = scrollDef
+    drag = [0, 0]
     dragging = False
 
     # alidad
@@ -100,7 +103,7 @@ def main():
         for avionId, avion in packet.dictAvions.items():
             if avionId in dictAvionsAff.keys():  # si l'avion est deja dans notre liste locale
                 # on l'update avec la methode update de la classe avion
-                dictAvionsAff[avionId].update(avion, zoom, scroll, mapScale)
+                dictAvionsAff[avionId].update(avion, zoom, scroll)
             else:  # sinon
                 # on l'ajoute avec methode update de la classe dict
                 dictAvionsAff.update({avionId: Avion(avionId, avion, mapScale)})
@@ -111,7 +114,6 @@ def main():
             for avionId in dictAvionsAff.keys():  # on itere sur la boucle locale
                 # si on trouve un avion local qui n'est pas dans les données reçues
                 if avionId not in list(packet.dictAvions.keys()):
-                    print('caca')
                     toBeRemovedOther.append(avionId)
             for avionId in toBeRemovedOther:
                 # 2eme boucle pour supprimer car on peut pas delete en pleine iteration
@@ -137,7 +139,10 @@ def main():
                         menuRoulant.decrease()
                     else:
                         Idcouple = menuRoulant.kill()
-                        localRequests.append((Idcouple, menuRoulant.what, int(event.ui_element.text)))
+                        if menuRoulant.what == "Altitude":
+                            localRequests.append((Idcouple, menuRoulant.what, int(event.ui_element.text)*100))
+                        else:
+                            localRequests.append((Idcouple, menuRoulant.what, int(event.ui_element.text)))
                 elif event.ui_element in menuPoints.boutonList:
                     Idcouple = menuPoints.kill()
                     localRequests.append((Idcouple, 'Direct', event.ui_element.text))
@@ -183,7 +188,7 @@ def main():
                                 menuRoulant.kill()
                                 menuRoulant.generate(avion.Id, avion.altitudeBouton.get_abs_rect()[0],
                                                      avion.altitudeBouton.get_abs_rect()[1], "Altitude",
-                                                     avion.targetFL)
+                                                     avion.targetFL/100)
                         elif event.ui_element == avion.routeBouton and pilote:
                             if event.mouse_button == 1:
                                 menuPoints = MenuRoute(avion.Id, avion.altitudeBouton.get_abs_rect()[0],
@@ -319,8 +324,8 @@ def main():
 
         if not pressing and nouvelAvionWin is None:
             if keys[pygame.K_r]: # reset zoom & scroll
-                zoom = 0.5
-                scroll = [-100, 20]
+                zoom = zoomDef
+                scroll = scrollDef
                 pressing = True
                 delaiPressage = pygame.time.get_ticks()
             if keys[pygame.K_a]:  # alidad start
@@ -356,17 +361,18 @@ def main():
                 pilote = False
             if keys[pygame.K_UP]:
                 pilote = True
+            if keys[pygame.K_SPACE]:
+                game.paused = not game.paused
+                pressing = True
+                delaiPressage = pygame.time.get_ticks()
         elif True not in pygame.key.ScancodeWrapper() and pygame.time.get_ticks() - delaiPressage >= 150:
             pressing = False
-
-
 
         win.fill((70, 70, 70))
         affListeSecteur = []
         for point in listeSecteur:
             affListeSecteur.append((point[0]*zoom+plotSize+scroll[0], point[1]*zoom+plotSize+scroll[1]))
         pygame.draw.polygon(win, (55, 55, 55), affListeSecteur)
-
 
         for segment in listeSegments:
             pygame.draw.line(win, (105, 110, 105), (segment[0][0]*zoom + scroll[0]+plotSize, segment[0][1]*zoom + scroll[1]+plotSize),
@@ -386,13 +392,6 @@ def main():
         manager.draw_ui(win)
         manager.update(time_delta)
 
-        if alidad:
-            pygame.draw.line(win, (255,105,180), alidadPos, pygame.mouse.get_pos())
-            distance = round(math.sqrt((alidadPos[0] - pygame.mouse.get_pos()[0])**2 +
-                                 (alidadPos[1] - pygame.mouse.get_pos()[1])**2)/zoom*mapScale, 1)
-            img = font.render(str(distance), True, (255,105,180))
-            win.blit(img, (pygame.mouse.get_pos()[0] + 20, pygame.mouse.get_pos()[1]))
-
         if selectConflitState == 3:
             pygame.draw.circle(win, (255, 0, 0), (conflitPoint[0]*zoom + scroll[0]+plotSize,
                                                   conflitPoint[1]*zoom + scroll[1]+plotSize),
@@ -403,6 +402,15 @@ def main():
             pygame.draw.circle(win, (71, 123, 146), (conflitPoint[0] * zoom + scroll[0] + plotSize,
                                                   conflitPoint[1] * zoom + scroll[1] + plotSize),
                                (conflitRadius + 15/mapScale) * zoom, 1)
+        if not game.paused: # oui en fait quand c en pause c False
+            img = font.render("gelé", True, (255, 105, 180))
+            win.blit(img, (20, 20))
+        if alidad:
+            pygame.draw.line(win, (255, 105, 180), alidadPos, pygame.mouse.get_pos())
+            distance = round(math.sqrt((alidadPos[0] - pygame.mouse.get_pos()[0]) ** 2 +
+                                       (alidadPos[1] - pygame.mouse.get_pos()[1]) ** 2) / zoom * mapScale, 1)
+            img = font.render(str(distance), True, (255, 105, 180))
+            win.blit(img, (pygame.mouse.get_pos()[0] + 20, pygame.mouse.get_pos()[1]))
 
         try:
             if localRequests is not []:
