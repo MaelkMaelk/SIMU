@@ -196,6 +196,8 @@ def main():
 
                         elif event.ui_element == avion.sortieBouton and pilote:
                             localRequests.append((avion.Id, 'Mouvement'))
+                        elif event.ui_element == avion.sortieBouton and event.ui_element.is_selected and not pilote:
+                            localRequests.append((avion.Id, 'Mouvement'))
 
                         # Menu de selection nouvel avion
                 if nouvelAvionWin is not None:
@@ -425,5 +427,6 @@ def main():
             print('Paquet perdu')
             packet = tempoPacket
         pygame.display.update()
+
 
 main()

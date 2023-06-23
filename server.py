@@ -183,7 +183,7 @@ while True:
                     AltitudeTwo = avion2.altitude
                     for i in range(12):
                         if math.sqrt((predictedPos[i][0] - (avion2.x + avion2.speed * 15 / 8 * (i+1) * math.cos(avion2.headingRad)))**2 +
-                                     (predictedPos[i][1] - (avion2.y + avion2.speed * 15 / 8 * (i+1) * math.sin(avion2.headingRad)))**2) <= 5 / mapScale and abs(predictedPos[i][2] - AltitudeTwo - VspeedTwo * (i+1) * 15 / 8) < float(1000):
+                                     (predictedPos[i][1] - (avion2.y + avion2.speed * 15 / 8 * (i+1) * math.sin(avion2.headingRad)))**2) <= 5 / mapScale and abs(predictedPos[i][2] - AltitudeTwo - VspeedTwo * (i+1) * 15 / 8) < float(1000) and abs(avion.altitude - avion2.altitude) <= 2500:
                             STCAtriggered = True
                             avion.STCA = True
                             avion2.STCA = True
