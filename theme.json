@@ -58,9 +58,18 @@
      },
       "coordBleue": {
         "colours": {
-          "selected_text": "rgb(255,255,255)",
-          "disabled_text":"rgb(0,0,255)",
+          "selected_text": "rgb(0,0,255)",
+          "disabled_text":"rgb(255,255,255)",
           "selected_bg": "#00000000"
         }
-      }
+      },
+      "STCA": {
+        "colours": {
+          "normal_text": "rgb(255,0,0)"
+        },
+        "misc": {
+          "border_width": "0",
+          "text_horiz_alignment": "left"
+        }
+       }
 }
