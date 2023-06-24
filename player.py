@@ -48,7 +48,7 @@ class AvionPacket:
     global plotSize
     global listeEtrangers
 
-    def __init__(self, mapScale, Id, indicatif, aircraft, perfos, x, y, altitude, route, heading=None, PFL=None):
+    def __init__(self, mapScale, Id, indicatif, aircraft, perfos, x, y, FL, route, heading=None, PFL=None):
         self.Id = Id
         self.indicatif = indicatif
         self.aircraft = aircraft
@@ -58,7 +58,7 @@ class AvionPacket:
         self.heading = heading
         self.speedKt = perfos[0]
         self.speed = perfos[0] / mapScale * timeConstant
-        self.altitude = altitude * 100
+        self.altitude = FL * 100
         self.altitudeEvoTxt = '-'
         self.perfos = perfos
 
@@ -67,6 +67,8 @@ class AvionPacket:
         self.part = False
         self.coordination = 0
         self.STCA = False
+        self.FLInterro = False
+        self.montrer = False
 
         # perfo
         self.turnRate = 10
@@ -78,7 +80,10 @@ class AvionPacket:
         self.routeFull = list(route)
         self.route = dict(route[2])
         self.last = route[1]
-        self.PFL = PFL
+        if PFL is not None:
+            self.PFL = PFL
+        else:
+            self.PFL = FL
         for sortie in self.routeFull[3]:
             if sortie[1] < self.PFL < sortie[2]:
                 self.sortie = sortie[0]
@@ -238,6 +243,8 @@ class Avion:
         self.onFrequency = False
         self.PFLaff = False
         self.STCA = Papa.STCA
+        self.FLInterro = Papa.FLInterro
+        self.montrer = Papa.montrer
 
         # etiquette
         self.etiquetteX = self.x + 60
@@ -262,12 +269,10 @@ class Avion:
         # updates
         self.affX = self.x * zoom + scroll[0]
         self.affY = self.y * zoom + scroll[1]
-
-        if typeAff:
+        if typeAff or self.montrer or self.FLInterro:
             self.typeBouton.show()
         else:
             self.typeBouton.hide()
-
         value = 60
         if self.etiquettePos % 4 == 0:
             self.etiquetteX = self.affX + self.size + value
@@ -389,10 +394,6 @@ class Avion:
         else:
             color = (204, 85, 0)
 
-        if typeAff:
-            self.typeBouton.show()
-        else:
-            self.typeBouton.hide()
         if vecteurs:
             pygame.draw.rect(win, color, (self.affX, self.affY, self.size * 2, self.size * 2), 1)
             pygame.draw.line(win, color, (self.affX + self.size, self.affY + self.size), (
@@ -441,6 +442,8 @@ class Avion:
         self.part = Papa.part
         self.coordination = Papa.coordination
         self.STCA = Papa.STCA
+        self.FLInterro = Papa.FLInterro
+        self.montrer = Papa.montrer
 
         # Coord
         if self.coordination == 2:
@@ -449,6 +452,14 @@ class Avion:
         elif self.coordination == 1:
             self.sortieBouton.disable()
 
+        # FL? et montrer
+        if self.montrer:
+            self.typeBouton.text = "Montrer"
+        elif self.FLInterro:
+            self.typeBouton.text = "FL?"
+        else:
+            self.typeBouton.text = self.aircraft
+        self.typeBouton.rebuild()
         # zoom & scroll
 
         self.affX = self.x * zoom + scroll[0]
@@ -710,6 +721,13 @@ class MenuATC:
             relative_rect=pygame.Rect((0, 0), (100, 17)), text='MVT',
             container=self.window, anchors={'top':'top', 'top_target': self.partBouton})
 
+        self.FLBouton = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((0, 0), (100, 17)), text='FL?',
+            container=self.window, anchors={'top': 'top', 'top_target': self.movBouton})
+
+        self.montrerBouton = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((0, 0), (100, 17)), text='Montrer',
+            container=self.window, anchors={'top': 'top', 'top_target': self.FLBouton})
 
     def kill(self):
         self.window.kill()

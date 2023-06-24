@@ -77,7 +77,7 @@ def main():
     selectedAircraftButton = None
     selectedRouteButton = None
     selectedFL = 310
-    selectedPFL = 310
+    selectedPFL = None
     selectedIndicatif = 'FCACA'
     conflitGen = False
     conflitAvion = None  # l'avion avec lequel on veut un conflit
@@ -138,20 +138,31 @@ def main():
                     elif event.ui_element == menuRoulant.boutonList[-1]:
                         menuRoulant.decrease()
                     else:
-                        Idcouple = menuRoulant.kill()
+                        avionId = menuRoulant.kill()
                         if menuRoulant.what == "Altitude":
-                            localRequests.append((Idcouple, menuRoulant.what, int(event.ui_element.text)*100))
+                            localRequests.append((avionId, menuRoulant.what, int(event.ui_element.text)*100))
+                        elif menuRoulant.what == "PFL":
+                            print(dictAvions[avionId].coordination)
+                            if dictAvions[avionId].sortie in listeEtrangers and dictAvions[avionId].coordination == 1:
+                                localRequests.append((avionId, "Mouvement"))
+                            localRequests.append((avionId, menuRoulant.what, int(event.ui_element.text)))
                         else:
-                            localRequests.append((Idcouple, menuRoulant.what, int(event.ui_element.text)))
+                            localRequests.append((avionId, menuRoulant.what, int(event.ui_element.text)))
                 elif event.ui_element in menuPoints.boutonList:
-                    Idcouple = menuPoints.kill()
-                    localRequests.append((Idcouple, 'Direct', event.ui_element.text))
+                    avionId = menuPoints.kill()
+                    localRequests.append((avionId, 'Direct', event.ui_element.text))
                 elif event.ui_element == menuOptionsATC.partBouton and event.mouse_button == 1:
-                    Idcouple = menuOptionsATC.kill()
-                    localRequests.append((Idcouple, 'Part'))
+                    avionId = menuOptionsATC.kill()
+                    localRequests.append((avionId, 'Part'))
                 elif event.ui_element == menuOptionsATC.movBouton and event.mouse_button == 1:
-                    Idcouple = menuOptionsATC.kill()
-                    localRequests.append((Idcouple, 'Mouvement'))
+                    avionId = menuOptionsATC.kill()
+                    localRequests.append((avionId, 'Mouvement'))
+                elif event.ui_element == menuOptionsATC.montrerBouton and event.mouse_button == 1:
+                    avionId = menuOptionsATC.kill()
+                    localRequests.append((avionId, 'Montrer'))
+                elif event.ui_element == menuOptionsATC.FLBouton and event.mouse_button == 1:
+                    avionId = menuOptionsATC.kill()
+                    localRequests.append((avionId, 'FL?'))
                 else:
                     for avion in dictAvionsAff.values():
                         if event.ui_element == avion.bouton:
@@ -165,8 +176,13 @@ def main():
                                 avion.etiquettePos += 1
                             elif event.mouse_button == 3 and pilote:
                                 localRequests.append((avion.Id, 'Remove'))
+                        elif event.ui_element == avion.typeBouton:
+                            if avion.FLInterro:
+                                localRequests.append((avion.Id, 'FL?'))
+                            elif avion.montrer:
+                                localRequests.append((avion.Id, 'Montrer'))
                         elif event.ui_element == avion.PFLbouton:
-                            menuRoulant.kill()
+                            menuRoulant.kill()  
                             menuRoulant.generate(avion.Id, avion.PFLbouton.get_abs_rect()[0],
                                                  avion.PFLbouton.get_abs_rect()[1], "PFL",
                                                  avion.PFL)
@@ -216,10 +232,17 @@ def main():
                                 selectedRouteButton = nouvelAvionWin.routesBoutons[bouton]
                             else:
                                 nouvelAvionWin.routesBoutons[bouton].unselect()
-
-                    elif event.ui_element == nouvelAvionWin.validationBouton and not conflitGen:
+                    elif event.ui_element == nouvelAvionWin.validationBouton and len(dictAvionsAff) != 0 and conflitGen:
+                        selectConflitState = 1
+                        pygame.mouse.set_cursor(pygame.cursors.diamond)
+                        conflitGen = False
                         nouvelAvionWin.kill()
                         nouvelAvionWin = None
+
+                    elif event.ui_element == nouvelAvionWin.validationBouton :
+                        nouvelAvionWin.kill()
+                        nouvelAvionWin = None
+                        conflitGen = False
                         if selectedRoute is not None and selectedAircraft is not None:
                             localRequests.append((len(dictAvions), "Add",
                                                  AvionPacket(mapScale, len(dictAvions), selectedIndicatif,
@@ -232,12 +255,7 @@ def main():
                             selectedAircraftButton = None
                             selectedFL = 310
                             selectedIndicatif = 'FCACA'
-                    elif event.ui_element == nouvelAvionWin.validationBouton:
-                        selectConflitState = 1
-                        pygame.mouse.set_cursor(pygame.cursors.diamond)
-                        conflitGen = False
-                        nouvelAvionWin.kill()
-                        nouvelAvionWin = None
+
             elif event.type == pygame_gui.UI_BUTTON_PRESSED and nouvelAvionWin is not None:
                 if event.ui_element == nouvelAvionWin.conflitsBouton:
                     conflitGen = not conflitGen
@@ -255,8 +273,6 @@ def main():
                 conflitPoint = ((pygame.mouse.get_pos()[0] - plotSize - scroll[0])/zoom,
                                 (pygame.mouse.get_pos()[1] - plotSize - scroll[1])/zoom)
                 speedRatio = conflitAvion.speedKt/perfos[selectedAircraft][0]
-                conflitRadius = math.sqrt((conflitPoint[0] - conflitAvion.x)**2 + (conflitPoint[1] - conflitAvion.y)**2)\
-                                /speedRatio
                 selectConflitState = 3
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 3 and selectConflitState == 3:
                 spawnPoint = ((pygame.mouse.get_pos()[0] - plotSize - scroll[0])/zoom,
@@ -280,7 +296,7 @@ def main():
                     try:
                         selectedPFL = int(event.text)
                     except:
-                        selectedPFL = selectedFL
+                        selectedPFL = None
                 elif event.ui_element == nouvelAvionWin.indicatifinput:
                     selectedIndicatif = event.text
 
@@ -364,7 +380,7 @@ def main():
             if keys[pygame.K_UP]:
                 pilote = True
             if keys[pygame.K_SPACE]:
-                game.paused = not game.paused
+                localRequests.append((0, 'Pause'))
                 pressing = True
                 delaiPressage = pygame.time.get_ticks()
         elif True not in pygame.key.ScancodeWrapper() and pygame.time.get_ticks() - delaiPressage >= 150:
@@ -395,6 +411,8 @@ def main():
         manager.update(time_delta)
 
         if selectConflitState == 3:
+            conflitRadius = math.sqrt((conflitPoint[0] - conflitAvion.x) ** 2 + (conflitPoint[1] - conflitAvion.y) ** 2) \
+                            / speedRatio
             pygame.draw.circle(win, (255, 0, 0), (conflitPoint[0]*zoom + scroll[0]+plotSize,
                                                   conflitPoint[1]*zoom + scroll[1]+plotSize),
                                conflitRadius*zoom, 1)
@@ -404,7 +422,7 @@ def main():
             pygame.draw.circle(win, (71, 123, 146), (conflitPoint[0] * zoom + scroll[0] + plotSize,
                                                   conflitPoint[1] * zoom + scroll[1] + plotSize),
                                (conflitRadius + 15/mapScale) * zoom, 1)
-        if not game.paused: # oui en fait quand c en pause c False
+        if not game.paused:  # oui en fait quand c en pause c False
             img = font.render("gelé", True, (255, 105, 180))
             win.blit(img, (20, 20))
         if alidad:

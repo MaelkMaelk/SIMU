@@ -253,6 +253,17 @@
             <sortie min= "195" max="660">M2</sortie>
         </route>
         <route>
+            <spawn>GAI</spawn>
+            <point>ETORI</point>
+            <point>SPIDY</point>
+            <point>MTL</point>
+            <point>LTP</point>
+            <point>MOZAO</point>
+            <point>SEVET</point>
+            <last>SEVET</last>
+            <sortie min= "245" max="660">G2</sortie>
+        </route>
+        <route>
             <spawn>JUVEN</spawn>
             <point>JUVEN</point>
             <point>BOSUA</point>

@@ -92,8 +92,6 @@ def threaded_client(conn, caca):
         try:
             data = pickle.loads(conn.recv(2048*16))
             if packetId != data.Id:
-                if data.game.paused != game.paused:
-                    game = data.game
                 reqQ.put(data.requests)
                 packetId = data.Id
             if not data:
@@ -152,6 +150,12 @@ while True:
                 dictAvion[req[0]].PFL = req[2]
             elif req[1] == 'Mouvement':
                 dictAvion[req[0]].Cmouvement()
+            elif req[1] == 'Montrer':
+                dictAvion[req[0]].montrer = not dictAvion[req[0]].montrer
+            elif req[1] == 'FL?':
+                dictAvion[req[0]].FLInterro = not dictAvion[req[0]].FLInterro
+            elif req[1] == 'Pause':
+                game.paused = not game.paused
 
     if time.time() - temps >= 8 and game.paused:
         temps = time.time()
