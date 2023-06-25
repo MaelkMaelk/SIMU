@@ -43,7 +43,7 @@ def main():
     dictAvionsAff = {}
     dictAvions = packet.dictAvions
 
-    font = pygame.font.SysFont(None, 18)
+    font = pygame.font.SysFont('arial', 18)
 
     # Map
     map = packet.map
