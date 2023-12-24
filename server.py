@@ -6,7 +6,7 @@ import pickle
 import xml.etree.ElementTree as ET
 import time
 
-server = "IP"
+server = "192.168.1.47"
 port = 5555
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
