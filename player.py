@@ -8,7 +8,6 @@ plotSize = 8
 timeConstant = 8 / 3600
 listeEtrangers = ['G2', 'M2']
 etiquetteLines = 4
-etiquetteListTemplate =[[]*etiquetteLines]
 
 def calculateHeading(x, y, xPoint, yPoint):
     if y > yPoint:
@@ -266,30 +265,6 @@ class Avion:
         # TARGETS and spd for altitude/heading etc...
         self.targetFL = Papa.targetFL
         self.targetHead = Papa.targetHead
-    def etiquetteUpdate(self):
-
-        if self.etiquettePos % 4 == 0:
-            self.etiquetteX = self.affX + self.size + self.ettiquetteWidth
-            self.etiquetteY = self.affY + self.size - self.etiquetteHeight
-            self.etiquetteContainer.update(self.etiquetteX, self.etiquetteY, self.ettiquetteWidth, self.etiquetteHeight)
-        elif self.etiquettePos % 4 == 1:
-            self.etiquetteX = self.affX + self.size + self.ettiquetteWidth
-            self.etiquetteY = self.affY + self.size + self.etiquetteHeight
-            self.etiquetteContainer.update(self.etiquetteX, self.etiquetteY, self.ettiquetteWidth, self.etiquetteHeight)
-        elif self.etiquettePos % 4 == 2:
-            self.etiquetteX = self.affX + self.size - self.ettiquetteWidth
-            self.etiquetteY = self.affY + self.size + self.etiquetteHeight
-            self.etiquetteContainer.update(self.etiquetteX, self.etiquetteY, self.ettiquetteWidth, self.etiquetteHeight)
-        else:
-            self.etiquetteX = self.affX + self.size - self.ettiquetteWidth
-            self.etiquetteY = self.affY + self.size - self.etiquetteHeight
-            self.etiquetteContainer.update(self.etiquetteX, self.etiquetteY, self.ettiquetteWidth, self.etiquetteHeight)
-        self.altitudeBouton.text = str(round(self.altitude))[0:3]
-        self.altitudeBouton.rebuild()
-
-        for ligne in range(len(self.etiquetteList)):
-            self.etiquetteList[ligne][0].set_position((self.etiquetteX, self.etiquetteY + ligne*18))
-
 
     def draw(self, win, zoom, scroll, vecteurs, vecteurSetting, typeAff):
         # updates
@@ -300,6 +275,42 @@ class Avion:
         else:
             self.typeBouton.hide()
 
+        # calcul de la largeur de l'etiquette
+        largeur = 0
+        for ligne in self.etiquetteList:
+            largeurLigne = 0
+            for element in ligne:
+                print(element.visible)
+                if element.visible:
+                    largeurLigne += element.get_abs_rect().size[0]
+            if largeur < largeurLigne:
+                largeur = largeurLigne
+        self.etiquetteContainer.rect[2] = largeur
+
+        value = 60  # distance de l'etiquette par rapport au plot
+        if self.etiquettePos % 4 == 0:
+            self.etiquetteX = self.affX + self.size + value
+            self.etiquetteY = self.affY + self.size - value
+            self.etiquetteContainer.relative_rect = pygame.Rect(
+                (self.etiquetteX, self.etiquetteY - self.etiquetteContainer.rect[3]), (-1, -1))
+        elif self.etiquettePos % 4 == 1:
+            self.etiquetteX = self.affX + self.size + value
+            self.etiquetteY = self.affY + self.size + value
+            self.etiquetteContainer.relative_rect = pygame.Rect((self.etiquetteX, self.etiquetteY), (-1, -1))
+        elif self.etiquettePos % 4 == 2:
+            self.etiquetteX = self.affX + self.size - value
+            self.etiquetteY = self.affY + self.size + value
+            self.etiquetteContainer.relative_rect = pygame.Rect(
+                (self.etiquetteX - self.etiquetteContainer.rect[2], self.etiquetteY), (-1, -1))
+        else:
+            self.etiquetteX = self.affX + self.size - value
+            self.etiquetteY = self.affY + self.size - value
+            self.etiquetteContainer.relative_rect = pygame.Rect(
+                (self.etiquetteX - self.etiquetteContainer.rect[2], self.etiquetteY - self.etiquetteContainer.rect[3]), (-1, -1))
+        self.altitudeBouton.text = str(round(self.altitude))[0:3]
+        self.altitudeBouton.rebuild()
+        self.etiquetteContainer.rebuild()
+        self.etiquetteContainer.update_containing_rect_position()
 
         # altitude evo
 
@@ -361,31 +372,44 @@ class Avion:
         # updates
         self.affX = self.x * zoom + scroll[0]
         self.affY = self.y * zoom + scroll[1]
+        
+        # calcul de la largeur de l'etiquette
+        largeur = 0
+        for ligne in self.etiquetteList:
+            largeurLigne = 0
+            for element in ligne:
+                print(element.visible)
+                if element.visible:
+                    largeurLigne += element.get_abs_rect().size[0]
+            if largeur < largeurLigne:
+                largeur = largeurLigne
+        self.etiquetteContainer.rect[2] = largeur
 
-        value = 60
+        value = 60  # distance de l'etiquette par rapport au plot
+
         if self.etiquettePos % 4 == 0:
             self.etiquetteX = self.affX + self.size + value
             self.etiquetteY = self.affY + self.size - value
-            self.etiquetteCont.relative_rect = pygame.Rect(
-                (self.etiquetteX, self.etiquetteY - self.etiquetteCont.rect[3]), (-1, -1))
+            self.etiquetteContainer.relative_rect = pygame.Rect(
+                (self.etiquetteX, self.etiquetteY - self.etiquetteContainer.rect[3]), (-1, -1))
         elif self.etiquettePos % 4 == 1:
             self.etiquetteX = self.affX + self.size + value
             self.etiquetteY = self.affY + self.size + value
-            self.etiquetteCont.relative_rect = pygame.Rect((self.etiquetteX, self.etiquetteY), (-1, -1))
+            self.etiquetteContainer.relative_rect = pygame.Rect((self.etiquetteX, self.etiquetteY), (-1, -1))
         elif self.etiquettePos % 4 == 2:
             self.etiquetteX = self.affX + self.size - value
             self.etiquetteY = self.affY + self.size + value
-            self.etiquetteCont.relative_rect = pygame.Rect(
-                (self.etiquetteX - self.etiquetteCont.rect[2], self.etiquetteY), (-1, -1))
+            self.etiquetteContainer.relative_rect = pygame.Rect(
+                (self.etiquetteX - self.etiquetteContainer.rect[2], self.etiquetteY), (-1, -1))
         else:
             self.etiquetteX = self.affX + self.size - value
             self.etiquetteY = self.affY + self.size - value
-            self.etiquetteCont.relative_rect = pygame.Rect(
-                (self.etiquetteX - self.etiquetteCont.rect[2], self.etiquetteY - self.etiquetteCont.rect[3]), (-1, -1))
+            self.etiquetteContainer.relative_rect = pygame.Rect(
+                (self.etiquetteX - self.etiquetteContainer.rect[2], self.etiquetteY - self.etiquetteContainer.rect[3]), (-1, -1))
         self.altitudeBouton.text = str(round(self.altitude))[0:3]
         self.altitudeBouton.rebuild()
-        self.etiquetteCont.rebuild()
-        self.etiquetteCont.update_containing_rect_position()
+        self.etiquetteContainer.rebuild()
+        self.etiquetteContainer.update_containing_rect_position()
 
         # altitude evo
         self.altitudeEvoTxtDis.text = self.altitudeEvoTxt
@@ -486,64 +510,86 @@ class Avion:
         self.bouton.rect = pygame.Rect((self.affX, self.affY), (20, 20))
         self.bouton.rebuild()
 
-    def etiquetteGen(self):
-        global etiquetteListTemplate
-        self.etiquetteList = list(etiquetteListTemplate)
-        self.etiquetteHeight = len(self.etiquetteList)*18
-        self.ettiquetteWidth = 0
-        self.etiquetteContainer = pygame.rect.Rect(0, 0, 0, 0)
+    def etiquetteGen(self, manager):
+
+        # liste des lignes de l'etiquette avec les éléments, pour calculer la largeur
+        global etiquetteLines
+        self.etiquetteList = []
+        for i in range(etiquetteLines):
+            self.etiquetteList.append([])
+
+        # conteneur UI pygameUI pour tout foutre dedans
+        self.etiquetteContainer = pygame_gui.core.ui_container.UIContainer(pygame.Rect((0, 0), (0, 68)), manager=manager)
+
         self.speedBouton = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, 17)), text=str(self.speedDis),
-            object_id=pygame_gui.core.ObjectID('@etiquette', 'autre'))
+            container=self.etiquetteContainer, object_id=pygame_gui.core.ObjectID('@etiquette', 'autre'))
+        self.etiquetteList[0].append(self.speedBouton)
 
         self.STCAlabel = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((3, 0), (32, 17)), text='ALRT',
+                                                     container=self.etiquetteContainer,
                                                      object_id=pygame_gui.core.ObjectID('@etiquette', 'STCA'))
+        self.etiquetteList[0].append(self.STCAlabel)
         self.STCAlabel.hide()
-
+        
         self.typeBouton = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((2, 0), (-1, 17)), text=self.aircraft,
-            anchors={'left': 'left', 'left_target': self.STCAlabel},
+            container=self.etiquetteContainer, anchors={'left': 'left', 'left_target': self.STCAlabel},
             object_id=pygame_gui.core.ObjectID('@etiquette', 'autre'))
+        self.etiquetteList[0].append(self.typeBouton)
 
         self.indicatifBouton = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, 17)), text=str(self.indicatif),
-            anchors={'top': 'top', 'top_target': self.speedBouton},
+            container=self.etiquetteContainer, anchors={'top': 'top', 'top_target': self.speedBouton},
             object_id=pygame_gui.core.ObjectID('@etiquette', 'autre'))
+        self.etiquetteList[1].append(self.indicatifBouton)
 
         self.altitudeBouton = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (30, 18)), text=str(self.altitude),
-            anchors={'top': 'top', 'top_target': self.indicatifBouton},
+            container=self.etiquetteContainer, anchors={'top': 'top', 'top_target': self.indicatifBouton},
             object_id=pygame_gui.core.ObjectID('@etiquette', 'autre'))
+        self.etiquetteList[2].append(self.altitudeBouton)
 
         self.altitudeEvoTxtDis = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((3, 0), (10, 17)), text='-',
+                                                             container=self.etiquetteContainer,
                                                              anchors={'left': 'left',
                                                                       'left_target': self.altitudeBouton,
                                                                       'top': 'top',
                                                                       'top_target': self.indicatifBouton},
                                                              object_id=pygame_gui.core.ObjectID('@etiquette', 'autre'))
+        self.etiquetteList[2].append(self.altitudeEvoTxtDis)
+
         self.routeBouton = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, 17)), text=self.last,
-            anchors={'top': 'top', 'top_target': self.altitudeBouton},
+            container=self.etiquetteContainer, anchors={'top': 'top', 'top_target': self.altitudeBouton},
             object_id=pygame_gui.core.ObjectID('@etiquette', 'autre'))
+        self.etiquetteList[3].append(self.routeBouton)
 
         self.PFLbouton = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((1, 0), (28, 17)), text=str(self.PFL),
-                                                      anchors={'left': 'left',
+                                                      container=self.etiquetteContainer, anchors={'left': 'left',
                                                                                              'left_target': self.routeBouton,
                                                                                              'top': 'top',
                                                                                              'top_target': self.altitudeBouton},
                                                       object_id= pygame_gui.core.ObjectID('@etiquette', 'autre'))
+        self.etiquetteList[3].append(self.PFLbouton)
+
         self.sortieBouton = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, 17)), text=self.sortie,
-            anchors={'left': 'left',
+            container=self.etiquetteContainer, anchors={'left': 'left',
                                                    'left_target': self.PFLbouton, 'top': 'top',
                                                    'top_target': self.altitudeBouton},
             object_id=pygame_gui.core.ObjectID('@etiquette', 'coordBleue'))
+        self.etiquetteList[3].append(self.sortieBouton)
+
+        # click gauche, droit et molette sur l'indicatif
         self.indicatifBouton.generate_click_events_from: Iterable[int] = frozenset(
             [pygame.BUTTON_LEFT, pygame.BUTTON_RIGHT, pygame.BUTTON_MIDDLE])
+        print(self.etiquetteList)
+        self.etiquetteContainer.rebuild()
 
     def kill(self):
         self.bouton.kill()
-        self.etiquetteCont.kill()
+        self.etiquetteContainer.kill()
 
 class menuDeroulant:
 
