@@ -5,14 +5,31 @@ from player import *
 import pickle
 import xml.etree.ElementTree as ET
 import time
+import struct
 
-server = "192.168.1.47"
+MCAST_GRP = '224.1.1.1'
+MCAST_PORT = 5007
+
+
+pingSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+pingSock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+
+# on this port, listen ONLY to MCAST_GRP
+pingSock.bind((MCAST_GRP, MCAST_PORT))
+mreq = struct.pack("4sl", socket.inet_aton(MCAST_GRP), socket.INADDR_ANY)
+
+pingSock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
+
+
+servername = "mael"
+server_ip = "192.168.1.47"
 port = 5555
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 try:
-    s.bind((server, port))
+    s.bind((server_ip, port))
 except socket.error as e:
     str(e)
 
@@ -117,9 +134,18 @@ def threaded_waiting():
         print("Connected to:", addr)
         start_new_thread(threaded_client, (conn, 0))
 
+def threaded_ping_responder():
+    global server_ip
+    while True:
+        # For Python 3, change next line to "print(sock.recv(10240))"
+        data, address = pingSock.recvfrom(10240)
+        print(data, address)
+        pingSock.sendto(servername.encode('utf-8'), address)
+
 
 reqQ = Queue()
 start_new_thread(threaded_waiting, ())
+start_new_thread(threaded_ping_responder, ())
 temps = time.time()
 STCAtriggered = False
 planeId = 0
