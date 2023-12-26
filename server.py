@@ -1,33 +1,32 @@
 import socket
 from _thread import *
 from queue import Queue
+from network import MCAST_GRP, MCAST_PORT, port
 from player import *
 import pickle
 import xml.etree.ElementTree as ET
 import time
 import struct
 
-MCAST_GRP = '224.1.1.1'
-MCAST_PORT = 5007
 
+# On se connecte a internet pour avoir notre adresse IP locale... Oui oui
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+sock.connect(("8.8.8.8", 80))
+servername = "mael"
+server_ip = sock.getsockname()[0]
+print(server_ip)
+sock.close()
+# fini on ferme le socket
 
+# set up le socket pour le UDP, il répond au scan server coté client
 pingSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
 pingSock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-
-
-# on this port, listen ONLY to MCAST_GRP
 pingSock.bind((MCAST_GRP, MCAST_PORT))
 mreq = struct.pack("4sl", socket.inet_aton(MCAST_GRP), socket.INADDR_ANY)
-
 pingSock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
 
-
-servername = "mael"
-server_ip = "192.168.1.47"
-port = 5555
-
+# socket TCP pour les connections avec les clients
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
 try:
     s.bind((server_ip, port))
 except socket.error as e:
@@ -40,8 +39,8 @@ playerId = 0
 dictAvion = {}
 requests = []
 gameMap = [{}, [], [], []]
-# XML map loading
 
+# XML map loading
 tree = ET.parse('XML/map.xml')
 root = tree.getroot()
 scale = float(root.find('scale').text)
@@ -140,7 +139,8 @@ def threaded_ping_responder():
         # For Python 3, change next line to "print(sock.recv(10240))"
         data, address = pingSock.recvfrom(10240)
         print(data, address)
-        pingSock.sendto(servername.encode('utf-8'), address)
+        if data == b'Server?':
+            pingSock.sendto(servername.encode('utf-8'), address)
 
 
 reqQ = Queue()
