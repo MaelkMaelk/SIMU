@@ -22,8 +22,8 @@ def serverBrowser():
             break
         serverList.update({data: address})
     sock.close()
-    #if len(serverList) <= 1:
-    #    return list(serverList.values())[0][0]
+    if len(serverList) <= 1:
+        return list(serverList.values())[0][0]
     print('Liste des serveurs actifs:')
     for i in range(len(list(serverList.keys()))):
         print(i, ' - ', list(serverList.keys())[i], '\n')
