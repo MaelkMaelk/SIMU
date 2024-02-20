@@ -124,6 +124,7 @@ temps = time.time()
 STCAtriggered = False
 planeId = 0
 while True:
+    toBeUpdatedList = []  # liste des avions aux quels il faut changer l'updateNumber
     inReq = reqQ.get()
     requests.append(inReq)
     for reqSublist in requests:
@@ -136,31 +137,50 @@ while True:
                 dictAvion.pop(req[0])
             elif req[1] == 'Altitude':
                 dictAvion[req[0]].targetFL = req[2]
+                if req[0] not in toBeUpdatedList:
+                    toBeUpdatedList.append(req[0])
             elif req[1] == 'Heading':
                 dictAvion[req[0]].headingMode = True
                 dictAvion[req[0]].targetHead = req[2]
+                if req[0] not in toBeUpdatedList:
+                    toBeUpdatedList.append(req[0])
             elif req[1] == 'Warning':
                 dictAvion[req[0]].Cwarning()
+                if req[0] not in toBeUpdatedList:
+                    toBeUpdatedList.append(req[0])
             elif req[1] == 'Part':
                 dictAvion[req[0]].Cpart()
+                if req[0] not in toBeUpdatedList:
+                    toBeUpdatedList.append(req[0])
             elif req[1] == 'Direct':
                 dictAvion[req[0]].headingMode = False
                 dictAvion[req[0]].CnextPoint(req[2])
+                if req[0] not in toBeUpdatedList:
+                    toBeUpdatedList.append(req[0])
             elif req[1] == 'PFL':
                 dictAvion[req[0]].PFL = req[2]
+                if req[0] not in toBeUpdatedList:
+                    toBeUpdatedList.append(req[0])
             elif req[1] == 'Mouvement':
                 dictAvion[req[0]].Cmouvement()
+                if req[0] not in toBeUpdatedList:
+                    toBeUpdatedList.append(req[0])
             elif req[1] == 'Montrer':
                 dictAvion[req[0]].montrer = not dictAvion[req[0]].montrer
+                if req[0] not in toBeUpdatedList:
+                    toBeUpdatedList.append(req[0])
             elif req[1] == 'FL?':
                 dictAvion[req[0]].FLInterro = not dictAvion[req[0]].FLInterro
+                if req[0] not in toBeUpdatedList:
+                    toBeUpdatedList.append(req[0])
             elif req[1] == 'Pause':
                 game.paused = not game.paused
 
-    if time.time() - temps >= 8 and game.paused:
+    if time.time() - temps >= timeConstant and game.paused:
         temps = time.time()
         for avion in list(dictAvion.values()):
             avion.move()
+            toBeUpdatedList.append(avion.Id)
         for avion in list(dictAvion.values()):
             # tout les calculs de distances sont ici effectués en pixel, la conversion se fait avec le mapScale
             STCAtriggered = False
@@ -172,10 +192,10 @@ while True:
             else:
                 VspeedOne = 0
             AltitudeOne = avion.altitude
-            for i in range(12):
-                predictedPos.append((avion.x + avion.speed * 15 / 8 * (i+1) * math.cos(avion.headingRad),
-                                        avion.y + avion.speed * 15 / 8 * (i+1) * math.sin(avion.headingRad),
-                                     AltitudeOne + VspeedOne * (i+1) * 15 / 8))
+            for i in range(8):
+                predictedPos.append((avion.x + avion.speed * 15 / timeConstant * (i+1) * math.cos(avion.headingRad),
+                                        avion.y + avion.speed * 15 / timeConstant * (i+1) * math.sin(avion.headingRad),
+                                     AltitudeOne + VspeedOne * (i+1) * 15 / timeConstant))
             for avion2 in list(dictAvion.values()):
                 if avion != avion2:
                     if avion2.evolution == 1:
@@ -185,13 +205,19 @@ while True:
                     else:
                         VspeedTwo = 0
                     AltitudeTwo = avion2.altitude
-                    for i in range(12):
-                        if math.sqrt((predictedPos[i][0] - (avion2.x + avion2.speed * 15 / 8 * (i+1) * math.cos(avion2.headingRad)))**2 +
-                                     (predictedPos[i][1] - (avion2.y + avion2.speed * 15 / 8 * (i+1) * math.sin(avion2.headingRad)))**2) <= 5 / mapScale and abs(predictedPos[i][2] - AltitudeTwo - VspeedTwo * (i+1) * 15 / 8) < float(1000) and abs(avion.altitude - avion2.altitude) <= 2500:
+                    for i in range(8):
+                        if math.sqrt((predictedPos[i][0] - (avion2.x + avion2.speed * 15 / timeConstant * (i+1) * math.cos(avion2.headingRad)))**2 +
+                                     (predictedPos[i][1] - (avion2.y + avion2.speed * 15 / timeConstant * (i+1) * math.sin(avion2.headingRad)))**2) <= 5 / mapScale and abs(predictedPos[i][2] - AltitudeTwo - VspeedTwo * (i+1) * 15 / timeConstant) < float(1000) and abs(avion.altitude - avion2.altitude) <= 2900:
                             STCAtriggered = True
                             avion.STCA = True
                             avion2.STCA = True
-            if not STCAtriggered:
+                            if avion.Id not in toBeUpdatedList:
+                                toBeUpdatedList.append(avion.Id)
+            if not STCAtriggered and avion.STCA:
                 avion.STCA = False
+                if avion.Id not in toBeUpdatedList:
+                    toBeUpdatedList.append(avion.Id)
+    for Id in toBeUpdatedList:
+        dictAvion[Id].updateNumber = (dictAvion[Id].updateNumber + 1)%10
 
     requests = []

@@ -5,10 +5,12 @@ import math
 import pygame_gui
 
 plotSize = 8
-timeConstant = 8 / 3600
-listeEtrangers = ['G2', 'M2']
+timeConstant = 4
+listeSecteurEtranger = ['G2', 'M2']
+
 
 def calculateHeading(x, y, xPoint, yPoint):
+
     if y > yPoint:
         if x > xPoint:
             heading = (math.atan(abs(y - yPoint) / (abs(x - xPoint)))) * 180 / math.pi
@@ -46,9 +48,10 @@ class Packet:
 class AvionPacket:
     global timeConstant
     global plotSize
-    global listeEtrangers
+    global listeSecteurEtranger
 
     def __init__(self, mapScale, Id, indicatif, aircraft, perfos, x, y, FL, route, heading=None, PFL=None):
+        self.updateNumber = 0
         self.Id = Id
         self.indicatif = indicatif
         self.aircraft = aircraft
@@ -57,7 +60,7 @@ class AvionPacket:
         self.comete = []
         self.heading = heading
         self.speedKt = perfos[0]
-        self.speed = perfos[0] / mapScale * timeConstant
+        self.speed = perfos[0] / mapScale * timeConstant /3600
         self.altitude = FL * 100
         self.altitudeEvoTxt = '-'
         self.perfos = perfos
@@ -72,8 +75,8 @@ class AvionPacket:
 
         # perfo
         self.turnRate = 10
-        self.ROC = perfos[-1] / 60 * 8/2
-        self.ROD = perfos[-2] / 60 * 8/2
+        self.ROC = perfos[-1] / 60 * timeConstant/2
+        self.ROD = perfos[-2] / 60 * timeConstant/2
         self.evolution = 0  # 0 stable, 1 montée, 2 descente
 
         # ROUTE
@@ -123,7 +126,7 @@ class AvionPacket:
         self.part = not self.part
 
     def Cmouvement(self):
-        if self.coordination == 1 and self.sortie in listeEtrangers:
+        if self.coordination == 1 and self.sortie in listeSecteurEtranger:
             self.coordination = 2  # enabled
         else:
             self.coordination = 1  # disabled
@@ -207,6 +210,7 @@ class Avion:
     global plotSize
 
     def __init__(self, Id, Papa, mapScale):
+        self.updateNumber = Papa.updateNumber
         self.Papa = Papa
         self.Id = Id
         self.indicatif = Papa.indicatif
@@ -269,53 +273,19 @@ class Avion:
         # updates
         self.affX = self.x * zoom + scroll[0]
         self.affY = self.y * zoom + scroll[1]
-        if typeAff or self.montrer or self.FLInterro:
-            self.typeBouton.show()
-        else:
-            self.typeBouton.hide()
-        value = 60
-        if self.etiquettePos % 4 == 0:
-            self.etiquetteX = self.affX + self.size + value
-            self.etiquetteY = self.affY + self.size - value
-            self.etiquetteCont.relative_rect = pygame.Rect(
-                (self.etiquetteX, self.etiquetteY - self.etiquetteCont.rect[3]), (-1, -1))
-        elif self.etiquettePos % 4 == 1:
-            self.etiquetteX = self.affX + self.size + value
-            self.etiquetteY = self.affY + self.size + value
-            self.etiquetteCont.relative_rect = pygame.Rect((self.etiquetteX, self.etiquetteY), (-1, -1))
-        elif self.etiquettePos % 4 == 2:
-            self.etiquetteX = self.affX + self.size - value
-            self.etiquetteY = self.affY + self.size + value
-            self.etiquetteCont.relative_rect = pygame.Rect(
-                (self.etiquetteX - self.etiquetteCont.rect[2], self.etiquetteY), (-1, -1))
-        else:
-            self.etiquetteX = self.affX + self.size - value
-            self.etiquetteY = self.affY + self.size - value
-            self.etiquetteCont.relative_rect = pygame.Rect(
-                (self.etiquetteX - self.etiquetteCont.rect[2], self.etiquetteY - self.etiquetteCont.rect[3]), (-1, -1))
-        self.altitudeBouton.text = str(round(self.altitude))[0:3]
-        self.altitudeBouton.rebuild()
-        self.etiquetteCont.rebuild()
-        self.etiquetteCont.update_containing_rect_position()
-
-        # altitude evo
-
-        self.altitudeEvoTxtDis.text = self.altitudeEvoTxt
-        self.altitudeEvoTxtDis.rebuild()
-
         # Vrai dessin
 
         if self.warning:
             color = (255, 120, 60)
             pygame.draw.line(win, color, (self.affX + self.size, self.affY + self.size), (
-                self.affX + self.size + self.speed * 60 / 8 * vecteurSetting * zoom * math.cos(self.headingRad),
-                self.affY + self.size + self.speed * 60 / 8 * vecteurSetting * zoom * math.sin(self.headingRad)), 2)
+                self.affX + self.size + self.speed * 60 / timeConstant * vecteurSetting * zoom * math.cos(self.headingRad),
+                self.affY + self.size + self.speed * 60 / timeConstant * vecteurSetting * zoom * math.sin(self.headingRad)), 2)
             pygame.draw.rect(win, color, (self.affX, self.affY, self.size * 2, self.size * 2), 1)
             for i in range(1, vecteurSetting + 1):
                 pygame.draw.circle(win, color, (self.affX + self.size +
-                                                self.speed * 60 / 8 * i * zoom * math.cos(self.headingRad),
+                                                self.speed * 60 / timeConstant * i * zoom * math.cos(self.headingRad),
                                                 self.affY + self.size +
-                                                self.speed * 60 / 8 * i * zoom * math.sin(self.headingRad)), 2)
+                                                self.speed * 60 / timeConstant * i * zoom * math.sin(self.headingRad)), 2)
         elif self.part:
             color = (30, 144, 255)
         else:
@@ -324,13 +294,13 @@ class Avion:
         if vecteurs:
             pygame.draw.rect(win, color, (self.affX, self.affY, self.size * 2, self.size * 2), 1)
             pygame.draw.line(win, color, (self.affX + self.size, self.affY + self.size), (
-                self.affX + self.size + self.speed * 60 / 8 * vecteurSetting * zoom * math.cos(self.headingRad),
-                self.affY + self.size + self.speed * 60 / 8 * vecteurSetting * zoom * math.sin(self.headingRad)), 1)
+                self.affX + self.size + self.speed * 60 / timeConstant * vecteurSetting * zoom * math.cos(self.headingRad),
+                self.affY + self.size + self.speed * 60 / timeConstant * vecteurSetting * zoom * math.sin(self.headingRad)), 1)
             for i in range(1, vecteurSetting + 1):
                 pygame.draw.circle(win, color, (self.affX + self.size +
-                                                self.speed * 60 / 8 * i * zoom * math.cos(self.headingRad),
+                                                self.speed * 60 / timeConstant * i * zoom * math.cos(self.headingRad),
                                                 self.affY + self.size +
-                                                self.speed * 60 / 8 * i * zoom * math.sin(self.headingRad)), 2)
+                                                self.speed * 60 / timeConstant * i * zoom * math.sin(self.headingRad)), 2)
         else:
             pygame.draw.rect(win, color, (self.affX, self.affY, self.size * 2, self.size * 2), 1)
         radius = 1
@@ -341,25 +311,49 @@ class Avion:
             radius += 1
         pygame.draw.line(win, (255, 255, 255), (self.affX + self.size, self.affY + self.size), (self.etiquetteX, self.etiquetteY))
 
-        # PART
-        if self.part:
-            self.indicatifBouton.select()
-        else:
-            self.indicatifBouton.unselect()
-
-        if self.STCA:
-            self.STCAlabel.show()
-            self.speedBouton.hide()
-        else:
-            self.STCAlabel.hide()
-            self.speedBouton.show()
-
     def drawPilote(self, win, zoom, scroll, vecteurs, vecteurSetting, typeAff):
         # updates
         self.affX = self.x * zoom + scroll[0]
         self.affY = self.y * zoom + scroll[1]
 
+        # Vrai dessin
+        if self.onFrequency:
+            color = (0, 255, 0)
+        else:
+            color = (204, 85, 0)
+
+        if vecteurs:
+            pygame.draw.rect(win, color, (self.affX, self.affY, self.size * 2, self.size * 2), 1)
+            pygame.draw.line(win, color, (self.affX + self.size, self.affY + self.size), (
+                self.affX + self.size + self.speed * 60 / timeConstant * vecteurSetting * zoom * math.cos(self.headingRad),
+                self.affY + self.size + self.speed * 60 / timeConstant * vecteurSetting * zoom * math.sin(self.headingRad)), 1)
+            for i in range(1, vecteurSetting + 1):
+                pygame.draw.circle(win, color, (self.affX + self.size +
+                                                self.speed * 60 / timeConstant * i * zoom * math.cos(self.headingRad),
+                                                self.affY + self.size +
+                                                self.speed * 60 / timeConstant * i * zoom * math.sin(self.headingRad)), 2)
+        else:
+            pygame.draw.rect(win, color, (self.affX, self.affY, self.size * 2, self.size * 2), 1)
+        radius = 1
+        for plot in self.comete:
+            affPlot = [(plot[0] - self.size) * zoom + self.size + scroll[0],
+                       (plot[1] - self.size) * zoom + self.size + scroll[1]]
+            pygame.draw.circle(win, color, affPlot, radius, 1)
+            radius += 1
+        pygame.draw.line(win, color, (self.affX + self.size, self.affY + self.size), (self.etiquetteX, self.etiquetteY))
+
+    def etiquetteUpdate(self, zoom, scroll):
+
+        # updates
+        self.affX = self.x * zoom + scroll[0]
+        self.affY = self.y * zoom + scroll[1]
+
+        # bouton
+        self.bouton.rect = pygame.Rect((self.affX, self.affY), (20, 20))
+        self.bouton.rebuild()
+
         value = 60
+
         if self.etiquettePos % 4 == 0:
             self.etiquetteX = self.affX + self.size + value
             self.etiquetteY = self.affY + self.size - value
@@ -379,44 +373,50 @@ class Avion:
             self.etiquetteY = self.affY + self.size - value
             self.etiquetteCont.relative_rect = pygame.Rect(
                 (self.etiquetteX - self.etiquetteCont.rect[2], self.etiquetteY - self.etiquetteCont.rect[3]), (-1, -1))
-        self.altitudeBouton.text = str(round(self.altitude))[0:3]
-        self.altitudeBouton.rebuild()
+
+        # etiquette cont
         self.etiquetteCont.rebuild()
         self.etiquetteCont.update_containing_rect_position()
+
+    def boutonsUpdate(self,typeAff, pilote):
+
+        # altitude
+        self.altitudeBouton.text = str(round(self.altitude))[0:3]
+        self.altitudeBouton.rebuild()
 
         # altitude evo
         self.altitudeEvoTxtDis.text = self.altitudeEvoTxt
         self.altitudeEvoTxtDis.rebuild()
 
-        # Vrai dessin
-        if self.onFrequency:
-            color = (0, 255, 0)
+        # PFL
+        self.PFLbouton.text = str(self.PFL)
+        self.PFLbouton.rebuild()
+
+        if pilote:
+            # PART
+            self.indicatifBouton.unselect()
         else:
-            color = (204, 85, 0)
+            # PART
+            if self.part:
+                self.indicatifBouton.select()
+            else:
+                self.indicatifBouton.unselect()
 
-        if vecteurs:
-            pygame.draw.rect(win, color, (self.affX, self.affY, self.size * 2, self.size * 2), 1)
-            pygame.draw.line(win, color, (self.affX + self.size, self.affY + self.size), (
-                self.affX + self.size + self.speed * 60 / 8 * vecteurSetting * zoom * math.cos(self.headingRad),
-                self.affY + self.size + self.speed * 60 / 8 * vecteurSetting * zoom * math.sin(self.headingRad)), 1)
-            for i in range(1, vecteurSetting + 1):
-                pygame.draw.circle(win, color, (self.affX + self.size +
-                                                self.speed * 60 / 8 * i * zoom * math.cos(self.headingRad),
-                                                self.affY + self.size +
-                                                self.speed * 60 / 8 * i * zoom * math.sin(self.headingRad)), 2)
+            if typeAff or self.montrer or self.FLInterro:
+                self.typeBouton.show()
+            else:
+                self.typeBouton.hide()
+
+        # FL? et montrer
+        if self.montrer:
+            self.typeBouton.text = "Montrer"
+        elif self.FLInterro:
+            self.typeBouton.text = "FL?"
         else:
-            pygame.draw.rect(win, color, (self.affX, self.affY, self.size * 2, self.size * 2), 1)
-        radius = 1
-        for plot in self.comete:
-            affPlot = [(plot[0] - self.size) * zoom + self.size + scroll[0],
-                       (plot[1] - self.size) * zoom + self.size + scroll[1]]
-            pygame.draw.circle(win, color, affPlot, radius, 1)
-            radius += 1
-        pygame.draw.line(win, color, (self.affX + self.size, self.affY + self.size), (self.etiquetteX, self.etiquetteY))
+            self.typeBouton.text = self.aircraft
+        self.typeBouton.rebuild()
 
-        # PART
-        self.indicatifBouton.unselect()
-
+        # STCA
         if self.STCA:
             self.STCAlabel.show()
             self.speedBouton.hide()
@@ -425,6 +425,7 @@ class Avion:
             self.speedBouton.show()
 
     def update(self, Papa, zoom, scroll):
+        self.updateNumber = Papa.updateNumber
         self.heading = Papa.heading
         self.headingRad = Papa.headingRad
         self.indicatif = Papa.indicatif
@@ -452,16 +453,7 @@ class Avion:
         elif self.coordination == 1:
             self.sortieBouton.disable()
 
-        # FL? et montrer
-        if self.montrer:
-            self.typeBouton.text = "Montrer"
-        elif self.FLInterro:
-            self.typeBouton.text = "FL?"
-        else:
-            self.typeBouton.text = self.aircraft
-        self.typeBouton.rebuild()
         # zoom & scroll
-
         self.affX = self.x * zoom + scroll[0]
         self.affY = self.y * zoom + scroll[1]
 
@@ -472,13 +464,6 @@ class Avion:
         # TARGETS and spd for altitude/heading etc...
         self.targetFL = Papa.targetFL
         self.targetHead = Papa.targetHead
-
-        # bouton
-        self.bouton.rect = pygame.Rect((self.affX, self.affY), (20, 20))
-        self.bouton.rebuild()
-        self.PFLbouton.text = str(Papa.PFL)
-        self.PFLbouton.rebuild()
-        self.altitudeEvoTxtDis.text = Papa.altitudeEvoTxt
 
         self.bouton.rect = pygame.Rect((self.affX, self.affY), (20, 20))
         self.bouton.rebuild()

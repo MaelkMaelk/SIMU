@@ -101,9 +101,10 @@ def main():
         clock.tick(40)
 
         for avionId, avion in packet.dictAvions.items():
-            if avionId in dictAvionsAff.keys():  # si l'avion est deja dans notre liste locale
-                # on l'update avec la methode update de la classe avion
-                dictAvionsAff[avionId].update(avion, zoom, scroll)
+            if avionId in dictAvionsAff.keys():  # si l'avion est deja dans notre liste locale et qu'il a été update (son updatenumber est diff)
+                if avion.updateNumber != dictAvionsAff[avionId].updateNumber:
+                    # on l'update avec la methode update de la classe avion
+                    dictAvionsAff[avionId].update(avion, zoom, scroll)
             else:  # sinon
                 # on l'ajoute avec methode update de la classe dict
                 dictAvionsAff.update({avionId: Avion(avionId, avion, mapScale)})
@@ -142,7 +143,6 @@ def main():
                         if menuRoulant.what == "Altitude":
                             localRequests.append((avionId, menuRoulant.what, int(event.ui_element.text)*100))
                         elif menuRoulant.what == "PFL":
-                            print(dictAvions[avionId].coordination)
                             if dictAvions[avionId].sortie in listeEtrangers and dictAvions[avionId].coordination == 1:
                                 localRequests.append((avionId, "Mouvement"))
                             localRequests.append((avionId, menuRoulant.what, int(event.ui_element.text)))
@@ -171,9 +171,8 @@ def main():
                             elif event.mouse_button == 2:
                                 avion.onFrequency = not avion.onFrequency
                             elif event.mouse_button == 1:
-                                avion.etiquettePos +=1
-                            elif event.mouse_button == 1:
                                 avion.etiquettePos += 1
+                                avion.etiquetteUpdate(zoom, scroll)
                             elif event.mouse_button == 3 and pilote:
                                 localRequests.append((avion.Id, 'Remove'))
                         elif event.ui_element == avion.typeBouton:
@@ -337,6 +336,8 @@ def main():
             scroll[0] += pygame.mouse.get_pos()[0] - drag[0]
             scroll[1] += pygame.mouse.get_pos()[1] - drag[1]
             drag = [pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1]]
+            for avion in dictAvionsAff.values():
+                avion.etiquetteUpdate(zoom, scroll)
         else:
             drag = [0, 0]
 
