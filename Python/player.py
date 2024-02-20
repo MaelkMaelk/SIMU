@@ -7,6 +7,7 @@ import pygame_gui
 plotSize = 8
 timeConstant = 8 / 3600
 listeEtrangers = ['G2', 'M2']
+etiquetteLines = 4
 
 def calculateHeading(x, y, xPoint, yPoint):
     if y > yPoint:
@@ -269,34 +270,77 @@ class Avion:
         # updates
         self.affX = self.x * zoom + scroll[0]
         self.affY = self.y * zoom + scroll[1]
-        if typeAff or self.montrer or self.FLInterro:
+
+        # on regarde si le bouton est actif pour décaler les suivants sur la ligne
+
+        if self.STCA and not self.STCAlabel.visible:
+            self.STCAlabel.show()
+            self.typeBouton.set_relative_position((self.typeBouton.get_relative_rect()[0] + self.STCAlabel.get_abs_rect()[2], 0))
+            self.montrerBouton.set_relative_position((self.montrerBouton.get_relative_rect()[0] + self.STCAlabel.get_abs_rect()[2], 0))
+            self.flightLVLbouton.set_relative_position((self.flightLVLbouton.get_relative_rect()[0] + self.STCAlabel.get_abs_rect()[2], 0))
+        elif not self.STCA and self.STCAlabel.visible:
+            self.STCAlabel.hide()
+            self.typeBouton.set_relative_position((self.typeBouton.get_relative_rect()[0] - self.STCAlabel.get_abs_rect()[2], 0))
+            self.montrerBouton.set_relative_position((self.montrerBouton.get_relative_rect()[0] - self.STCAlabel.get_abs_rect()[2], 0))
+            self.flightLVLbouton.set_relative_position((self.flightLVLbouton.get_relative_rect()[0] - self.STCAlabel.get_abs_rect()[2], 0))
+
+        if typeAff and not self.typeBouton.visible:
             self.typeBouton.show()
-        else:
+            self.montrerBouton.set_relative_position((self.montrerBouton.get_relative_rect()[0] + self.typeBouton.get_abs_rect()[2], 0))
+            self.flightLVLbouton.set_relative_position((self.flightLVLbouton.get_relative_rect()[0] + self.typeBouton.get_abs_rect()[2], 0))
+        elif not typeAff and self.typeBouton.visible:
             self.typeBouton.hide()
-        value = 60
+            self.montrerBouton.set_relative_position((self.montrerBouton.get_relative_rect()[0] - self.typeBouton.get_abs_rect()[2], 0))
+            self.flightLVLbouton.set_relative_position((self.flightLVLbouton.get_relative_rect()[0] - self.typeBouton.get_abs_rect()[2], 0))
+
+        if self.montrer and not self.montrerBouton.visible:
+            self.montrerBouton.show()
+            self.flightLVLbouton.set_relative_position((self.flightLVLbouton.get_relative_rect()[0] + self.montrerBouton.get_abs_rect()[2], 0))
+        elif not self.montrer and self.montrerBouton.visible:
+            self.montrerBouton.hide()
+            self.flightLVLbouton.set_relative_position((self.flightLVLbouton.get_relative_rect()[0] - self.montrerBouton.get_abs_rect()[2], 0))
+
+        if self.FLInterro and not self.flightLVLbouton.visible:
+            self.flightLVLbouton.show()
+        elif not self.FLInterro and self.flightLVLbouton.visible:
+            self.flightLVLbouton.hide()
+
+
+        # calcul de la largeur de l'etiquette
+        largeur = 0
+        for ligne in self.etiquetteList:
+            largeurLigne = 0
+            for element in ligne:
+                if element.visible:
+                    largeurLigne += element.get_abs_rect().size[0] + 2
+            if largeur < largeurLigne:
+                largeur = largeurLigne
+        self.etiquetteContainer.rect[2] = largeur
+
+        value = 60  # distance de l'etiquette par rapport au plot
         if self.etiquettePos % 4 == 0:
             self.etiquetteX = self.affX + self.size + value
             self.etiquetteY = self.affY + self.size - value
-            self.etiquetteCont.relative_rect = pygame.Rect(
-                (self.etiquetteX, self.etiquetteY - self.etiquetteCont.rect[3]), (-1, -1))
+            self.etiquetteContainer.relative_rect = pygame.Rect(
+                (self.etiquetteX, self.etiquetteY - self.etiquetteContainer.rect[3]), (-1, -1))
         elif self.etiquettePos % 4 == 1:
             self.etiquetteX = self.affX + self.size + value
             self.etiquetteY = self.affY + self.size + value
-            self.etiquetteCont.relative_rect = pygame.Rect((self.etiquetteX, self.etiquetteY), (-1, -1))
+            self.etiquetteContainer.relative_rect = pygame.Rect((self.etiquetteX, self.etiquetteY), (-1, -1))
         elif self.etiquettePos % 4 == 2:
             self.etiquetteX = self.affX + self.size - value
             self.etiquetteY = self.affY + self.size + value
-            self.etiquetteCont.relative_rect = pygame.Rect(
-                (self.etiquetteX - self.etiquetteCont.rect[2], self.etiquetteY), (-1, -1))
+            self.etiquetteContainer.relative_rect = pygame.Rect(
+                (self.etiquetteX - self.etiquetteContainer.rect[2], self.etiquetteY), (-1, -1))
         else:
             self.etiquetteX = self.affX + self.size - value
             self.etiquetteY = self.affY + self.size - value
-            self.etiquetteCont.relative_rect = pygame.Rect(
-                (self.etiquetteX - self.etiquetteCont.rect[2], self.etiquetteY - self.etiquetteCont.rect[3]), (-1, -1))
+            self.etiquetteContainer.relative_rect = pygame.Rect(
+                (self.etiquetteX - self.etiquetteContainer.rect[2], self.etiquetteY - self.etiquetteContainer.rect[3]), (-1, -1))
         self.altitudeBouton.text = str(round(self.altitude))[0:3]
         self.altitudeBouton.rebuild()
-        self.etiquetteCont.rebuild()
-        self.etiquetteCont.update_containing_rect_position()
+        self.etiquetteContainer.rebuild()
+        self.etiquetteContainer.update_containing_rect_position()
 
         # altitude evo
 
@@ -347,42 +391,64 @@ class Avion:
         else:
             self.indicatifBouton.unselect()
 
-        if self.STCA:
-            self.STCAlabel.show()
-            self.speedBouton.hide()
-        else:
-            self.STCAlabel.hide()
-            self.speedBouton.show()
-
     def drawPilote(self, win, zoom, scroll, vecteurs, vecteurSetting, typeAff):
         # updates
         self.affX = self.x * zoom + scroll[0]
         self.affY = self.y * zoom + scroll[1]
 
-        value = 60
+        # on regarde si le bouton est actif pour décaler les suivants sur la ligne
+
+        if self.STCA and not self.STCAlabel.visible:
+            self.STCAlabel.show()
+            self.typeBouton.set_relative_position(
+                (self.typeBouton.get_relative_rect()[0] + self.STCAlabel.get_abs_rect()[2], 0))
+        elif not self.STCA and self.STCAlabel.visible:
+            self.STCAlabel.hide()
+            self.typeBouton.set_relative_position(
+                (self.typeBouton.get_relative_rect()[0] - self.STCAlabel.get_abs_rect()[2], 0))
+
+        if self.montrerBouton.visible:
+            self.montrerBouton.hide()
+
+        if self.flightLVLbouton.visible:
+            self.flightLVLbouton.hide()
+
+        # calcul de la largeur de l'etiquette
+        largeur = 0
+        for ligne in self.etiquetteList:
+            largeurLigne = 0
+            for element in ligne:
+                if element.visible:
+                    largeurLigne += element.get_abs_rect().size[0] + 2
+            if largeur < largeurLigne:
+                largeur = largeurLigne
+        self.etiquetteContainer.rect[2] = largeur
+
+        value = 60  # distance de l'etiquette par rapport au plot
+
         if self.etiquettePos % 4 == 0:
             self.etiquetteX = self.affX + self.size + value
             self.etiquetteY = self.affY + self.size - value
-            self.etiquetteCont.relative_rect = pygame.Rect(
-                (self.etiquetteX, self.etiquetteY - self.etiquetteCont.rect[3]), (-1, -1))
+            self.etiquetteContainer.relative_rect = pygame.Rect(
+                (self.etiquetteX, self.etiquetteY - self.etiquetteContainer.rect[3]), (-1, -1))
         elif self.etiquettePos % 4 == 1:
             self.etiquetteX = self.affX + self.size + value
             self.etiquetteY = self.affY + self.size + value
-            self.etiquetteCont.relative_rect = pygame.Rect((self.etiquetteX, self.etiquetteY), (-1, -1))
+            self.etiquetteContainer.relative_rect = pygame.Rect((self.etiquetteX, self.etiquetteY), (-1, -1))
         elif self.etiquettePos % 4 == 2:
             self.etiquetteX = self.affX + self.size - value
             self.etiquetteY = self.affY + self.size + value
-            self.etiquetteCont.relative_rect = pygame.Rect(
-                (self.etiquetteX - self.etiquetteCont.rect[2], self.etiquetteY), (-1, -1))
+            self.etiquetteContainer.relative_rect = pygame.Rect(
+                (self.etiquetteX - self.etiquetteContainer.rect[2], self.etiquetteY), (-1, -1))
         else:
             self.etiquetteX = self.affX + self.size - value
             self.etiquetteY = self.affY + self.size - value
-            self.etiquetteCont.relative_rect = pygame.Rect(
-                (self.etiquetteX - self.etiquetteCont.rect[2], self.etiquetteY - self.etiquetteCont.rect[3]), (-1, -1))
+            self.etiquetteContainer.relative_rect = pygame.Rect(
+                (self.etiquetteX - self.etiquetteContainer.rect[2], self.etiquetteY - self.etiquetteContainer.rect[3]), (-1, -1))
         self.altitudeBouton.text = str(round(self.altitude))[0:3]
         self.altitudeBouton.rebuild()
-        self.etiquetteCont.rebuild()
-        self.etiquetteCont.update_containing_rect_position()
+        self.etiquetteContainer.rebuild()
+        self.etiquetteContainer.update_containing_rect_position()
 
         # altitude evo
         self.altitudeEvoTxtDis.text = self.altitudeEvoTxt
@@ -419,10 +485,10 @@ class Avion:
 
         if self.STCA:
             self.STCAlabel.show()
-            self.speedBouton.hide()
+            self.typeBouton.set_relative_position((self.STCAlabel.get_abs_rect()[2] + 2, 0))
         else:
             self.STCAlabel.hide()
-            self.speedBouton.show()
+            self.typeBouton.set_relative_position((0, 0))
 
     def update(self, Papa, zoom, scroll):
         self.heading = Papa.heading
@@ -452,11 +518,6 @@ class Avion:
         elif self.coordination == 1:
             self.sortieBouton.disable()
 
-        # FL? et montrer
-        if self.montrer:
-            self.typeBouton.text = "Montrer"
-        elif self.FLInterro:
-            self.typeBouton.text = "FL?"
         else:
             self.typeBouton.text = self.aircraft
         self.typeBouton.rebuild()
@@ -484,62 +545,100 @@ class Avion:
         self.bouton.rebuild()
 
     def etiquetteGen(self, manager):
-        self.etiquetteCont = pygame_gui.core.ui_container.UIContainer(pygame.Rect((0, 0), (94, 68)), manager=manager)
+
+        # liste des lignes de l'etiquette avec les éléments, pour calculer la largeur
+        global etiquetteLines
+        self.etiquetteList = []
+        for i in range(etiquetteLines):
+            self.etiquetteList.append([])
+
+        # conteneur UI pygameUI pour tout foutre dedans
+        self.etiquetteContainer = pygame_gui.core.ui_container.UIContainer(pygame.Rect((0, 0), (0, 68)), manager=manager)
+
         self.speedBouton = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, 17)), text=str(self.speedDis),
-            container=self.etiquetteCont, object_id=pygame_gui.core.ObjectID('@etiquette', 'autre'))
+            container=self.etiquetteContainer, object_id=pygame_gui.core.ObjectID('@etiquette', 'autre'))
+        self.etiquetteList[0].append(self.speedBouton)
 
-        self.STCAlabel = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((3, 0), (32, 17)), text='ALRT',
-                                                     container=self.etiquetteCont,
+        self.STCAlabel = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((2, 0), (-1, 17)), text='ALRT',
+                                                     container=self.etiquetteContainer,
+                                                     anchors={'left': 'left', 'left_target': self.speedBouton},
                                                      object_id=pygame_gui.core.ObjectID('@etiquette', 'STCA'))
+        self.etiquetteList[0].append(self.STCAlabel)
         self.STCAlabel.hide()
-
+        
         self.typeBouton = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((2, 0), (-1, 17)), text=self.aircraft,
-            container=self.etiquetteCont, anchors={'left': 'left', 'left_target': self.STCAlabel},
+            container=self.etiquetteContainer, anchors={'left': 'left', 'left_target': self.speedBouton},
             object_id=pygame_gui.core.ObjectID('@etiquette', 'autre'))
+        self.etiquetteList[0].append(self.typeBouton)
+        self.typeBouton.hide() # on le cache car le code pense qu'il est caché par défaut, pour les positions des suivants
+
+        self.montrerBouton = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((2, 0), (-1, 17)), text='Montrer',
+                                                     container=self.etiquetteContainer,
+                                                     anchors={'left': 'left', 'left_target': self.speedBouton},
+                                                     object_id=pygame_gui.core.ObjectID('@etiquette', 'autre'))
+        self.etiquetteList[0].append(self.montrerBouton)
+        self.montrerBouton.hide()
+
+        self.flightLVLbouton = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((2, 0), (-1, 17)), text='FL?',
+                                                     container=self.etiquetteContainer,
+                                                     anchors={'left': 'left', 'left_target': self.speedBouton},
+                                                     object_id=pygame_gui.core.ObjectID('@etiquette', 'autre'))
+        self.etiquetteList[0].append(self.flightLVLbouton)
+        self.flightLVLbouton.hide()
 
         self.indicatifBouton = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, 17)), text=str(self.indicatif),
-            container=self.etiquetteCont, anchors={'top': 'top', 'top_target': self.speedBouton},
+            container=self.etiquetteContainer, anchors={'top': 'top', 'top_target': self.speedBouton},
             object_id=pygame_gui.core.ObjectID('@etiquette', 'autre'))
+        self.etiquetteList[1].append(self.indicatifBouton)
 
         self.altitudeBouton = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (30, 18)), text=str(self.altitude),
-            container=self.etiquetteCont, anchors={'top': 'top', 'top_target': self.indicatifBouton},
+            container=self.etiquetteContainer, anchors={'top': 'top', 'top_target': self.indicatifBouton},
             object_id=pygame_gui.core.ObjectID('@etiquette', 'autre'))
+        self.etiquetteList[2].append(self.altitudeBouton)
 
-        self.altitudeEvoTxtDis = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((3, 0), (10, 17)), text='-',
-                                                             container=self.etiquetteCont,
+        self.altitudeEvoTxtDis = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((2, 0), (10, 17)), text='-',
+                                                             container=self.etiquetteContainer,
                                                              anchors={'left': 'left',
                                                                       'left_target': self.altitudeBouton,
                                                                       'top': 'top',
                                                                       'top_target': self.indicatifBouton},
                                                              object_id=pygame_gui.core.ObjectID('@etiquette', 'autre'))
+        self.etiquetteList[2].append(self.altitudeEvoTxtDis)
+
         self.routeBouton = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, 17)), text=self.last,
-            container=self.etiquetteCont, anchors={'top': 'top', 'top_target': self.altitudeBouton},
+            container=self.etiquetteContainer, anchors={'top': 'top', 'top_target': self.altitudeBouton},
             object_id=pygame_gui.core.ObjectID('@etiquette', 'autre'))
+        self.etiquetteList[3].append(self.routeBouton)
 
         self.PFLbouton = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((1, 0), (28, 17)), text=str(self.PFL),
-                                                      container=self.etiquetteCont, anchors={'left': 'left',
+                                                      container=self.etiquetteContainer, anchors={'left': 'left',
                                                                                              'left_target': self.routeBouton,
                                                                                              'top': 'top',
                                                                                              'top_target': self.altitudeBouton},
                                                       object_id= pygame_gui.core.ObjectID('@etiquette', 'autre'))
+        self.etiquetteList[3].append(self.PFLbouton)
+
         self.sortieBouton = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, 17)), text=self.sortie,
-            container=self.etiquetteCont, anchors={'left': 'left',
+            container=self.etiquetteContainer, anchors={'left': 'left',
                                                    'left_target': self.PFLbouton, 'top': 'top',
                                                    'top_target': self.altitudeBouton},
             object_id=pygame_gui.core.ObjectID('@etiquette', 'coordBleue'))
+        self.etiquetteList[3].append(self.sortieBouton)
+
+        # click gauche, droit et molette sur l'indicatif
         self.indicatifBouton.generate_click_events_from: Iterable[int] = frozenset(
             [pygame.BUTTON_LEFT, pygame.BUTTON_RIGHT, pygame.BUTTON_MIDDLE])
-        self.etiquetteCont.rebuild()
+        self.etiquetteContainer.rebuild()
 
     def kill(self):
         self.bouton.kill()
-        self.etiquetteCont.kill()
+        self.etiquetteContainer.kill()
 
 class menuDeroulant:
 

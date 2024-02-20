@@ -1,8 +1,12 @@
-import pygame
 from network import Network
+import server_browser
 from player import *
 import pygame_gui
 import math
+import socket
+
+address = server_browser.serverBrowser()
+print(address)
 
 pygame.init()
 width = 1200
@@ -17,24 +21,25 @@ temps = pygame.time.get_ticks()
 clock = pygame.time.Clock()
 
 
-def main():
+def main(server_ip):
     global temps
     global height
     global width
     run = True
+
     # menus
     menuRoulant = menuDeroulant(0, 0, "altitude", 152)
     menuPoints = MenuRoute((0, 0), 0, 0, {'BOJOL': (900, 10, True)})
     menuPoints.kill()
     menuOptionsATC = MenuATC((0, 0), 0, 0)
     menuOptionsATC.kill()
-    n = Network()
+    n = Network(server_ip)
     packet = n.getP()
     i = 0
 
     packetId = 0
     while packet == None and i < 2000:
-        n = Network()
+        n = Network(server_ip)
         packet = n.getP()
         i +=1
 
@@ -447,4 +452,4 @@ def main():
         pygame.display.update()
 
 
-main()
+main(address)
