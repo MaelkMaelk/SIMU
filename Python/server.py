@@ -12,7 +12,7 @@ import struct
 # On se connecte a internet pour avoir notre adresse IP locale... Oui oui
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock.connect(("8.8.8.8", 80))
-servername = "mael"
+servername = input("Nom du serveur ?")
 server_ip = sock.getsockname()[0]
 print(server_ip)
 sock.close()
