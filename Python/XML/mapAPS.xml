@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map>
+    <mapType>APS</mapType>
+    <scale>0.09376</scale>
+    <size>2</size>
+ 
+    <points>
+        <point name="ARBON">
+            <x>540</x>
+            <y>659</y>
+        </point>
+        <point name="SOLEY">
+            <x>535</x>
+            <y>775</y>
+        </point>
+        <point name="LSE">
+            <x>599</x>
+            <y>404</y>
+            <balise>True</balise>
+        </point>
+        <point name="BST">
+            <x>503</x>
+            <y>357</y>
+            <balise>True</balise>
+        </point>
+        <point name="RYF">
+            <x>349</x>
+            <y>338</y>
+        </point>
+        <point name="VB402">
+            <x>349</x>
+            <y>338</y>
+            <procedure>True</procedure>
+        </point>
+        <point name="VB404">
+            <x>349</x>
+            <y>338</y>
+            <procedure>True</procedure>
+        </point>
+        <point name="IB07L">
+            <x>411</x>
+            <y>396</y>
+            <procedure>True</procedure>
+        </point>
+        <point name="FB07L">
+            <x>445</x>
+            <y>383</y>
+            <procedure>True</procedure>
+        </point>
+        <point name="VB400">
+            <x>349</x>
+            <y>338</y>
+            <procedure>True</procedure>
+        </point>
+        <point name="VB410">
+            <x>349</x>
+            <y>338</y>
+            <procedure>True</procedure>
+        </point>
+        <point name="RW07">
+            <x>489</x>
+            <y>367</y>
+            <procedure>True</procedure>
+        </point>
+    </points>
+
+    <secteurs>
+        <secteur color="76,81,103">
+            <limite>
+                <x>520</x>
+                <y>776</y>
+            </limite>
+            <limite>
+                <x>404</x>
+                <y>516</y>
+            </limite>
+            <limite>
+                <x>242</x>
+                <y>526</y>
+            </limite>
+            <limite>
+                <x>356</x>
+                <y>785</y>
+            </limite>
+        </secteur>
+        <secteur color="71,76,96">
+            <limite>
+                <x>128</x>
+                <y>267</y>
+            </limite>
+            <limite>
+                <x>425</x>
+                <y>169</y>
+            </limite>
+            <limite>
+                <x>476</x>
+                <y>41</y>
+            </limite>
+            <limite>
+                <x>698</x>
+                <y>64</y>
+            </limite>
+            <limite>
+                <x>799</x>
+                <y>160</y>
+            </limite>
+            <limite>
+                <x>772</x>
+                <y>217</y>
+            </limite>
+            <limite>
+                <x>784</x>
+                <y>268</y>
+            </limite>
+            <limite>
+                <x>747</x>
+                <y>299</y>
+            </limite>
+            <limite>
+                <x>822</x>
+                <y>724</y>
+            </limite>
+            <limite>
+                <x>740</x>
+                <y>763</y>
+            </limite>
+            <limite>
+                <x>520</x>
+                <y>776</y>
+            </limite>
+            <limite>
+                <x>404</x>
+                <y>516</y>
+            </limite>
+            <limite>
+                <x>242</x>
+                <y>526</y>
+            </limite>
+        </secteur>
+    </secteurs>
+
+    <routes>
+        <route name="RYF07">
+            <Type>APP</Type>
+            <point id="1">
+                <name>RYF</name>
+                <Altitude>5000</Altitude>
+            </point>
+            <point id="2">
+                <name>IB07L</name>
+                <Altitude>3700</Altitude>
+                <IAS>210</IAS>
+            </point>
+            <point id="3">
+                <name>FB07L</name>
+                <Altitude>3700</Altitude>
+            </point>
+            <point id="4">
+                <name>RW07</name>
+                <Altitude>2340</Altitude>
+            </point>
+            <next id ="0">land</next>
+            <next id ="1">API07</next>
+        </route>
+        <route name="MOU1A">
+            <Type>STAR</Type>
+            <point id="1">
+                <name>RYF</name>
+            </point>
+            <next>RYF07</next>
+        </route>
+        <route name="RYF_HLDG">
+            <Type>HLDG</Type>
+            <point id="1">
+                <name>RYF</name>
+                <radial>90</radial>
+                <IAS>220</IAS>
+                <top>12000</top>
+                <bottom>5000</bottom>
+            </point>
+        </route>
+
+    </routes>
+</map>

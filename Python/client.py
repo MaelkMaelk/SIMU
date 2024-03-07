@@ -5,7 +5,8 @@ import pygame_gui
 import math
 import socket
 
-address = server_browser.serverBrowser()
+#address = server_browser.serverBrowser()
+address = '10.188.124.237'
 print(address)
 
 pygame.init()
@@ -29,7 +30,7 @@ def main(server_ip):
 
     # menus
     menuRoulant = menuDeroulant(0, 0, "altitude", 152)
-    menuPoints = MenuRoute((0, 0), 0, 0, {'BOJOL': (900, 10, True)})
+    menuPoints = MenuRoute((0, 0), 0, 0, [{'name': 'RYF'}])
     menuPoints.kill()
     menuOptionsATC = MenuATC((0, 0), 0, 0)
     menuOptionsATC.kill()
@@ -38,7 +39,7 @@ def main(server_ip):
     i = 0
 
     packetId = 0
-    while packet == None and i < 2000:
+    while packet == None and i < 200:
         n = Network(server_ip)
         packet = n.getP()
         i +=1
@@ -250,9 +251,9 @@ def main(server_ip):
                         conflitGen = False
                         if selectedRoute is not None and selectedAircraft is not None:
                             localRequests.append((len(dictAvions), "Add",
-                                                 AvionPacket(mapScale, len(dictAvions), selectedIndicatif,
+                                                 AvionPacket(mapScale, listePoints, len(dictAvions), selectedIndicatif,
                                                              selectedAircraft, perfos[selectedAircraft],
-                                                             selectedRoute[0][0], selectedRoute[0][1],
+                                                             650, 670,
                                                              selectedFL, selectedRoute, PFL=selectedPFL)))
                             selectedRoute = None
                             selectedAircraft = None
@@ -391,20 +392,22 @@ def main(server_ip):
         elif True not in pygame.key.ScancodeWrapper() and pygame.time.get_ticks() - delaiPressage >= 150:
             pressing = False
 
-        win.fill((70, 70, 70))
-        affListeSecteur = []
-        for point in listeSecteur:
-            affListeSecteur.append((point[0]*zoom+plotSize+scroll[0], point[1]*zoom+plotSize+scroll[1]))
-        pygame.draw.polygon(win, (55, 55, 55), affListeSecteur)
+        win.fill((55, 65, 75))
+        for secteur in listeSecteur:
+            affListeSecteur = []
+            for point in secteur[1]:
+                affListeSecteur.append((point[0]*zoom+plotSize+scroll[0], point[1]*zoom+plotSize+scroll[1]))
+            pygame.draw.polygon(win, secteur[0], affListeSecteur)
 
         for segment in listeSegments:
             pygame.draw.line(win, (105, 110, 105), (segment[0][0]*zoom + scroll[0]+plotSize, segment[0][1]*zoom + scroll[1]+plotSize),
                              (segment[1][0]*zoom + scroll[0]+plotSize, segment[1][1]*zoom + scroll[1]+plotSize), 2)
 
-        '''for nom, point in listePoints.items():
-            pygame.draw.polygon(win, (155, 155, 155), ((point[0]*zoom + scroll[0], point[1]*zoom-10 + scroll[1]), (point[0]*zoom+7 + scroll[0], point[1]*zoom+7 + scroll[1]), (point[0]*zoom-7 + scroll[0], point[1]*zoom+7 + scroll[1])), 1)
-            img = font.render(nom, True, (155, 155, 155))
-            win.blit(img, (point[0]*zoom + 10 + scroll[0], point[1]*zoom+10 + scroll[1]))'''
+        for nom, point in listePoints.items():
+            if not point[3]:
+                pygame.draw.polygon(win, (155, 155, 155), ((point[0]*zoom + scroll[0]+plotSize, point[1]*zoom - 2 + scroll[1]+plotSize), (point[0]*zoom + 2 + scroll[0]+plotSize, point[1]*zoom+2 + scroll[1]+plotSize), (point[0]*zoom-2 + scroll[0]+plotSize, point[1]*zoom+2 + scroll[1]+plotSize)), 1)
+                img = font.render(nom, True, (155, 155, 155))
+                win.blit(img, (point[0]*zoom + 10 + scroll[0], point[1]*zoom+10 + scroll[1]))
         if pilote:
             for avion in dictAvionsAff.values():
                 avion.drawPilote(win, zoom, scroll, vecteurs, vecteurSetting, typeAff)
