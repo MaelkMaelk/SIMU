@@ -76,29 +76,27 @@ for route in root.find('routes'):  # construction des routes
     routeType = route.find('Type').text
     listeNext = []
     listeRoutePoints = []
-    if routeType == 'HLDG':
-        caca = 'gros caca'
-    else:
-        x1 = gameMap[0][route.find('point').find('name').text][0]
-        y1 = gameMap[0][route.find('point').find('name').text][1]
 
-        for point in route.findall('point'):
-            pointDict = {}
-            pointDict.update({'name': point.find('name').text})
-            for XMLpoint in point:
-                try:
-                    XMLpointValue = int(XMLpoint.text)
-                except:
-                    XMLpointValue = XMLpoint.text
-                pointDict.update({XMLpoint.tag: XMLpointValue})
-            listeRoutePoints.append(pointDict)
+    x1 = gameMap[0][route.find('point').find('name').text][0]
+    y1 = gameMap[0][route.find('point').find('name').text][1]
 
-            y2 = gameMap[0][point.find('name').text][1]
-            x2 = gameMap[0][point.find('name').text][0]
-            if ((x1, y1), (x2, y2)) not in gameMap[2] and x1 != x2 and y1 != y2:
-                gameMap[2].append(((x1, y1), (x2, y2)))
-            x1 = x2
-            y1 = y2
+    for point in route.findall('point'):
+        pointDict = {}
+        pointDict.update({'name': point.find('name').text})
+        for XMLpoint in point:
+            try:
+                XMLpointValue = int(XMLpoint.text)
+            except:
+                XMLpointValue = XMLpoint.text
+            pointDict.update({XMLpoint.tag: XMLpointValue})
+        listeRoutePoints.append(pointDict)
+
+        y2 = gameMap[0][point.find('name').text][1]
+        x2 = gameMap[0][point.find('name').text][0]
+        if ((x1, y1), (x2, y2)) not in gameMap[2] and x1 != x2 and y1 != y2:
+            gameMap[2].append(((x1, y1), (x2, y2)))
+        x1 = x2
+        y1 = y2
     for next in route.findall('next'):
         listeNext.append(next.text)
     gameMap[3].append([nomRoute, routeType, listeRoutePoints, listeNext])
@@ -195,7 +193,7 @@ while True:
             elif req[1] == 'Heading':
                 dictAvion[req[0]].headingMode = True
                 dictAvion[req[0]].intercept = True
-                dictAvion[req[0]].targetHead = req[2]
+                dictAvion[req[0]].targetHeading = req[2]
             elif req[1] == 'Warning':
                 dictAvion[req[0]].Cwarning()
             elif req[1] == 'Part':

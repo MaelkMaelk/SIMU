@@ -6,27 +6,157 @@
  
     <points>
         <point name="ARBON">
-            <x>540</x>
-            <y>659</y>
+            <x>625</x>
+            <y>593</y>
         </point>
         <point name="SOLEY">
-            <x>535</x>
-            <y>775</y>
+            <x>618</x>
+            <y>702</y>
         </point>
         <point name="LSE">
-            <x>599</x>
-            <y>404</y>
+            <x>686</x>
+            <y>371</y>
             <balise>True</balise>
         </point>
         <point name="BST">
-            <x>503</x>
-            <y>357</y>
+            <x>597</x>
+            <y>332</y>
+            <balise>True</balise>
+        </point>
+        <point name="CFA">
+            <x>44</x>
+            <y>366</y>
+            <balise>True</balise>
+        </point>
+        <point name="ROA">
+            <x>313</x>
+            <y>230</y>
+            <balise>True</balise>
+        </point>
+        <point name="MOU">
+            <x>222</x>
+            <y>11</y>
+            <balise>True</balise>
+        </point>
+        <point name="MEN">
+            <x>41</x>
+            <y>935</y>
+            <balise>True</balise>
+        </point>
+        <point name="MTL">
+            <x>599</x>
+            <y>949</y>
+            <balise>True</balise>
+        </point>
+        <point name="LTP">
+            <x>909</x>
+            <y>491</y>
+            <balise>True</balise>
+        </point>
+        <point name="WS">
+            <x>714</x>
+            <y>557</y>
+            <balise>True</balise>
+        </point>
+        <point name="EG">
+            <x>795</x>
+            <y>551</y>
             <balise>True</balise>
         </point>
         <point name="RYF">
-            <x>349</x>
-            <y>338</y>
+            <x>463</x>
+            <y>306</y>
         </point>
+        <point name="ONCLE">
+            <x>303</x>
+            <y>327</y>
+        </point>
+        <point name="OSEAN">
+            <x>452</x>
+            <y>695</y>
+        </point>
+        <point name="LESPI">
+            <x>298</x>
+            <y>203</y>
+        </point>
+        <point name="BALSI">
+            <x>981</x>
+            <y>490</y>
+        </point>
+        <point name="ESPRI">
+            <x>949</x>
+            <y>491</y>
+        </point>
+        <point name="RUNOM">
+            <x>768</x>
+            <y>213</y>
+        </point>
+        <point name="ENSUI">
+            <x>860</x>
+            <y>148</y>
+        </point>
+        <point name="MILPA">
+            <x>935</x>
+            <y>96</y>
+        </point>
+        <point name="BRIRO">
+            <x>417</x>
+            <y>611</y>
+        </point>
+        <point name="OGIER">
+            <x>409</x>
+            <y>590</y>
+        </point>
+        <point name="SUDER">
+            <x>671</x>
+            <y>700</y>
+        </point>
+        <point name="SERAC">
+            <x>767</x>
+            <y>697</y>
+        </point>
+        <point name="TSARE">
+            <x>713</x>
+            <y>699</y>
+        </point>
+        <point name="ETULA">
+            <x>840</x>
+            <y>429</y>
+        </point>
+        <point name="ILITE">
+            <x>781</x>
+            <y>304</y>
+        </point>
+        <point name="ENEVE">
+            <x>852</x>
+            <y>253</y>
+        </point>
+        <point name="NORRE">
+            <x>610</x>
+            <y>184</y>
+        </point>
+        <point name="NESTI">
+            <x>754</x>
+            <y>66</y>
+        </point>
+        <point name="NASAL">
+            <x>623</x>
+            <y>48</y>
+        </point>
+        <point name="NOTAN">
+            <x>556</x>
+            <y>105</y>
+        </point>
+        <point name="AVRIL">
+            <x>696</x>
+            <y>449</y>
+        </point>
+        <point name="BELLY">
+            <x>619</x>
+            <y>427</y>
+        </point>
+
+
         <point name="VB402">
             <x>349</x>
             <y>338</y>
@@ -67,74 +197,200 @@
     <secteurs>
         <secteur color="76,81,103">
             <limite>
-                <x>520</x>
-                <y>776</y>
+                <x>361</x>
+                <y>470</y>
             </limite>
             <limite>
-                <x>404</x>
-                <y>516</y>
+                <x>507</x>
+                <y>467</y>
             </limite>
             <limite>
-                <x>242</x>
-                <y>526</y>
+                <x>604</x>
+                <y>702</y>
             </limite>
             <limite>
-                <x>356</x>
-                <y>785</y>
+                <x>457</x>
+                <y>706</y>
             </limite>
         </secteur>
         <secteur color="71,76,96">
             <limite>
-                <x>128</x>
-                <y>267</y>
+                <x>266</x>
+                <y>237</y>
             </limite>
             <limite>
-                <x>425</x>
-                <y>169</y>
+                <x>461</x>
+                <y>178</y>
             </limite>
             <limite>
-                <x>476</x>
-                <y>41</y>
+                <x>423</x>
+                <y>266</y>
             </limite>
             <limite>
-                <x>698</x>
-                <y>64</y>
+                <x>507</x>
+                <y>467</y>
             </limite>
             <limite>
-                <x>799</x>
-                <y>160</y>
+                <x>361</x>
+                <y>470</y>
+            </limite>
+        </secteur>
+        <secteur color="71,76,96">
+            <limite>
+                <x>461</x>
+                <y>178</y>
             </limite>
             <limite>
-                <x>772</x>
-                <y>217</y>
+                <x>534</x>
+                <y>156</y>
             </limite>
             <limite>
-                <x>784</x>
-                <y>268</y>
+                <x>583</x>
+                <y>43</y>
             </limite>
             <limite>
-                <x>747</x>
-                <y>299</y>
+                <x>782</x>
+                <y>70</y>
             </limite>
             <limite>
-                <x>822</x>
-                <y>724</y>
+                <x>848</x>
+                <y>136</y>
             </limite>
             <limite>
-                <x>740</x>
-                <y>763</y>
+                <x>805</x>
+                <y>216</y>
             </limite>
             <limite>
-                <x>520</x>
-                <y>776</y>
+                <x>548</x>
+                <y>224</y>
             </limite>
             <limite>
-                <x>404</x>
-                <y>516</y>
+                <x>436</x>
+                <y>297</y>
             </limite>
             <limite>
-                <x>242</x>
-                <y>526</y>
+                <x>423</x>
+                <y>266</y>
+            </limite>
+        </secteur>
+        <secteur color="71,76,96">
+            <limite>
+                <x>436</x>
+                <y>297</y>
+            </limite>
+            <limite>
+                <x>548</x>
+                <y>224</y>
+            </limite>
+            <limite>
+                <x>805</x>
+                <y>216</y>
+            </limite>
+            <limite>
+                <x>773</x>
+                <y>279</y>
+            </limite>
+            <limite>
+                <x>798</x>
+                <y>456</y>
+            </limite>
+            <limite>
+                <x>507</x>
+                <y>467</y>
+            </limite>
+        </secteur>
+        <secteur color="71,76,96">
+            <limite>
+                <x>507</x>
+                <y>467</y>
+            </limite>
+            <limite>
+                <x>798</x>
+                <y>456</y>
+            </limite>
+            <limite>
+                <x>801</x>
+                <y>479</y>
+            </limite>
+            <limite>
+                <x>777</x>
+                <y>527</y>
+            </limite>
+            <limite>
+                <x>535</x>
+                <y>535</y>
+            </limite>
+        </secteur>
+        <secteur color="71,76,96">
+            <limite>
+                <x>535</x>
+                <y>535</y>
+            </limite>
+            <limite>
+                <x>777</x>
+                <y>527</y>
+            </limite>
+            <limite>
+                <x>801</x>
+                <y>479</y>
+            </limite>
+            <limite>
+                <x>847</x>
+                <y>477</y>
+            </limite>
+            <limite>
+                <x>874</x>
+                <y>664</y>
+            </limite>
+            <limite>
+                <x>800</x>
+                <y>697</y>
+            </limite>
+            <limite>
+                <x>604</x>
+                <y>702</y>
+            </limite>
+        </secteur>
+        <secteur color="71,76,96">
+            <limite>
+                <x>848</x>
+                <y>136</y>
+            </limite>
+            <limite>
+                <x>870</x>
+                <y>158</y>
+            </limite>
+            <limite>
+                <x>856</x>
+                <y>172</y>
+            </limite>
+            <limite>
+                <x>847</x>
+                <y>189</y>
+            </limite>
+            <limite>
+                <x>843</x>
+                <y>229</y>
+            </limite>
+            <limite>
+                <x>853</x>
+                <y>253</y>
+            </limite>
+            <limite>
+                <x>820</x>
+                <y>282</y>
+            </limite>
+            <limite>
+                <x>847</x>
+                <y>477</y>
+            </limite>
+            <limite>
+                <x>801</x>
+                <y>479</y>
+            </limite>
+            <limite>
+                <x>773</x>
+                <y>279</y>
             </limite>
         </secteur>
     </secteurs>
@@ -159,25 +415,38 @@
                 <name>RW07</name>
                 <Altitude>2340</Altitude>
             </point>
-            <next id ="0">land</next>
-            <next id ="1">API07</next>
+            <next id ="1">land</next>
+            <next id ="2">API07</next>
         </route>
+
         <route name="MOU1A">
             <Type>STAR</Type>
             <point id="1">
+                <name>MOU</name>
+            </point>
+            <point id="2">
+                <name>LESPI</name>
+                <Altitude>12000</Altitude>
+            </point>
+            <point id="3">
+                <name>ROA</name>
+            </point>
+            <point id="4">
                 <name>RYF</name>
             </point>
-            <next>RYF07</next>
+            <next id ="1">RYF_HLDG</next>
+            <next id ="2">RYF07</next>
         </route>
+
         <route name="RYF_HLDG">
             <Type>HLDG</Type>
             <point id="1">
                 <name>RYF</name>
-                <radial>90</radial>
+                <rightTurn>False</rightTurn>
+                <radial>128</radial>
                 <IAS>220</IAS>
-                <top>12000</top>
-                <bottom>5000</bottom>
             </point>
+            <next id ="1">RYF07</next>
         </route>
 
     </routes>

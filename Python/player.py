@@ -139,11 +139,14 @@ class AvionPacket:
         #        self.sortie = sortie[0]
         self.sortie = 'caca'
         self.headingMode = False
+        self.routeType = self.routeFull[1]
         self.intercept = False
-        self.attente = {} # format attente : # radial, IAS, temps, turnRadius si non standard
-        self.nextPointValue = 0
+        self.attente = {}  # format attente : # radial, IAS, temps, turnRadius si non standard
+        if calculateDistance(x, y, listePoints[self.route[0]['name']][0], listePoints[self.route[0]['name']][1]) <= 4 * self.speed:
+            self.nextPointValue = 1
+        else:
+            self.nextPointValue = 0
         self.nextPoint = self.route[self.nextPointValue]
-        self.pointHeading = 0
         if route[3] is not []:
             self.nextRoute = route[3][0]
 
@@ -158,10 +161,10 @@ class AvionPacket:
         # TARGETS and spd for altitude/heading etc...
         self.targetFL = self.altitude
         self.calculateEvoRate(listePoints)
-        self.targetHead = self.heading
+        self.targetHeading = self.heading
 
         # radardisp type : arrivée départ transit
-        if self.routeFull[1] in ('APP', 'STAR'):
+        if self.routeFull[1] in ('APP', 'STAR', 'HLDG'):
             self.plotType = 'arrivee'
         elif self.routeFull[1] == 'SID':
             self.plotType = 'depart'
@@ -186,15 +189,48 @@ class AvionPacket:
                 break
         self.nextPoint = self.route[i]
         self.nextPointValue = i
+
     def changeRoute(self, gameMap):
+
         for route in gameMap[3]:
             if route[0] == self.nextRoute:
                 self.routeFull = route
                 break
+
+        self.routeType = self.routeFull[1]
         self.route = self.routeFull[2]
         self.nextPointValue = 0
         self.nextPoint = self.route[0]
         self.nextRoute = self.routeFull[3][0]
+
+        if self.routeType == 'HLDG':
+            self.HLDGradial = self.route[0]['radial']
+
+            try:
+                self.HLDGturnTime = self.route[0]['turnTime'] * 60 / radarRefresh
+            except:
+                self.HLDGturnTime = 60 / radarRefresh
+            self.turnRate = 180 / self.HLDGturnTime
+
+            try:
+                self.HLDGoutboundTime = self.route[0]['outboundTime'] * 60 / radarRefresh
+            except:
+                self.HLDGoutboundTime = 60 / radarRefresh
+
+            try:
+                self.HLDGrightTurn = self.route[0]['rightTurn']
+            except:
+                self.HLDGrightTurn = True
+
+            if self.HLDGrightTurn:
+                self.HLDGrightTurnMultiplier = 1
+            else:
+                self.HLDGrightTurnMultiplier = -1
+
+            self.HLDGentryType = None
+            self.inHLDG = False
+            self.HLDGtime = 0 #compteur pour savoir ou on est dans le HLDG
+
     def calculateEvoRate(self, listePoints):
 
         """Calcule le taux de descente ou de montée pour suivre la procédure,
@@ -222,22 +258,103 @@ class AvionPacket:
 
             if self.intercept and (calculateIntersection(self.heading, self.x, self.y, 74, 'RW07', gameMap)[0]
                                    / self.speed) <= (calculateAngle(74, self.heading)[0]/2/self.turnRate):
-                self.targetHead = 74
+                self.targetHeading = 74
             if self.intercept and self.heading == 74:
                 self.intercept = False
                 self.headingMode = False
                 self.CnextPoint('RW07')
 
-            # on fait tourner l'avion pour l'aligner avec son targetHeading
-            if self.heading != self.targetHead:
-                if abs(self.heading - self.targetHead) <= self.turnRate:
-                    self.heading = self.targetHead
-                elif abs(self.heading - self.targetHead) > 180:
-                    self.heading = (self.heading + self.turnRate * (self.heading - self.targetHead) / abs(
-                        self.heading - self.targetHead)) % 360
-                else:
-                    self.heading -= self.turnRate * (self.heading - self.targetHead) / abs(
-                        self.heading - self.targetHead)
+        elif self.routeType == 'HLDG':  # format attente : # radial, IAS, outboundTime, turnTime si non-standard
+            if self.inHLDG:  # si l'avion est deja dans l'attente:
+                if calculateDistance(self.x, self.y, gameMap[0][self.nextPoint['name']][0],
+                                       gameMap[0][self.nextPoint['name']][1]) <= self.speed:
+
+                    self.heading = self.route[0]['radial'] + self.HLDGrightTurnMultiplier
+                    self.targetHeading = self.route[0]['radial'] + 180
+                    self.HLDGtime = 0
+
+                elif self.HLDGtime >= self.HLDGturnTime * 2 + self.HLDGoutboundTime:
+                    self.targetHeading = calculateHeading(self.x, self.y, gameMap[0][self.nextPoint['name']][0],
+                                                         gameMap[0][self.nextPoint['name']][1])
+
+                elif self.HLDGtime >= self.HLDGturnTime + self.HLDGoutboundTime:
+                    self.heading += self.HLDGrightTurnMultiplier
+                    self.targetHeading = self.route[0]['radial']
+
+                self.HLDGtime += 1
+
+            else:  # si il n'est pas dans l'attente:
+
+                # on vérifie que l'avion ai bien son cap final sur la balise et qu'il ne connait pas son entrée
+                if self.HLDGentryType is None and self.heading == self.targetHeading:
+                    if self.route[0]['rightTurn']:
+                        if ((self.route[0]['radial'] + 290) % 360 <= self.heading <
+                                (self.route[0]['radial'] + 110) % 360):
+
+                            self.inHLDG = True
+
+                        elif ((self.route[0]['radial'] + 110) % 360 <= self.heading <
+                              (self.route[0]['radial'] + 180) % 360):
+
+                            self.HLDGentryType = 'offset_entry'
+
+                        else:
+                            self.HLDGentryType = 'parallel_entry'
+                    else:
+                        if (self.route[0]['radial'] <= self.heading <
+                                (self.route[0]['radial'] + 70) % 360):
+
+                            self.HLDGentryType = 'offset_entry'
+                            self.inHLDG = True
+
+                        elif (self.route[0]['radial'] + 250) % 360 <= self.heading < self.route[0]['radial']:
+
+                            self.HLDGentryType = 'parallel_entry'
+
+                        else:
+                            self.inHLDG = True
+
+                    print(self.HLDGentryType)
+
+                elif self.HLDGentryType == 'offset_entry':
+                    if ((calculateDistance(self.x, self.y, gameMap[0][self.nextPoint['name']][0], gameMap[0][self.nextPoint['name']][1]) / self.speed)
+                            <= calculateAngle(74, self.heading)[0]/2/self.turnRate) and self.HLDGtime == 0:
+                        if self.HLDGrightTurn:
+                            self.targetHeading = (self.route[0]['radial'] + 150) % 360
+                        else:
+                            self.targetHeading = (self.route[0]['radial'] + 210) % 360
+                        self.HLDGtime = 1
+
+                    elif self.HLDGtime == self.HLDGoutboundTime:
+                        self.targetHeading = self.targetHeading = calculateHeading(self.x, self.y,
+                                                                                   gameMap[0][self.nextPoint['name']][0],
+                                                                                   gameMap[0][self.nextPoint['name']][1])
+                        self.heading = (self.heading + 360 + self.HLDGrightTurnMultiplier * 10) % 360
+                        self.inHLDG = True
+                        self.HLDGtime = self.HLDGturnTime * 2 + self.HLDGoutboundTime # valeur du temps au rapprochement
+
+                    elif 0 < self.HLDGtime:
+                        self.HLDGtime += 1
+
+                else:  # forcément entrée parallel
+                    if ((calculateDistance(self.x, self.y, gameMap[0][self.nextPoint['name']][0], gameMap[0][self.nextPoint['name']][1]) / self.speed)
+                            <= calculateAngle(74, self.heading)[0] / 2 / self.turnRate) and self.HLDGtime == 0:
+
+                        self.targetHeading = (self.route[0]['radial'] + 180) % 360
+                        self.HLDGtime = 1
+
+                    elif self.HLDGtime == self.HLDGoutboundTime:
+                        self.targetHeading = self.targetHeading = calculateHeading(self.x, self.y,
+                                                                                   gameMap[0][self.nextPoint['name']][
+                                                                                       0],
+                                                                                   gameMap[0][self.nextPoint['name']][
+                                                                                       1])
+                        self.heading += (self.heading + 360 - self.HLDGrightTurnMultiplier * 10) % 360 # virage dans le sens opposé au virage de l'attente
+                        self.inHLDG = True
+                        self.HLDGtime = self.HLDGturnTime * 2 + self.HLDGoutboundTime  # valeur du temps au rapprochement
+
+                    elif 0 < self.HLDGtime:
+                        self.HLDGtime += 1
 
         else:
             if math.sqrt((self.x - gameMap[0][self.nextPoint['name']][0]) ** 2 + (
@@ -248,25 +365,24 @@ class AvionPacket:
                         return True
                     else:
                         self.changeRoute(gameMap)
-
-                # format attente : # radial, IAS, temps, turnRadius si non standard
                 else:
                     self.nextPointValue += 1
                     self.nextPoint = self.route[self.nextPointValue]
                     if self.altitude == self.targetFL:
                         self.calculateEvoRate(gameMap[0])
-            self.pointHeading = calculateHeading(self.x, self.y, gameMap[0][self.nextPoint['name']][0],
-                                                 gameMap[0][self.nextPoint['name']][1])
 
-            if self.heading != self.pointHeading:
-                if abs(self.heading - self.pointHeading) <= self.turnRate:
-                    self.heading = self.pointHeading
-                elif abs(self.heading - self.pointHeading) > 180:
-                    self.heading = (self.heading + self.turnRate * (self.heading - self.pointHeading) / abs(
-                        self.heading - self.pointHeading)) % 360
-                else:
-                    self.heading -= self.turnRate * (self.heading - self.pointHeading) / abs(
-                        self.heading - self.pointHeading)
+            self.targetHeading = calculateHeading(self.x, self.y, gameMap[0][self.nextPoint['name']][0],
+                                             gameMap[0][self.nextPoint['name']][1])
+
+        if self.heading != self.targetHeading:
+            if abs(self.heading - self.targetHeading) <= self.turnRate:
+                self.heading = self.targetHeading
+            elif abs(self.heading - self.targetHeading) > 180:
+                self.heading = (self.heading + self.turnRate * (self.heading - self.targetHeading) / abs(
+                    self.heading - self.targetHeading)) % 360
+            else:
+                self.heading -= self.turnRate * (self.heading - self.targetHeading) / abs(
+                    self.heading - self.targetHeading)
 
         # altitude update
         if self.altitude != self.targetFL:
@@ -275,14 +391,12 @@ class AvionPacket:
                     self.altitude = self.targetFL
                     if not self.headingMode:
                         self.calculateEvoRate(gameMap[0])
-                    print(self.evolution)
                 else:
                     self.altitude += self.evolution
                     self.altitudeEvoTxt = '↘'
             else:
                 if abs(self.altitude - self.targetFL) <= abs(self.evolution):
                     self.altitude = self.targetFL
-                    print(self.evolution)
                     if not self.headingMode:
                         self.calculateEvoRate(gameMap[0])
                 else:
@@ -319,6 +433,7 @@ class Avion:
         self.comete = Papa.comete
         self.PFL = Papa.PFL
         self.speedTAS = Papa.speedTAS
+        self.speed = Papa.speed
         self.altitude = Papa.altitude
         self.altitudeEvoTxt = '-'
         self.bouton = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((self.x, self.y), (20, 20)), text='')
@@ -365,7 +480,7 @@ class Avion:
 
         # TARGETS and spd for altitude/heading etc...
         self.targetFL = Papa.targetFL
-        self.targetHead = Papa.targetHead
+        self.targetHeading = Papa.targetHeading
 
     def draw(self, win, zoom, scroll, vecteurs, vecteurSetting, typeAff):
         # updates
@@ -657,7 +772,7 @@ class Avion:
 
         # TARGETS and spd for altitude/heading etc...
         self.targetFL = Papa.targetFL
-        self.targetHead = Papa.targetHead
+        self.targetHeading = Papa.targetHeading
 
         # bouton
         self.bouton.rect = pygame.Rect((self.affX, self.affY), (20, 20))
