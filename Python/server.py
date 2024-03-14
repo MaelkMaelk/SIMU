@@ -189,6 +189,7 @@ while True:
             elif req[1] == 'Remove':
                 dictAvion.pop(req[0])
             elif req[1] == 'Altitude':
+                if req[2] <= dictAvion[req[0]].targetFL
                 dictAvion[req[0]].targetFL = req[2]
             elif req[1] == 'Heading':
                 dictAvion[req[0]].headingMode = True

@@ -253,7 +253,7 @@ def main(server_ip):
                             localRequests.append((len(dictAvions), "Add",
                                                  AvionPacket(mapScale, listePoints, len(dictAvions), selectedIndicatif,
                                                              selectedAircraft, perfos[selectedAircraft],
-                                                             800, 670,
+                                                             map[0][selectedRoute[2][0]['name']][0], map[0][selectedRoute[2][0]['name']][1],
                                                              selectedFL, selectedRoute, PFL=selectedPFL)))
                             selectedRoute = None
                             selectedAircraft = None

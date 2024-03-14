@@ -105,10 +105,10 @@ class AvionPacket:
         self.x = x
         self.y = y
         self.comete = []
-        self.speedTAS = perfos[0]
-        self.IAS = self.speedTAS
+        self.speedIAS = perfos[0]
         self.speed = perfos[0] / mapScale * timeConstant
         self.altitude = FL * 100
+        self.speedTAS = self.speedIAS + self.altitude/200
         self.altitudeEvoTxt = '-'
         self.perfos = perfos
 
@@ -124,7 +124,7 @@ class AvionPacket:
         self.turnRate = 10
         self.maxROC = perfos[-1] / 60 * radarRefresh / 2
         self.maxROD = perfos[-2] / 60 * radarRefresh / 2
-        self.evolution = 0  # 0 stable, 1 montée, 2 descente
+        self.evolution = 0  # 0 stable
 
         # ROUTE format route [nomRoute, routeType, listeRoutePoints, next] points : {caractéristiques eg : nom alti IAS}
         self.routeFull = route
@@ -218,7 +218,10 @@ class AvionPacket:
                 self.HLDGoutboundTime = 60 / radarRefresh
 
             try:
-                self.HLDGrightTurn = self.route[0]['rightTurn']
+                if self.route[0]['rightTurn'] in ['FALSE','false','False']:
+                    self.HLDGrightTurn = False
+                else:
+                    self.HLDGrightTurn = True
             except:
                 self.HLDGrightTurn = True
 
@@ -269,7 +272,7 @@ class AvionPacket:
                 if calculateDistance(self.x, self.y, gameMap[0][self.nextPoint['name']][0],
                                        gameMap[0][self.nextPoint['name']][1]) <= self.speed:
 
-                    self.heading = self.route[0]['radial'] + self.HLDGrightTurnMultiplier
+                    self.heading = (self.route[0]['radial'] + 360 + self.HLDGrightTurnMultiplier * 5) % 360
                     self.targetHeading = self.route[0]['radial'] + 180
                     self.HLDGtime = 0
 
@@ -279,6 +282,7 @@ class AvionPacket:
 
                 elif self.HLDGtime >= self.HLDGturnTime + self.HLDGoutboundTime:
                     self.heading += self.HLDGrightTurnMultiplier
+                    print(self.heading)
                     self.targetHeading = self.route[0]['radial']
 
                 self.HLDGtime += 1
@@ -305,7 +309,6 @@ class AvionPacket:
                                 (self.route[0]['radial'] + 70) % 360):
 
                             self.HLDGentryType = 'offset_entry'
-                            self.inHLDG = True
 
                         elif (self.route[0]['radial'] + 250) % 360 <= self.heading < self.route[0]['radial']:
 
@@ -349,7 +352,7 @@ class AvionPacket:
                                                                                        0],
                                                                                    gameMap[0][self.nextPoint['name']][
                                                                                        1])
-                        self.heading += (self.heading + 360 - self.HLDGrightTurnMultiplier * 10) % 360 # virage dans le sens opposé au virage de l'attente
+                        self.heading = (self.heading + 360 - self.HLDGrightTurnMultiplier * 10) % 360 # virage dans le sens opposé au virage de l'attente
                         self.inHLDG = True
                         self.HLDGtime = self.HLDGturnTime * 2 + self.HLDGoutboundTime  # valeur du temps au rapprochement
 
@@ -416,7 +419,7 @@ class AvionPacket:
         self.x += self.speed * math.cos(self.headingRad)
         self.y += self.speed * math.sin(self.headingRad)
 
-        self.IAS = self.speedTAS - self.altitude/200
+        self.speedTAS = self.speedIAS + self.altitude / 200
 
 
 class Avion:
@@ -433,6 +436,7 @@ class Avion:
         self.comete = Papa.comete
         self.PFL = Papa.PFL
         self.speedTAS = Papa.speedTAS
+        self.speedIAS = Papa.speedIAS
         self.speed = Papa.speed
         self.altitude = Papa.altitude
         self.altitudeEvoTxt = '-'
@@ -736,6 +740,7 @@ class Avion:
         self.x = Papa.x
         self.y = Papa.y
         self.comete = Papa.comete
+        self.speedIAS = Papa.speedIAS
         self.speedTAS = Papa.speedTAS
         self.speed = Papa.speed
 
@@ -797,7 +802,7 @@ class Avion:
                                                                            manager=manager)
 
         self.speedBouton = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((0, 0), (-1, 17)), text=str(self.speedTAS/10),
+            relative_rect=pygame.Rect((0, 0), (-1, 17)), text=str(round(self.speedIAS/10)),
             container=self.etiquetteContainer, object_id=pygame_gui.core.ObjectID('@etiquette', 'autre'))
         self.etiquetteList[0].append(self.speedBouton)
 
