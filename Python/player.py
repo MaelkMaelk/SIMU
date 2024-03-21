@@ -105,10 +105,10 @@ class AvionPacket:
         self.x = x
         self.y = y
         self.comete = []
-        self.speedIAS = perfos[0]
-        self.speed = perfos[0] / mapScale * timeConstant
         self.altitude = FL * 100
-        self.speedTAS = self.speedIAS + self.altitude/200
+        self.speedIAS = perfos[0]
+        self.speedTAS = self.speedIAS + self.altitude / 200
+        self.speed = self.speedTAS / mapScale * timeConstant
         self.altitudeEvoTxt = '-'
         self.perfos = perfos
 
@@ -122,8 +122,8 @@ class AvionPacket:
 
         # perfo
         self.turnRate = 10
-        self.maxROC = perfos[-1] / 60 * radarRefresh / 2
-        self.maxROD = perfos[-2] / 60 * radarRefresh / 2
+        self.maxROC = perfos[-1] / 60 * radarRefresh
+        self.maxROD = perfos[-2] / 60 * radarRefresh
         self.evolution = 0  # 0 stable
 
         # ROUTE format route [nomRoute, routeType, listeRoutePoints, next] points : {caractéristiques eg : nom alti IAS}
@@ -141,12 +141,14 @@ class AvionPacket:
         self.headingMode = False
         self.routeType = self.routeFull[1]
         self.intercept = False
+        self.axe = None
         self.attente = {}  # format attente : # radial, IAS, temps, turnRadius si non standard
         if calculateDistance(x, y, listePoints[self.route[0]['name']][0], listePoints[self.route[0]['name']][1]) <= 4 * self.speed:
             self.nextPointValue = 1
         else:
             self.nextPointValue = 0
         self.nextPoint = self.route[self.nextPointValue]
+        self.nextRouteListe = route[3]
         if route[3] is not []:
             self.nextRoute = route[3][0]
 
@@ -190,8 +192,9 @@ class AvionPacket:
         self.nextPoint = self.route[i]
         self.nextPointValue = i
 
-    def changeRoute(self, gameMap):
-
+    def changeRoute(self, gameMap, nextRoute=None):
+        if nextRoute is not None:
+            self.nextRoute = nextRoute
         for route in gameMap[3]:
             if route[0] == self.nextRoute:
                 self.routeFull = route
@@ -254,18 +257,26 @@ class AvionPacket:
         else:
             self.evolution = 0
 
+    def changeAxe(self, Axe, gameMap):
+        for axeElement in gameMap[5]:
+            if Axe == axeElement[0]:
+                self.axe = axeElement
+                break
+
     def move(self, gameMap):
         # heading update
         if self.headingMode:
             # interception d'un axe
+            if self.intercept:
 
-            if self.intercept and (calculateIntersection(self.heading, self.x, self.y, 74, 'RW07', gameMap)[0]
-                                   / self.speed) <= (calculateAngle(74, self.heading)[0]/2/self.turnRate):
-                self.targetHeading = 74
-            if self.intercept and self.heading == 74:
-                self.intercept = False
-                self.headingMode = False
-                self.CnextPoint('RW07')
+                if (calculateIntersection(self.heading, self.x, self.y, self.axe[2], self.axe[1], gameMap)[0]
+                                       / self.speed) <= (calculateAngle(self.axe[2], self.heading)[0]/2/self.turnRate):
+                    self.targetHeading = self.axe[2]
+
+                if self.heading == self.axe[2]:
+                    self.intercept = False
+                    self.headingMode = False
+                    self.changeRoute(gameMap, self.axe[3])
 
         elif self.routeType == 'HLDG':  # format attente : # radial, IAS, outboundTime, turnTime si non-standard
             if self.inHLDG:  # si l'avion est deja dans l'attente:
@@ -282,7 +293,6 @@ class AvionPacket:
 
                 elif self.HLDGtime >= self.HLDGturnTime + self.HLDGoutboundTime:
                     self.heading += self.HLDGrightTurnMultiplier
-                    print(self.heading)
                     self.targetHeading = self.route[0]['radial']
 
                 self.HLDGtime += 1
@@ -420,6 +430,7 @@ class AvionPacket:
         self.y += self.speed * math.sin(self.headingRad)
 
         self.speedTAS = self.speedIAS + self.altitude / 200
+        self.speed = self.speedTAS / gameMap[4] * timeConstant
 
 
 class Avion:
@@ -476,6 +487,7 @@ class Avion:
         # drawRoute
         self.drawRoute = False
         self.route = Papa.route
+        self.nextRouteListe = Papa.nextRouteListe
 
         # Zoom & scroll
 
@@ -571,6 +583,8 @@ class Avion:
                 (-1, -1))
         self.altitudeBouton.text = str(round(self.altitude / 100))
         self.altitudeBouton.rebuild()
+        self.speedBouton.text = str(round(self.speedTAS / 10))
+        self.speedBouton.rebuild()
         self.etiquetteContainer.rebuild()
         self.etiquetteContainer.update_containing_rect_position()
 
@@ -687,6 +701,8 @@ class Avion:
                 (-1, -1))
         self.altitudeBouton.text = str(round(self.altitude / 100))
         self.altitudeBouton.rebuild()
+        self.speedBouton.text = str(round(self.speedTAS/10))
+        self.speedBouton.rebuild()
         self.etiquetteContainer.rebuild()
         self.etiquetteContainer.update_containing_rect_position()
 
@@ -773,6 +789,7 @@ class Avion:
 
         # ROUTE
         self.route = Papa.route
+        self.nextRouteListe = Papa.nextRouteListe
         self.PFL = Papa.PFL
 
         # TARGETS and spd for altitude/heading etc...
@@ -802,7 +819,7 @@ class Avion:
                                                                            manager=manager)
 
         self.speedBouton = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((0, 0), (-1, 17)), text=str(round(self.speedIAS/10)),
+            relative_rect=pygame.Rect((0, 0), (-1, 17)), text=str(round(self.speedTAS/10)),
             container=self.etiquetteContainer, object_id=pygame_gui.core.ObjectID('@etiquette', 'autre'))
         self.etiquetteList[0].append(self.speedBouton)
 
@@ -885,88 +902,6 @@ class Avion:
     def kill(self):
         self.bouton.kill()
         self.etiquetteContainer.kill()
-
-
-class menuDeroulant:
-
-    def __init__(self, x, y, what, value):
-        self.Idtuple = (0, 0)
-        self.x = x
-        self.y = y + 50
-        self.what = what
-        self.value = value - 100
-        self.boutonList = []
-        self.cont = None
-
-    def generate(self, Idtuple, x, y, what, value):
-        self.Idtuple = Idtuple
-        self.x = x
-        self.y = y + 50
-        self.what = what
-        if what == 'Heading':
-            self.value = (value + 25) % 360
-        else:
-            self.value = value + 50
-        self.cont = pygame_gui.elements.UIWindow(pygame.Rect((self.x, self.y), (100, 250)))
-        self.boutonList.append(pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((0, 0), (100, 17)), text='+',
-            container=self.cont, object_id=pygame_gui.core.ObjectID('caca', '@menu')))
-        for i in range(9):
-            if what == 'Heading':
-                self.value = (self.value - 5) % 360
-            else:
-                self.value -= 10
-            self.boutonList.append(pygame_gui.elements.UIButton(
-                relative_rect=pygame.Rect((0, 0), (100, 17)), text=str(round(self.value)),
-                container=self.cont, anchors={'top': 'top', 'top_target': self.boutonList[i]}))
-        self.boutonList.append(pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((0, 0), (100, 17)), text='-',
-            container=self.cont, anchors={'top': 'top', 'top_target': self.boutonList[-1]}))
-        self.boutonList[5].select()
-
-    def kill(self):
-        if self.cont is not None:
-            self.cont.kill()
-            self.boutonList = []
-        return self.Idtuple
-
-    def increase(self):
-        for bouton in self.boutonList[1:-1]:
-            if self.what == 'Heading':
-                bouton.text = str((int(bouton.text) + 10) % 360)
-            else:
-                bouton.text = str(int(bouton.text) + 10)
-            bouton.rebuild()
-
-    def decrease(self):
-        for bouton in self.boutonList[1:-1]:
-            if self.what == 'Heading':
-                bouton.text = str((int(bouton.text) - 10) % 360)
-            else:
-                bouton.text = str(int(bouton.text) - 10)
-            bouton.rebuild()
-
-
-class MenuRoute:
-
-    def __init__(self, Idtuple, x, y, route):
-        self.Idtuple = Idtuple
-        self.window = pygame_gui.elements.UIWindow(pygame.Rect((x, y), (100, 250)))
-        self.boutonList = []
-        self.route = route
-        self.boutonList.append(pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((0, 0), (100, 17)), text=self.route[0]['name'],
-            container=self.window))
-
-        for i in range(1, len(route)):
-            self.boutonList.append(pygame_gui.elements.UIButton(
-                relative_rect=pygame.Rect((0, 0), (100, 17)), text=self.route[i]['name'],
-                container=self.window, anchors={'top': 'top', 'top_target': self.boutonList[i - 1]}))
-
-    def kill(self):
-        self.window.kill()
-        return self.Idtuple
-
 
 class NouvelAvionWindow:
 
@@ -1079,3 +1014,5 @@ class MenuATC:
     def kill(self):
         self.window.kill()
         return self.Idtuple
+
+

@@ -49,7 +49,7 @@
             <balise>True</balise>
         </point>
         <point name="LTP">
-            <x>909</x>
+            <x>809</x>
             <y>491</y>
             <balise>True</balise>
         </point>
@@ -84,8 +84,8 @@
             <y>490</y>
         </point>
         <point name="ESPRI">
-            <x>949</x>
-            <y>491</y>
+            <x>849</x>
+            <y>492</y>
         </point>
         <point name="RUNOM">
             <x>768</x>
@@ -156,40 +156,40 @@
             <y>427</y>
         </point>
 
-
+        
         <point name="VB402">
-            <x>349</x>
-            <y>338</y>
+            <x>552</x>
+            <y>303</y>
             <procedure>True</procedure>
         </point>
         <point name="VB404">
-            <x>349</x>
-            <y>338</y>
+            <x>508</x>
+            <y>320</y>
             <procedure>True</procedure>
         </point>
         <point name="IB07L">
-            <x>411</x>
-            <y>396</y>
+            <x>521</x>
+            <y>359</y>
             <procedure>True</procedure>
         </point>
         <point name="FB07L">
-            <x>445</x>
-            <y>383</y>
+            <x>550</x>
+            <y>349</y>
             <procedure>True</procedure>
         </point>
         <point name="VB400">
-            <x>349</x>
-            <y>338</y>
+            <x>536</x>
+            <y>434</y>
             <procedure>True</procedure>
         </point>
         <point name="VB410">
-            <x>349</x>
-            <y>338</y>
+            <x>630</x>
+            <y>320</y>
             <procedure>True</procedure>
         </point>
         <point name="RW07">
-            <x>489</x>
-            <y>367</y>
+            <x>589</x>
+            <y>335</y>
             <procedure>True</procedure>
         </point>
     </points>
@@ -419,6 +419,17 @@
             <next id ="2">API07</next>
         </route>
 
+        <route name="RYF_HLDG">
+            <Type>HLDG</Type>
+            <point id="1">
+                <name>RYF</name>
+                <rightTurn>False</rightTurn>
+                <radial>128</radial>
+                <IAS>220</IAS>
+            </point>
+            <next id ="1">RYF07</next>
+        </route>
+
         <route name="MOU1A">
             <Type>STAR</Type>
             <point id="1">
@@ -438,16 +449,204 @@
             <next id ="2">RYF07</next>
         </route>
 
-        <route name="RYF_HLDG">
+        <route name="CFA1A">
+            <Type>STAR</Type>
+            <point id="1">
+                <name>CFA</name>
+            </point>
+            <point id="2">
+                <name>ONCLE</name>
+                <Altitude>12000</Altitude>
+            </point>
+            <point id="3">
+                <name>RYF</name>
+            </point>
+            <next id ="1">RYF_HLDG</next>
+            <next id ="2">RYF07</next>
+        </route>
+
+        <route name="RUNOM07">
+            <Type>APP</Type>
+            <point id="1">
+                <name>RUNOM</name>
+                <Altitude>7000</Altitude>
+            </point>
+            <point id="2">
+                <name>VB402</name>
+                <Altitude>7000</Altitude>
+            </point>
+            <point id="3">
+                <name>VB404</name>
+                <IAS>210</IAS>
+            </point>
+            <point id="4">
+                <name>IB07L</name>
+                <Altitude>3700</Altitude>
+            </point>
+            <point id="5">
+                <name>FB07L</name>
+                <Altitude>3700</Altitude>
+            </point>
+            <point id="6">
+                <name>RW07</name>
+                <Altitude>2340</Altitude>
+            </point>
+            <next id ="1">land</next>
+            <next id ="2">API07</next>
+        </route>
+
+        <route name="RUNOM_HLDG">
             <Type>HLDG</Type>
             <point id="1">
-                <name>RYF</name>
-                <rightTurn>False</rightTurn>
-                <radial>128</radial>
+                <name>RUNOM</name>
+                <rightTurn>True</rightTurn>
+                <radial>210</radial>
                 <IAS>220</IAS>
             </point>
-            <next id ="1">RYF07</next>
+            <next id ="1">RUNOM07</next>
+        </route>
+
+        <route name="MILPA1A">
+            <Type>STAR</Type>
+            <point id="1">
+                <name>MILPA</name>
+            </point>
+            <point id="2">
+                <name>ENSUI</name>
+                <Altitude>12000</Altitude>
+            </point>
+            <point id="3">
+                <name>RUNOM</name>
+            </point>
+            <next id ="1">RUNOM_HLDG</next>
+            <next id ="2">RUNOM07</next>
+        </route>
+
+        <route name="BALSI1A">
+            <Type>STAR</Type>
+            <point id="1">
+                <name>BALSI</name>
+            </point>
+            <point id="2">
+                <name>ESPRI</name>
+                <Altitude>15000</Altitude>
+            </point>
+            <point id="3">
+                <name>LTP</name>
+            </point>
+            <point id="4">
+                <name>RUNOM</name>
+            </point>
+            <next id ="1">RUNOM_HLDG</next>
+            <next id ="2">RUNOM07</next>
+        </route>
+
+        <route name="ARBON07">
+            <Type>APP</Type>
+            <point id="1">
+                <name>ARBON</name>
+                <Altitude>8000</Altitude>
+            </point>
+            <point id="2">
+                <name>VB400</name>
+                <Altitude>8000</Altitude>
+            </point>
+            <point id="3">
+                <name>IB07L</name>
+                <Altitude>3700</Altitude>
+            </point>
+            <point id="4">
+                <name>FB07L</name>
+                <Altitude>3700</Altitude>
+            </point>
+            <point id="5">
+                <name>RW07</name>
+                <Altitude>2340</Altitude>
+            </point>
+            <next id ="1">land</next>
+            <next id ="2">API07</next>
+        </route>
+
+        <route name="ARBON_HLDG">
+            <Type>HLDG</Type>
+            <point id="1">
+                <name>ARBON</name>
+                <rightTurn>True</rightTurn>
+                <radial>17</radial>
+                <IAS>220</IAS>
+            </point>
+            <next id ="1">ARBON07</next>
+        </route>
+
+        <route name="MEN1A">
+            <Type>STAR</Type>
+            <point id="1">
+                <name>MEN</name>
+            </point>
+            <point id="2">
+                <name>OSEAN</name>
+                <Altitude>12000</Altitude>
+            </point>
+            <point id="3">
+                <name>ARBON</name>
+            </point>
+            <next id ="1">ARBON_HLDG</next>
+            <next id ="2">ARBON07</next>
+        </route>
+
+        <route name="MTL1A">
+            <Type>STAR</Type>
+            <point id="1">
+                <name>MTL</name>
+            </point>
+            <point id="2">
+                <name>SOLEY</name>
+                <Altitude>12000</Altitude>
+            </point>
+            <point id="3">
+                <name>ARBON</name>
+            </point>
+            <next id ="1">ARBON_HLDG</next>
+            <next id ="2">ARBON07</next>
+        </route>
+
+        <route name="07Final">
+            <Type>APP</Type>
+            <point id="1">
+                <name>IB07L</name>
+                <Altitude>3700</Altitude>
+                <IAS>210</IAS>
+            </point>
+            <point id="2">
+                <name>FB07L</name>
+                <Altitude>3700</Altitude>
+            </point>
+            <point id="3">
+                <name>RW07</name>
+                <Altitude>2340</Altitude>
+            </point>
+            <next id ="1">land</next>
+            <next id ="2">API07</next>
         </route>
 
     </routes>
+
+    <axes>
+        <axe name="BST_07L">
+            <point>RW07</point>
+            <radial>74</radial>
+            <next>07Final</next>
+            <chevron>IB07L</chevron> # position du chevron soit un point soit une distance
+            <displaySize>20</displaySize> # longueur de l'axe visualisé en Nm
+        </axe>
+
+        <axe name="BST_25R">
+            <point>BST</point>
+            <radial>254</radial>
+            <next>25Final</next>
+            <chevron>10</chevron>
+            <displaySize>20</displaySize>
+        </axe>
+    </axes>
+
 </map>

@@ -4,6 +4,7 @@ from player import *
 import pygame_gui
 import math
 import socket
+import interface
 
 #address = server_browser.serverBrowser()
 address = '10.188.124.237'
@@ -29,9 +30,8 @@ def main(server_ip):
     run = True
 
     # menus
-    menuRoulant = menuDeroulant(0, 0, "altitude", 152)
-    menuPoints = MenuRoute((0, 0), 0, 0, [{'name': 'RYF'}])
-    menuPoints.kill()
+    menuAvion = None
+    modifications = None
     menuOptionsATC = MenuATC((0, 0), 0, 0)
     menuOptionsATC.kill()
     n = Network(server_ip)
@@ -57,7 +57,7 @@ def main(server_ip):
     listeSecteur = map[1]
     listeSegments = map[2]
     listeRoutes = map[3]
-    mapScale = 0.0814
+    mapScale = map[4]
     # scroll and zoom
     zoomDef = 0.5
     scrollDef = [-700+width/2, 20]
@@ -136,28 +136,19 @@ def main(server_ip):
             if event.type == pygame.MOUSEWHEEL:
                 zoom = zoom+event.y/14
             if event.type == pygame_gui.UI_BUTTON_START_PRESS and not alidadStart and selectConflitState == 0:
+                '''faut mettre le menu quelque part ici'''
+                if menuAvion is not None:
+                    modifications = menuAvion.checkEvent(event)
+                    if modifications is not None:
+                        avionId = modifications[0]
+                        modifications = modifications[1]
+
+                        for changement, valeur in modifications.items():
+                            localRequests.append((avionId, changement, valeur))
+
                 triggered = True
 
-                if event.ui_element in menuRoulant.boutonList:
-                    if event.ui_element == menuRoulant.boutonList[0]:
-                        menuRoulant.increase()
-                    elif event.ui_element == menuRoulant.boutonList[-1]:
-                        menuRoulant.decrease()
-                    else:
-                        avionId = menuRoulant.kill()
-                        if menuRoulant.what == "Altitude":
-                            localRequests.append((avionId, menuRoulant.what, int(event.ui_element.text)*100))
-                        elif menuRoulant.what == "PFL":
-                            print(dictAvions[avionId].coordination)
-                            if dictAvions[avionId].sortie in listeEtrangers and dictAvions[avionId].coordination == 1:
-                                localRequests.append((avionId, "Mouvement"))
-                            localRequests.append((avionId, menuRoulant.what, int(event.ui_element.text)))
-                        else:
-                            localRequests.append((avionId, menuRoulant.what, int(event.ui_element.text)))
-                elif event.ui_element in menuPoints.boutonList:
-                    avionId = menuPoints.kill()
-                    localRequests.append((avionId, 'Direct', event.ui_element.text))
-                elif event.ui_element == menuOptionsATC.partBouton and event.mouse_button == 1:
+                if event.ui_element == menuOptionsATC.partBouton and event.mouse_button == 1:
                     avionId = menuOptionsATC.kill()
                     localRequests.append((avionId, 'Part'))
                 elif event.ui_element == menuOptionsATC.movBouton and event.mouse_button == 1:
@@ -171,6 +162,7 @@ def main(server_ip):
                     localRequests.append((avionId, 'FL?'))
                 else:
                     for avion in dictAvionsAff.values():
+
                         if event.ui_element == avion.bouton:
                             if event.mouse_button == 2 and not pilote:
                                 localRequests.append((avion.Id, 'Warning'))
@@ -182,22 +174,16 @@ def main(server_ip):
                                 avion.etiquettePos += 1
                             elif event.mouse_button == 3 and pilote:
                                 localRequests.append((avion.Id, 'Remove'))
+
                         elif event.ui_element == avion.typeBouton:
                             if avion.FLInterro:
                                 localRequests.append((avion.Id, 'FL?'))
                             elif avion.montrer:
                                 localRequests.append((avion.Id, 'Montrer'))
-                        elif event.ui_element == avion.PFLbouton:
-                            menuRoulant.kill()  
-                            menuRoulant.generate(avion.Id, avion.PFLbouton.get_abs_rect()[0],
-                                                 avion.PFLbouton.get_abs_rect()[1], "PFL",
-                                                 avion.PFL)
+
                         elif event.ui_element == avion.indicatifBouton:
                             if event.mouse_button == 1 and pilote:
-                                menuRoulant.kill()
-                                menuRoulant.generate(avion.Id, avion.indicatifBouton.get_abs_rect()[0],
-                                                     avion.indicatifBouton.get_abs_rect()[1], "Heading",
-                                                     round(avion.heading))
+                                menuAvion = interface.menuAvion(avion, map)
                             elif event.mouse_button == 3:
                                 avion.drawRoute = True
                             elif event.mouse_button == 2 and not pilote:
@@ -205,16 +191,6 @@ def main(server_ip):
                             elif event.mouse_button == 1 and not pilote:
                                 menuOptionsATC = MenuATC(avion.Id, avion.indicatifBouton.get_abs_rect()[0],
                                                          avion.indicatifBouton.get_abs_rect()[1])
-                        elif event.ui_element == avion.altitudeBouton and pilote:
-                            if event.mouse_button == 1:
-                                menuRoulant.kill()
-                                menuRoulant.generate(avion.Id, avion.altitudeBouton.get_abs_rect()[0],
-                                                     avion.altitudeBouton.get_abs_rect()[1], "Altitude",
-                                                     avion.targetFL/100)
-                        elif event.ui_element == avion.routeBouton and pilote:
-                            if event.mouse_button == 1:
-                                menuPoints = MenuRoute(avion.Id, avion.altitudeBouton.get_abs_rect()[0],
-                                                     avion.altitudeBouton.get_abs_rect()[1], avion.route)
 
                         elif event.ui_element == avion.sortieBouton and pilote:
                             localRequests.append((avion.Id, 'Mouvement'))
@@ -278,17 +254,15 @@ def main(server_ip):
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 3 and selectConflitState == 2:
                 conflitPoint = ((pygame.mouse.get_pos()[0] - plotSize - scroll[0])/zoom,
                                 (pygame.mouse.get_pos()[1] - plotSize - scroll[1])/zoom)
-                speedRatio = conflitAvion.speedKt/perfos[selectedAircraft][0]
+                speedRatio = conflitAvion.speedTAS/perfos[selectedAircraft][0]
                 selectConflitState = 3
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 3 and selectConflitState == 3:
                 spawnPoint = ((pygame.mouse.get_pos()[0] - plotSize - scroll[0])/zoom,
                                 (pygame.mouse.get_pos()[1] - plotSize - scroll[1])/zoom)
                 selectConflitState = 0
-                localRequests.append((len(dictAvions), "Add", AvionPacket(mapScale, len(dictAvions),
-                                                                         selectedIndicatif, selectedAircraft,
-                                                                         perfos[selectedAircraft],
-                                                                         spawnPoint[0], spawnPoint[1],selectedFL,
-                                                                         selectedRoute, PFL=selectedPFL)))
+                localRequests.append((len(dictAvions), "Add", AvionPacket(mapScale, listePoints, len(dictAvions), selectedIndicatif,
+                                                             selectedAircraft, perfos[selectedAircraft],spawnPoint[0], spawnPoint[1],
+                                                             selectedFL, selectedRoute, PFL=selectedPFL)))
                 pygame.mouse.set_cursor(pygame.cursors.arrow)
 
 
@@ -311,9 +285,6 @@ def main(server_ip):
                     if event.ui_element == nouvelAvionWin.window:
                         nouvelAvionWin.kill()
                         nouvelAvionWin = None
-                elif event.ui_element == menuRoulant.cont:
-                    menuRoulant.kill()
-
             # dragging
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and drag == [0, 0] and not alidadStart:
                 drag = [pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1]]
@@ -329,6 +300,8 @@ def main(server_ip):
                 pygame.mouse.set_cursor(pygame.cursors.arrow)
 
             manager.process_events(event)
+        if menuAvion is not None:
+            menuAvion.checkSliders()
         if selectedRouteButton is not None:
             selectedRouteButton.select()
         if selectedAircraftButton is not None:
@@ -388,6 +361,12 @@ def main(server_ip):
             if keys[pygame.K_SPACE]:
                 localRequests.append((0, 'Pause'))
                 pressing = True
+                delaiPressage = pygame.time.get_ticks()
+            if keys[pygame.K_LEFT]:
+                localRequests.append((0, 'Slower'))
+                delaiPressage = pygame.time.get_ticks()
+            if keys[pygame.K_RIGHT]:
+                localRequests.append((0, 'Faster'))
                 delaiPressage = pygame.time.get_ticks()
         elif True not in pygame.key.ScancodeWrapper() and pygame.time.get_ticks() - delaiPressage >= 150:
             pressing = False

@@ -8,7 +8,6 @@ import xml.etree.ElementTree as ET
 import time
 import struct
 
-
 # On se connecte a internet pour avoir notre adresse IP locale... Oui oui
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock.connect(("8.8.8.8", 80))
@@ -35,7 +34,6 @@ except socket.error as e:
 s.listen(2)
 print("Waiting for a connection, Server Started")
 
-
 playerId = 0
 dictAvion = {}
 requests = []
@@ -51,8 +49,8 @@ print(mapScale)
 size = float(root.find('size').text)
 for point in root.find('points'):
     name = point.attrib['name']
-    x = int(point.find('x').text)*size
-    y = int(point.find('y').text)*size
+    x = int(point.find('x').text) * size
+    y = int(point.find('y').text) * size
     if point.find('balise') is not None:
         balise = bool(point.find('balise').text)
     else:
@@ -66,8 +64,8 @@ for point in root.find('points'):
 for secteur in root.find('secteurs'):  # format map : [points, secteurs, segments, routes]
     contour = []
     for limite in secteur.findall('limite'):  # format secteurs : [[color, [point contours]]]
-        x = int(limite.find('x').text)*size
-        y = int(limite.find('y').text)*size
+        x = int(limite.find('x').text) * size
+        y = int(limite.find('y').text) * size
         contour.append((x, y))
     gameMap[1].append([[int(x) for x in secteur.attrib['color'].split(',')], contour])
 
@@ -102,16 +100,26 @@ for route in root.find('routes'):  # construction des routes
     gameMap[3].append([nomRoute, routeType, listeRoutePoints, listeNext])
     # format route [nomRoute, routeType, listePoints, next]
 
+gameMap.append(mapScale)
+axes = []
+
+# format axes = (nom, point, radial, finale)
+for axe in root.find('axes'):
+    axes.append((axe.attrib['name'], axe.find('point').text, int(axe.find('radial').text), axe.find('next').text))
+
+gameMap.append(axes)
+
 aircraftType = {}
 tree = ET.parse('XML/aircrafts.xml')
 root = tree.getroot()
 
 for aircraft in root:
-    aircraftType.update({aircraft.attrib['name']:(int(aircraft.find('speed').text), int(aircraft.find('maxSpeed').text),
-                                                  int(aircraft.find('ceiling').text), int(aircraft.find('ROC').text),
-                                                  int(aircraft.find('ROD').text)) })
+    aircraftType.update(
+        {aircraft.attrib['name']: (int(aircraft.find('speed').text), int(aircraft.find('maxSpeed').text),
+                                   int(aircraft.find('ceiling').text), int(aircraft.find('ROC').text),
+                                   int(aircraft.find('ROD').text))})
 
-# format map : [points, secteurs, segments, routes]
+# format map : [points, secteurs, segments, routes, mapScale, axes]
 
 game = Game()
 
@@ -132,7 +140,7 @@ def threaded_client(conn, caca):
     reply = ""
     while True:
         try:
-            data = pickle.loads(conn.recv(2048*16))
+            data = pickle.loads(conn.recv(2048 * 16))
             if packetId != data.Id:
                 reqQ.put(data.requests)
                 packetId = data.Id
@@ -148,7 +156,7 @@ def threaded_client(conn, caca):
             if nombre >= 200:
                 break
             else:
-                nombre+=1
+                nombre += 1
 
     print("Lost connection")
     conn.close()
@@ -177,6 +185,7 @@ start_new_thread(threaded_ping_responder, ())
 temps = time.time()
 STCAtriggered = False
 planeId = 0
+accelerationTemporelle = 1
 while True:
     inReq = reqQ.get()
     requests.append(inReq)
@@ -189,12 +198,19 @@ while True:
             elif req[1] == 'Remove':
                 dictAvion.pop(req[0])
             elif req[1] == 'Altitude':
-                if req[2] <= dictAvion[req[0]].targetFL
+                if req[2] <= dictAvion[req[0]].altitude:
+                    dictAvion[req[0]].evolution = - dictAvion[req[0]].maxROD
+                else:
+                    dictAvion[req[0]].evolution = dictAvion[req[0]].maxROC
                 dictAvion[req[0]].targetFL = req[2]
+            elif req[1] == 'Intercept':
+                dictAvion[req[0]].intercept = True
+                dictAvion[req[0]].changeAxe(req[2], gameMap)
             elif req[1] == 'Heading':
                 dictAvion[req[0]].headingMode = True
-                dictAvion[req[0]].intercept = True
                 dictAvion[req[0]].targetHeading = req[2]
+            elif req[1] == 'IAS':
+                dictAvion[req[0]].speedIAS = req[2]
             elif req[1] == 'Warning':
                 dictAvion[req[0]].Cwarning()
             elif req[1] == 'Part':
@@ -202,6 +218,9 @@ while True:
             elif req[1] == 'Direct':
                 dictAvion[req[0]].headingMode = False
                 dictAvion[req[0]].CnextPoint(req[2])
+            elif req[1] == 'Route':
+                dictAvion[req[0]].nextRoute = req[2]
+                dictAvion[req[0]].changeRoute(gameMap)
             elif req[1] == 'PFL':
                 dictAvion[req[0]].PFL = req[2]
             elif req[1] == 'Mouvement':
@@ -212,12 +231,17 @@ while True:
                 dictAvion[req[0]].FLInterro = not dictAvion[req[0]].FLInterro
             elif req[1] == 'Pause':
                 game.paused = not game.paused
+            elif req[1] == 'Faster':
+                accelerationTemporelle += 0.5
+            elif req[1] == 'Slower':
+                if accelerationTemporelle > 0.5:
+                    accelerationTemporelle -= 0.5
 
-    if time.time() - temps >= radarRefresh and game.paused:
+    if time.time() - temps >= radarRefresh/accelerationTemporelle and game.paused:
         temps = time.time()
         suppListe = []
         for avion in list(dictAvion.values()):
-            supp = avion.move(gameMap) # si jamais l'avion doit etre supp, il le renvoie à la fin du move, sinon None
+            supp = avion.move(gameMap)  # si jamais l'avion doit etre supp, il le renvoie à la fin du move, sinon None
             if supp is not None:
                 suppListe.append(avion.Id)
         for avion in suppListe:
@@ -229,16 +253,22 @@ while True:
             VspeedOne = avion.evolution
             AltitudeOne = avion.altitude
             for i in range(12):
-                predictedPos.append((avion.x + avion.speed * 15 / radarRefresh * (i+1) * math.cos(avion.headingRad),
-                                        avion.y + avion.speed * 15 / radarRefresh * (i+1) * math.sin(avion.headingRad),
-                                     AltitudeOne + VspeedOne * (i+1) * 15 / radarRefresh))
+                predictedPos.append((avion.x + avion.speed * 15 / radarRefresh * (i + 1) * math.cos(avion.headingRad),
+                                     avion.y + avion.speed * 15 / radarRefresh * (i + 1) * math.sin(avion.headingRad),
+                                     AltitudeOne + VspeedOne * (i + 1) * 15 / radarRefresh))
             for avion2 in list(dictAvion.values()):
                 if avion != avion2:
                     VspeedTwo = avion.evolution
                     AltitudeTwo = avion2.altitude
                     for i in range(12):
-                        if math.sqrt((predictedPos[i][0] - (avion2.x + avion2.speed * 15 / radarRefresh * (i+1) * math.cos(avion2.headingRad)))**2 +
-                                     (predictedPos[i][1] - (avion2.y + avion2.speed * 15 / radarRefresh * (i+1) * math.sin(avion2.headingRad)))**2) <= 5 / mapScale and abs(predictedPos[i][2] - AltitudeTwo - VspeedTwo * (i+1) * 15 / radarRefresh) < float(1000) and abs(avion.altitude - avion2.altitude) <= 2500:
+                        if math.sqrt((predictedPos[i][0] - (
+                                avion2.x + avion2.speed * 15 / radarRefresh * (i + 1) * math.cos(
+                                avion2.headingRad))) ** 2 +
+                                     (predictedPos[i][1] - (
+                                             avion2.y + avion2.speed * 15 / radarRefresh * (i + 1) * math.sin(
+                                         avion2.headingRad))) ** 2) <= 5 / mapScale and abs(
+                            predictedPos[i][2] - AltitudeTwo - VspeedTwo * (i + 1) * 15 / radarRefresh) < float(
+                            1000) and abs(avion.altitude - avion2.altitude) <= 2500:
                             STCAtriggered = True
                             avion.STCA = True
                             avion2.STCA = True
