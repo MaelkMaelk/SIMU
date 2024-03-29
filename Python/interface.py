@@ -27,7 +27,6 @@ def scrollListGen(valueList, rect, container, sliderBool=True):
         container=container, anchors=boutonAnchor)]
 
     for value in valueList[1:]:
-
         boutonAnchor.update({'top': 'top', 'top_target': liste[-1]})
         liste.append(pygame_gui.elements.UIButton(
             relative_rect=rect,
@@ -45,28 +44,38 @@ class menuAvion:
         self.window = self.window = pygame_gui.elements.UIWindow(pygame.Rect((400, 400), (600, 600)))
 
         # génération boutons heading
-        self.headingLabel = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, 17), (100, 17)), container=self.window, text=('Cap - ' + str(round(avion.heading))))
-        self.headingContainer = pygame_gui.elements.UIScrollingContainer(pygame.Rect((0, 34), (100, 200)), container=self.window)
+        self.headingLabel = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, 17), (100, 17)),
+                                                        container=self.window,
+                                                        text=('Cap - ' + str(round(avion.heading))))
+        self.headingContainer = pygame_gui.elements.UIScrollingContainer(pygame.Rect((0, 34), (100, 200)),
+                                                                         container=self.window)
         tempo = scrollListGen(range(round(avion.heading / 5) * 5 - 25, round(avion.heading / 5) * 5 + 30, 5),
                               pygame.Rect((0, 0), (75, 17)), self.headingContainer)
         self.headingBoutonListe = tempo[1]
         self.headingSlider = tempo[0]
-        self.headingSlider.set_scroll_from_start_percentage((round(avion.heading / 5) * 5 - 15)/300 * 0.8)
+        self.headingSlider.set_scroll_from_start_percentage((round(avion.heading / 5) * 5 - 15) / 300 * 0.8)
 
         # génération boutons Alti
         self.altiLabel = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, 17), (100, 17)),
-                                                        container=self.window, text=('FL - ' + str(round(avion.altitude/100))), anchors={'left': 'left', 'left_target': self.headingLabel})
-        self.altiContainer = pygame_gui.elements.UIScrollingContainer(pygame.Rect((0, 34), (100, 200)), container=self.window, anchors={'left': 'left', 'left_target': self.headingContainer})
+                                                     container=self.window,
+                                                     text=('FL - ' + str(round(avion.altitude / 100))),
+                                                     anchors={'left': 'left', 'left_target': self.headingLabel})
+        self.altiContainer = pygame_gui.elements.UIScrollingContainer(pygame.Rect((0, 34), (100, 200)),
+                                                                      container=self.window, anchors={'left': 'left',
+                                                                                                      'left_target': self.headingContainer})
         tempo = scrollListGen(range(round(avion.altitude / 1000) * 10 - 50, round(avion.altitude / 1000) * 10 + 60, 10),
                               pygame.Rect((0, 0), (75, 17)), self.altiContainer)
         self.altiBoutonListe = tempo[1]
         self.altiSlider = tempo[0]
-        self.altiSlider.set_scroll_from_start_percentage((round(avion.altitude / 1000) * 10 - 30)/410 * 0.8)
+        self.altiSlider.set_scroll_from_start_percentage((round(avion.altitude / 1000) * 10 - 30) / 410 * 0.8)
 
         # génération boutons speed
         self.speedLabel = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, 17), (100, 17)),
-                                                        container=self.window, text=('IAS - ' + str(avion.speedIAS)), anchors={'left': 'left', 'left_target': self.altiLabel})
-        self.speedContainer = pygame_gui.elements.UIScrollingContainer(pygame.Rect((0, 34), (100, 200)), container=self.window, anchors={'left': 'left', 'left_target': self.altiContainer})
+                                                      container=self.window, text=('IAS - ' + str(avion.speedIAS)),
+                                                      anchors={'left': 'left', 'left_target': self.altiLabel})
+        self.speedContainer = pygame_gui.elements.UIScrollingContainer(pygame.Rect((0, 34), (100, 200)),
+                                                                       container=self.window, anchors={'left': 'left',
+                                                                                                       'left_target': self.altiContainer})
         tempo = scrollListGen(range(round(avion.speedIAS / 10) * 10 - 50, round(avion.speedIAS / 10) * 10 + 60, 10),
                               pygame.Rect((0, 0), (75, 17)), self.speedContainer)
         self.speedBoutonListe = tempo[1]
@@ -78,7 +87,8 @@ class menuAvion:
         self.pointContainer = pygame_gui.elements.UIScrollingContainer(pygame.Rect((0, 0), (100, 200)),
                                                                        container=self.window, anchors={'left': 'left',
                                                                                                        'left_target': self.speedContainer})
-        tempo = scrollListGen([point['name'] for point in avion.route], pygame.Rect((0, 0), (75, 17)), self.pointContainer, sliderBool=False)
+        tempo = scrollListGen([point['name'] for point in avion.route], pygame.Rect((0, 0), (75, 17)),
+                              self.pointContainer, sliderBool=False)
         self.pointBoutonListe = tempo[1]
 
         # génération boutons next routes
@@ -94,8 +104,10 @@ class menuAvion:
         # génération bouton interception
 
         self.axeContainer = pygame_gui.elements.UIScrollingContainer(pygame.Rect((0, 0), (100, 85)),
-                                                                       container=self.window, anchors={'left': 'left',
-                                                                                                       'left_target': self.speedContainer, 'top': 'top', 'top_target': self.pointContainer})
+                                                                     container=self.window, anchors={'left': 'left',
+                                                                                                     'left_target': self.speedContainer,
+                                                                                                     'top': 'top',
+                                                                                                     'top_target': self.pointContainer})
 
         tempo = scrollListGen([axe[0] for axe in gameMap[5]], pygame.Rect((0, 0), (75, 17)),
                               self.axeContainer, sliderBool=False)
@@ -103,7 +115,9 @@ class menuAvion:
 
         # bouton validation
 
-        self.validerBouton = pygame_gui.elements.UIButton(pygame.Rect((200, 90), (75, 17)), text='valider', container=self.window, anchors={'top': 'top','top_target': self.pointContainer})
+        self.validerBouton = pygame_gui.elements.UIButton(pygame.Rect((200, 90), (75, 17)), text='valider',
+                                                          container=self.window,
+                                                          anchors={'top': 'top', 'top_target': self.pointContainer})
 
         ''' VALEURS que le Menu renvera:'''
 
@@ -117,7 +131,8 @@ class menuAvion:
 
         if self.headingSlider.has_moved_recently:
 
-            value = round((360 - 5 * (len(self.headingBoutonListe) - 1)) * (self.headingSlider.start_percentage / 0.8) / 5) * 5
+            value = round(
+                (360 - 5 * (len(self.headingBoutonListe) - 1)) * (self.headingSlider.start_percentage / 0.8) / 5) * 5
             for bouton in self.headingBoutonListe:
                 bouton.text = str(value)
                 bouton.rebuild()
@@ -126,7 +141,8 @@ class menuAvion:
         elif self.altiSlider.has_moved_recently:
 
             # la valeur de niveau oscille entre 0 et 410
-            value = round((410 - 10 * (len(self.headingBoutonListe) - 1)) * (self.altiSlider.start_percentage / 0.8) / 10) * 10
+            value = round(
+                (410 - 10 * (len(self.headingBoutonListe) - 1)) * (self.altiSlider.start_percentage / 0.8) / 10) * 10
             for bouton in self.altiBoutonListe:
                 bouton.text = str(value)
                 bouton.rebuild()
@@ -134,7 +150,8 @@ class menuAvion:
 
         elif self.speedSlider.has_moved_recently:
 
-            value = round((330 - 10 * (len(self.headingBoutonListe) - 1)) * (self.speedSlider.start_percentage / 0.8) / 10) * 10 + 70
+            value = round((330 - 10 * (len(self.headingBoutonListe) - 1)) * (
+                    self.speedSlider.start_percentage / 0.8) / 10) * 10 + 70
             for bouton in self.speedBoutonListe:
                 bouton.text = str(value)
                 bouton.rebuild()
@@ -160,7 +177,7 @@ class menuAvion:
             # ALTI
         elif event.ui_element in self.altiBoutonListe:
 
-            self.returnValues.update({'Altitude': int(event.ui_element.text)})
+            self.returnValues.update({'Altitude': int(event.ui_element.text) * 100})
 
             # speed
         elif event.ui_element in self.speedBoutonListe:

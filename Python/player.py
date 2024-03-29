@@ -78,9 +78,10 @@ def calculateIntersection(heading, xAvion, yAvion, radial, point, gameMap = None
 
 
 class Game:
-    def __init__(self):
+    def __init__(self, heure):
         self.ready = False
         self.paused = True
+        self.heure = heure
 
 
 class Packet:
@@ -98,22 +99,34 @@ class AvionPacket:
     global plotSize
     global listeEtrangers
 
-    def __init__(self, mapScale, listePoints, Id, indicatif, aircraft, perfos, x, y, FL, route, heading=None, PFL=None):
+    def __init__(self, gameMap, Id, indicatif, aircraft, perfos, route, FL=None, x=None, y=None, heading=None, PFL=None):
+
+        listePoints = gameMap[0]
+
         self.Id = Id
         self.indicatif = indicatif
         self.aircraft = aircraft
-        self.x = x
-        self.y = y
+        if x is not None:
+            self.x = x
+            self.y = y
+        else:  # si il n'y a pas de point de spawn défini on prend le 1er point de la map
+            self.x = gameMap[0][route[2][0]['name']][0]
+            self.y = gameMap[0][route[2][0]['name']][1]
+
         self.comete = []
-        self.altitude = FL * 100
+        if FL is not None:
+            self.altitude = FL * 100
+        else:
+            self.altitude = route[2][0]['altitude']
         self.speedIAS = perfos[0]
         self.speedTAS = self.speedIAS + self.altitude / 200
-        self.speed = self.speedTAS / mapScale * timeConstant
+        self.speed = self.speedTAS / gameMap[4] * timeConstant
         self.altitudeEvoTxt = '-'
         self.perfos = perfos
 
         # RADAR display
         self.warning = False
+        self.visible = True
         self.part = False
         self.coordination = 0
         self.STCA = False
@@ -143,7 +156,7 @@ class AvionPacket:
         self.intercept = False
         self.axe = None
         self.attente = {}  # format attente : # radial, IAS, temps, turnRadius si non standard
-        if calculateDistance(x, y, listePoints[self.route[0]['name']][0], listePoints[self.route[0]['name']][1]) <= 4 * self.speed:
+        if calculateDistance(self.x, self.y, listePoints[self.route[0]['name']][0], listePoints[self.route[0]['name']][1]) <= 4 * self.speed:
             self.nextPointValue = 1
         else:
             self.nextPointValue = 0
@@ -162,6 +175,7 @@ class AvionPacket:
 
         # TARGETS and spd for altitude/heading etc...
         self.targetFL = self.altitude
+        self.forcedEvo = False
         self.calculateEvoRate(listePoints)
         self.targetHeading = self.heading
 
@@ -245,7 +259,7 @@ class AvionPacket:
         altiCible = self.altitude
         for point in self.route[self.nextPointValue:]:
             try:
-                altiCible = point['Altitude']
+                altiCible = point['altitude']
                 break
             except:
                 pass
@@ -263,6 +277,18 @@ class AvionPacket:
                 self.axe = axeElement
                 break
 
+    def checkInZoneNoRadar(self, gameMap):
+        dedans = False
+        for zone in gameMap[6]:
+            if zone['type'] == 'NO_RADAR':
+                if zone['plancher'] <= self.altitude <= zone['plafond']:
+                    if (self.x - gameMap[0][zone['point']][0])**2 + (self.y - gameMap[0][zone['point']][1])**2 <= (zone['radius']/gameMap[4])**2:
+                        dedans = True
+        if dedans:
+            self.visible = False
+        else:
+            self.visible = True
+
     def move(self, gameMap):
         # heading update
         if self.headingMode:
@@ -275,6 +301,7 @@ class AvionPacket:
 
                 if self.heading == self.axe[2]:
                     self.intercept = False
+                    self.forcedEvo = False
                     self.headingMode = False
                     self.changeRoute(gameMap, self.axe[3])
 
@@ -402,7 +429,7 @@ class AvionPacket:
             if self.altitude - self.targetFL > 0:
                 if abs(self.altitude - self.targetFL) <= abs(self.evolution):
                     self.altitude = self.targetFL
-                    if not self.headingMode:
+                    if not self.forcedEvo:
                         self.calculateEvoRate(gameMap[0])
                 else:
                     self.altitude += self.evolution
@@ -410,7 +437,7 @@ class AvionPacket:
             else:
                 if abs(self.altitude - self.targetFL) <= abs(self.evolution):
                     self.altitude = self.targetFL
-                    if not self.headingMode:
+                    if not self.forcedEvo:
                         self.calculateEvoRate(gameMap[0])
                 else:
                     self.altitude += self.evolution
@@ -431,6 +458,9 @@ class AvionPacket:
 
         self.speedTAS = self.speedIAS + self.altitude / 200
         self.speed = self.speedTAS / gameMap[4] * timeConstant
+
+        # on vérifie si on est vivible au radar
+        self.checkInZoneNoRadar(gameMap)
 
 
 class Avion:
@@ -468,6 +498,7 @@ class Avion:
         self.size = plotSize
 
         # Radar display
+        self.visible = Papa.visible
         self.warning = Papa.warning
         self.part = Papa.part
         self.coordination = 0  # 0 = noir, 1 = blanc, 2 = bleu
@@ -594,49 +625,53 @@ class Avion:
         self.altitudeEvoTxtDis.rebuild()
 
         # Vrai dessin
-
-        if self.warning:
-            color = (255, 120, 60)
-        elif self.part:
-            color = (30, 144, 255)
-        else:
-            if self.plotType == 'arrivee':
-                color = (135, 206, 235)
-            elif self.plotType == 'depart':
-                color = (171, 75, 82)
+        if self.visible:
+            if self.warning:
+                color = (255, 120, 60)
+            elif self.part:
+                color = (30, 144, 255)
             else:
-                color = (255, 255, 255)
+                if self.plotType == 'arrivee':
+                    color = (135, 206, 235)
+                elif self.plotType == 'depart':
+                    color = (171, 75, 82)
+                else:
+                    color = (255, 255, 255)
 
-        if self.plotType == 'arrivee':
-            pygame.draw.polygon(win, color,
-                                ((self.affX + self.size + int(plotSize), self.affY + self.size + int(plotSize)),
-                                 (self.affX + self.size - int(plotSize), self.affY + self.size + plotSize),
-                                 (self.affX + self.size, self.affY + self.size - plotSize)), 1)
-        elif self.plotType == 'depart':
-            pygame.draw.rect(win, color, (self.affX, self.affY, self.size * 2, self.size * 2), 1)
+            if self.plotType == 'arrivee':
+                pygame.draw.polygon(win, color,
+                                    ((self.affX + self.size + int(plotSize), self.affY + self.size + int(plotSize)),
+                                     (self.affX + self.size - int(plotSize), self.affY + self.size + plotSize),
+                                     (self.affX + self.size, self.affY + self.size - plotSize)), 1)
+            elif self.plotType == 'depart':
+                pygame.draw.rect(win, color, (self.affX, self.affY, self.size * 2, self.size * 2), 1)
+            else:
+                pygame.draw.rect(win, color, (self.affX, self.affY, self.size * 2, self.size * 2), 1)
+
+            if vecteurs or self.warning:
+                pygame.draw.line(win, color, (self.affX + self.size, self.affY + self.size), (
+                    self.affX + self.size + self.speed * 60 / radarRefresh * vecteurSetting * zoom * math.cos(
+                        self.headingRad),
+                    self.affY + self.size + self.speed * 60 / radarRefresh * vecteurSetting * zoom * math.sin(
+                        self.headingRad)), 1)
+                for i in range(1, vecteurSetting + 1):
+                    pygame.draw.circle(win, color, (self.affX + self.size +
+                                                    self.speed * 60 / radarRefresh * i * zoom * math.cos(self.headingRad),
+                                                    self.affY + self.size +
+                                                    self.speed * 60 / radarRefresh * i * zoom * math.sin(self.headingRad)),
+                                       2)
+            radius = 1
+            for plot in self.comete:
+                affPlot = [(plot[0] - self.size) * zoom + self.size + scroll[0],
+                           (plot[1] - self.size) * zoom + self.size + scroll[1]]
+                pygame.draw.circle(win, color, affPlot, int(round(radius)), 1)
+                radius += 0.7
+            pygame.draw.line(win, (255, 255, 255), (self.affX + self.size, self.affY + self.size),
+                             (self.etiquetteX, self.etiquetteY))
+
+            self.etiquetteContainer.show()
         else:
-            pygame.draw.rect(win, color, (self.affX, self.affY, self.size * 2, self.size * 2), 1)
-
-        if vecteurs or self.warning:
-            pygame.draw.line(win, color, (self.affX + self.size, self.affY + self.size), (
-                self.affX + self.size + self.speed * 60 / radarRefresh * vecteurSetting * zoom * math.cos(
-                    self.headingRad),
-                self.affY + self.size + self.speed * 60 / radarRefresh * vecteurSetting * zoom * math.sin(
-                    self.headingRad)), 1)
-            for i in range(1, vecteurSetting + 1):
-                pygame.draw.circle(win, color, (self.affX + self.size +
-                                                self.speed * 60 / radarRefresh * i * zoom * math.cos(self.headingRad),
-                                                self.affY + self.size +
-                                                self.speed * 60 / radarRefresh * i * zoom * math.sin(self.headingRad)),
-                                   2)
-        radius = 1
-        for plot in self.comete:
-            affPlot = [(plot[0] - self.size) * zoom + self.size + scroll[0],
-                       (plot[1] - self.size) * zoom + self.size + scroll[1]]
-            pygame.draw.circle(win, color, affPlot, int(round(radius)), 1)
-            radius += 0.7
-        pygame.draw.line(win, (255, 255, 255), (self.affX + self.size, self.affY + self.size),
-                         (self.etiquetteX, self.etiquetteY))
+            self.etiquetteContainer.hide()
 
         # PART
         if self.part:
@@ -705,6 +740,7 @@ class Avion:
         self.speedBouton.rebuild()
         self.etiquetteContainer.rebuild()
         self.etiquetteContainer.update_containing_rect_position()
+        self.etiquetteContainer.show()
 
         # altitude evo
         self.altitudeEvoTxtDis.text = self.altitudeEvoTxt
@@ -764,6 +800,7 @@ class Avion:
         self.altitudeEvoTxt = Papa.altitudeEvoTxt
 
         # Radar display
+        self.visible = Papa.visible
         self.warning = Papa.warning
         self.part = Papa.part
         self.coordination = Papa.coordination

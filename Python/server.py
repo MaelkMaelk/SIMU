@@ -1,19 +1,23 @@
 import socket
+import sys
 from _thread import *
 from queue import Queue
 from network import MCAST_GRP, MCAST_PORT, port
 from player import *
 import pickle
 import xml.etree.ElementTree as ET
+from xml.dom import minidom
 import time
 import struct
+
+SIMU = 'simu.xml'
+mode_ecriture = False
 
 # On se connecte a internet pour avoir notre adresse IP locale... Oui oui
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock.connect(("8.8.8.8", 80))
 servername = "mael"
 server_ip = sock.getsockname()[0]
-print(server_ip)
 sock.close()
 # fini on ferme le socket
 
@@ -32,7 +36,6 @@ except socket.error as e:
     str(e)
 
 s.listen(2)
-print("Waiting for a connection, Server Started")
 
 playerId = 0
 dictAvion = {}
@@ -40,7 +43,6 @@ requests = []
 gameMap = [{}, [], [], []]
 
 # XML map loading
-
 
 tree = ET.parse('XML/mapAPS.xml')
 root = tree.getroot()
@@ -61,7 +63,7 @@ for point in root.find('points'):
         procedure = False
     gameMap[0].update({name: (x, y, balise, procedure)})
 
-for secteur in root.find('secteurs'):  # format map : [points, secteurs, segments, routes]
+for secteur in root.find('secteurs'):
     contour = []
     for limite in secteur.findall('limite'):  # format secteurs : [[color, [point contours]]]
         x = int(limite.find('x').text) * size
@@ -103,11 +105,32 @@ for route in root.find('routes'):  # construction des routes
 gameMap.append(mapScale)
 axes = []
 
-# format axes = (nom, point, radial, finale)
+# format axes = (nom, point, radial, finale, chevron, dsiplaySize)
 for axe in root.find('axes'):
-    axes.append((axe.attrib['name'], axe.find('point').text, int(axe.find('radial').text), axe.find('next').text))
+    try:
+        chevron = int(axe.find('chevron').text)
+    except:
+        chevron = axe.find('chevron').text
+
+    axes.append((axe.attrib['name'], axe.find('point').text, int(axe.find('radial').text), axe.find('next').text, chevron, int(axe.find('displaySize').text)))
+
+zoneListe = []
+
+for zone in root.find('zones'):
+    zoneDict = {}
+    zoneDict.update({'name': zone.attrib['name']})
+
+    for XMLpoint in zone:
+        try:
+            XMLpointValue = int(XMLpoint.text)
+        except:
+            XMLpointValue = XMLpoint.text
+        zoneDict.update({XMLpoint.tag: XMLpointValue})
+    zoneListe.append(zoneDict)
+
 
 gameMap.append(axes)
+gameMap.append(zoneListe)
 
 aircraftType = {}
 tree = ET.parse('XML/aircrafts.xml')
@@ -119,9 +142,75 @@ for aircraft in root:
                                    int(aircraft.find('ceiling').text), int(aircraft.find('ROC').text),
                                    int(aircraft.find('ROD').text))})
 
-# format map : [points, secteurs, segments, routes, mapScale, axes]
+# format map : [points, secteurs, segments, routes, mapScale, axes, zones]
 
-game = Game()
+try:
+    tree = ET.parse('XML/' + SIMU)
+
+    if mode_ecriture:
+        heure = input('Heure de début de simu, format: hhmm')
+        heure = int(heure[0:2]) * 3600 + int(heure[2:]) * 60
+    else:
+        heure = tree.find('heure').text
+        heure = int(heure[0:2]) * 3600 + int(heure[2:]) * 60
+
+    avionSpawnListe = []
+    for avion in tree.find('avions'):
+
+        avionDict = {}
+
+        for XMLpoint in avion:
+            try:
+                XMLpointValue = int(XMLpoint.text)
+            except:
+                XMLpointValue = XMLpoint.text
+            avionDict.update({XMLpoint.tag: XMLpointValue})
+
+        heureSpawn = avion.attrib['heure']
+        heureSpawn = int(heureSpawn[0:2]) * 3600 + int(heureSpawn[2:]) * 60
+
+        avionSpawnListe.append((heureSpawn, avionDict))
+except:
+
+    heure = input('Heure de début de simu, format: hhmm')
+    heure = int(heure[0:2]) * 3600 + int(heure[2:]) * 60
+
+game = Game(heure)
+
+# XML écriture
+
+SimuTree = ET.Element('simu')
+heureXML = ET.SubElement(SimuTree, 'heure')
+heureXML.text = '1002'
+avionsXML = ET.SubElement(SimuTree, 'avions')
+
+def generateAvionXML(parent, heureEcriture, indicatifEcriture, aircraftEcriture, routeEcriture, altitudeEcriture, xEcriture=None, yEcriture=None, headingEcriture=None, PFLEcriture=None):
+
+    avionXML = ET.SubElement(parent, 'avion')
+    avionXML.set('heure', str(heureEcriture))
+
+    node = ET.SubElement(avionXML, 'indicatif')
+    node.text = str(indicatifEcriture)
+    node = ET.SubElement(avionXML, 'aircraft')
+    node.text = str(aircraftEcriture)
+    node = ET.SubElement(avionXML, 'route')
+    node.text = str(routeEcriture)
+    node = ET.SubElement(avionXML, 'altitude')
+    node.text = str(altitudeEcriture)
+
+    if xEcriture is not None:
+        node = ET.SubElement(avionXML, 'x')
+        node.text = str(xEcriture)
+        node = ET.SubElement(avionXML, 'y')
+        node.text = str(yEcriture)
+
+    if headingEcriture is not None:
+        node = ET.SubElement(avionXML, 'heading')
+        node.text = str(headingEcriture)
+
+    if PFLEcriture is not None:
+        node = ET.SubElement(avionXML, 'PFL')
+        node.text = str(PFLEcriture)
 
 
 def threaded_client(conn, caca):
@@ -163,6 +252,7 @@ def threaded_client(conn, caca):
 
 
 def threaded_waiting():
+    print("Waiting for a connection, Server Started")
     while True:
         conn, addr = s.accept()
         print("Connected to:", addr)
@@ -186,7 +276,8 @@ temps = time.time()
 STCAtriggered = False
 planeId = 0
 accelerationTemporelle = 1
-while True:
+Running = True
+while Running:
     inReq = reqQ.get()
     requests.append(inReq)
     for reqSublist in requests:
@@ -195,6 +286,17 @@ while True:
                 req[2].Id = planeId
                 dictAvion.update({planeId: req[2]})
                 planeId += 1
+                if mode_ecriture:
+
+                    heures = str(round(game.heure // 3600))
+                    if len(heures) == 1:
+                        heures = '0' + heures
+                    minutes = str(round(game.heure % 3600 // 60))
+                    if len(minutes) == 1:
+                        minutes = '0' + minutes
+
+                    generateAvionXML(avionsXML, heures + minutes, req[2].indicatif, req[2].aircraft, req[2].routeFull[0], req[2].altitude, xEcriture=req[2].x, yEcriture=req[2].y, PFLEcriture=req[2].PFL)
+
             elif req[1] == 'Remove':
                 dictAvion.pop(req[0])
             elif req[1] == 'Altitude':
@@ -203,6 +305,7 @@ while True:
                 else:
                     dictAvion[req[0]].evolution = dictAvion[req[0]].maxROC
                 dictAvion[req[0]].targetFL = req[2]
+                dictAvion[req[0]].forcedEvo = True
             elif req[1] == 'Intercept':
                 dictAvion[req[0]].intercept = True
                 dictAvion[req[0]].changeAxe(req[2], gameMap)
@@ -236,8 +339,27 @@ while True:
             elif req[1] == 'Slower':
                 if accelerationTemporelle > 0.5:
                     accelerationTemporelle -= 0.5
+            elif req[1] == 'Save' and mode_ecriture:
+                xmlstr = minidom.parseString(ET.tostring(SimuTree)).toprettyxml(indent="   ")
+                with open("simu.xml", "w") as f:
+                    f.write(xmlstr)
+
+    toBeRemovedFromSpawn = []
+    for spawn in avionSpawnListe:
+        if spawn[0] <= game.heure:
+            for route in gameMap[3]:
+                if route[0] == spawn[1]['route']:
+                    spawnRoute = route
+                    break
+            dictAvion.update({planeId: AvionPacket(gameMap, planeId, spawn[1]['indicatif'], spawn[1]['aircraft'], aircraftType[spawn[1]['aircraft']], spawnRoute)})
+            toBeRemovedFromSpawn.append(spawn)
+            planeId += 1
+
+    for avion in toBeRemovedFromSpawn:
+        avionSpawnListe.remove(avion)
 
     if time.time() - temps >= radarRefresh/accelerationTemporelle and game.paused:
+        game.heure += (time.time() - temps) * accelerationTemporelle
         temps = time.time()
         suppListe = []
         for avion in list(dictAvion.values()):
@@ -268,7 +390,7 @@ while True:
                                              avion2.y + avion2.speed * 15 / radarRefresh * (i + 1) * math.sin(
                                          avion2.headingRad))) ** 2) <= 5 / mapScale and abs(
                             predictedPos[i][2] - AltitudeTwo - VspeedTwo * (i + 1) * 15 / radarRefresh) < float(
-                            1000) and abs(avion.altitude - avion2.altitude) <= 2500:
+                                1000) and abs(avion.altitude - avion2.altitude) <= 2500:
                             STCAtriggered = True
                             avion.STCA = True
                             avion2.STCA = True
@@ -276,3 +398,5 @@ while True:
                 avion.STCA = False
 
     requests = []
+
+sys.exit()

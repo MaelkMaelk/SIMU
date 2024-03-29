@@ -227,15 +227,14 @@ def main(server_ip):
                         conflitGen = False
                         if selectedRoute is not None and selectedAircraft is not None:
                             localRequests.append((len(dictAvions), "Add",
-                                                 AvionPacket(mapScale, listePoints, len(dictAvions), selectedIndicatif,
+                                                 AvionPacket(map, len(dictAvions), selectedIndicatif,
                                                              selectedAircraft, perfos[selectedAircraft],
-                                                             map[0][selectedRoute[2][0]['name']][0], map[0][selectedRoute[2][0]['name']][1],
-                                                             selectedFL, selectedRoute, PFL=selectedPFL)))
+                                                             selectedRoute, FL=selectedFL, PFL=selectedPFL)))
                             selectedRoute = None
                             selectedAircraft = None
                             selectedRouteButton = None
                             selectedAircraftButton = None
-                            selectedFL = 310
+                            selectedFL = None
                             selectedIndicatif = 'FCACA'
 
             elif event.type == pygame_gui.UI_BUTTON_PRESSED and nouvelAvionWin is not None:
@@ -260,9 +259,12 @@ def main(server_ip):
                 spawnPoint = ((pygame.mouse.get_pos()[0] - plotSize - scroll[0])/zoom,
                                 (pygame.mouse.get_pos()[1] - plotSize - scroll[1])/zoom)
                 selectConflitState = 0
-                localRequests.append((len(dictAvions), "Add", AvionPacket(mapScale, listePoints, len(dictAvions), selectedIndicatif,
-                                                             selectedAircraft, perfos[selectedAircraft],spawnPoint[0], spawnPoint[1],
-                                                             selectedFL, selectedRoute, PFL=selectedPFL)))
+                localRequests.append((len(dictAvions), "Add", AvionPacket(map, len(dictAvions), selectedIndicatif,
+                                                             selectedAircraft, perfos[selectedAircraft], selectedRoute, x=spawnPoint[0], y=spawnPoint[1],
+                                                             FL=selectedFL, PFL=selectedPFL)))
+                AvionPacket(map, len(dictAvions), selectedIndicatif,
+                            selectedAircraft, perfos[selectedAircraft],
+                            selectedRoute, FL=selectedFL, PFL=selectedPFL)
                 pygame.mouse.set_cursor(pygame.cursors.arrow)
 
 
@@ -368,6 +370,9 @@ def main(server_ip):
             if keys[pygame.K_RIGHT]:
                 localRequests.append((0, 'Faster'))
                 delaiPressage = pygame.time.get_ticks()
+            if keys[pygame.K_s]:
+                localRequests.append((0, 'Save'))
+                delaiPressage = pygame.time.get_ticks()
         elif True not in pygame.key.ScancodeWrapper() and pygame.time.get_ticks() - delaiPressage >= 150:
             pressing = False
 
@@ -378,9 +383,27 @@ def main(server_ip):
                 affListeSecteur.append((point[0]*zoom+plotSize+scroll[0], point[1]*zoom+plotSize+scroll[1]))
             pygame.draw.polygon(win, secteur[0], affListeSecteur)
 
-        for segment in listeSegments:
+        '''for segment in listeSegments:
             pygame.draw.line(win, (105, 110, 105), (segment[0][0]*zoom + scroll[0]+plotSize, segment[0][1]*zoom + scroll[1]+plotSize),
-                             (segment[1][0]*zoom + scroll[0]+plotSize, segment[1][1]*zoom + scroll[1]+plotSize), 2)
+                             (segment[1][0]*zoom + scroll[0]+plotSize, segment[1][1]*zoom + scroll[1]+plotSize), 2)'''
+
+        for axe in map[5]:
+
+            # ligne de l'axe
+            axeX = (map[0][axe[1]][0] + axe[5]/mapScale*math.cos((axe[2] + 90) / 180 * math.pi))*zoom + scroll[0]+plotSize
+            axeY = (map[0][axe[1]][1] + axe[5]/mapScale*math.sin((axe[2] + 90) / 180 * math.pi))*zoom + scroll[1]+plotSize
+            pygame.draw.line(win, (105, 110, 105), (map[0][axe[1]][0]*zoom + scroll[0]+plotSize, map[0][axe[1]][1]*zoom + scroll[1]+plotSize), (axeX, axeY))
+
+            # chevron
+            if type(axe[4]) == int:
+                axeX = (map[0][axe[1]][0] + axe[4] / mapScale * math.cos((axe[2] + 90) / 180 * math.pi)) * zoom + \
+                       scroll[0] + plotSize
+                axeY = (map[0][axe[1]][1] + axe[4] / mapScale * math.sin((axe[2] + 90) / 180 * math.pi)) * zoom + \
+                       scroll[1] + plotSize
+            else:
+                axeX = map[0][axe[4]][0]*zoom + scroll[0]+plotSize
+                axeY = map[0][axe[4]][1]*zoom + scroll[1]+plotSize
+            pygame.draw.circle(win, (105, 110, 105), (axeX, axeY), 3)
 
         for nom, point in listePoints.items():
             if not point[3]:
@@ -411,7 +434,17 @@ def main(server_ip):
                                (conflitRadius + 15/mapScale) * zoom, 1)
         if not game.paused:  # oui en fait quand c en pause c False
             img = font.render("gelé", True, (255, 105, 180))
-            win.blit(img, (20, 20))
+            win.blit(img, (20, 50))
+
+        heures = str(round(game.heure//3600))
+        if len(heures) == 1:
+            heures = '0' + heures
+        minutes = str(round(game.heure % 3600//60))
+        if len(minutes) == 1:
+            minutes = '0' + minutes
+
+        img = font.render(heures + ':' + minutes, True, (255, 105, 180))
+        win.blit(img, (20, 20))
         if alidad:
             pygame.draw.line(win, (255, 105, 180), alidadPos, pygame.mouse.get_pos())
             distance = round(math.sqrt((alidadPos[0] - pygame.mouse.get_pos()[0]) ** 2 +

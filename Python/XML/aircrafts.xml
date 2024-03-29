@@ -3,8 +3,8 @@
 <aircrafts>
 
     <aircraft name="B738">
-        <speed>1660</speed>
-        <maxSpeed>250</maxSpeed>
+        <speed>250</speed>
+        <maxSpeed>540</maxSpeed>
         <ceiling>410</ceiling>
         <ROC>2500</ROC>
         <ROD>3000</ROD>

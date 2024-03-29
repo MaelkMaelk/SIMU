@@ -158,23 +158,23 @@
 
         
         <point name="VB402">
-            <x>552</x>
-            <y>303</y>
+            <x>554</x>
+            <y>285</y>
             <procedure>True</procedure>
         </point>
         <point name="VB404">
-            <x>508</x>
-            <y>320</y>
+            <x>510</x>
+            <y>297</y>
             <procedure>True</procedure>
         </point>
         <point name="IB07L">
             <x>521</x>
-            <y>359</y>
+            <y>355</y>
             <procedure>True</procedure>
         </point>
         <point name="FB07L">
             <x>550</x>
-            <y>349</y>
+            <y>347</y>
             <procedure>True</procedure>
         </point>
         <point name="VB400">
@@ -194,6 +194,15 @@
         </point>
     </points>
 
+    <zones>
+        <zone name="NO_RADAR_LFVC">
+            <type>NO_RADAR</type>
+            <point>EG</point>
+            <radius>20</radius>
+            <plancher>0</plancher>
+            <plafond>5500</plafond>
+        </zone>
+    </zones>
     <secteurs>
         <secteur color="76,81,103">
             <limite>
@@ -400,20 +409,20 @@
             <Type>APP</Type>
             <point id="1">
                 <name>RYF</name>
-                <Altitude>5000</Altitude>
+                <altitude>5000</altitude>
             </point>
             <point id="2">
                 <name>IB07L</name>
-                <Altitude>3700</Altitude>
+                <altitude>3700</altitude>
                 <IAS>210</IAS>
             </point>
             <point id="3">
                 <name>FB07L</name>
-                <Altitude>3700</Altitude>
+                <altitude>3700</altitude>
             </point>
             <point id="4">
                 <name>RW07</name>
-                <Altitude>2340</Altitude>
+                <altitude>2340</altitude>
             </point>
             <next id ="1">land</next>
             <next id ="2">API07</next>
@@ -434,10 +443,11 @@
             <Type>STAR</Type>
             <point id="1">
                 <name>MOU</name>
+                <altitude>19000</altitude>
             </point>
             <point id="2">
                 <name>LESPI</name>
-                <Altitude>12000</Altitude>
+                <altitude>12000</altitude>
             </point>
             <point id="3">
                 <name>ROA</name>
@@ -453,10 +463,11 @@
             <Type>STAR</Type>
             <point id="1">
                 <name>CFA</name>
+                <altitude>19000</altitude>
             </point>
             <point id="2">
                 <name>ONCLE</name>
-                <Altitude>12000</Altitude>
+                <altitude>12000</altitude>
             </point>
             <point id="3">
                 <name>RYF</name>
@@ -469,11 +480,11 @@
             <Type>APP</Type>
             <point id="1">
                 <name>RUNOM</name>
-                <Altitude>7000</Altitude>
+                <altitude>7000</altitude>
             </point>
             <point id="2">
                 <name>VB402</name>
-                <Altitude>7000</Altitude>
+                <altitude>7000</altitude>
             </point>
             <point id="3">
                 <name>VB404</name>
@@ -481,15 +492,15 @@
             </point>
             <point id="4">
                 <name>IB07L</name>
-                <Altitude>3700</Altitude>
+                <altitude>3700</altitude>
             </point>
             <point id="5">
                 <name>FB07L</name>
-                <Altitude>3700</Altitude>
+                <altitude>3700</altitude>
             </point>
             <point id="6">
                 <name>RW07</name>
-                <Altitude>2340</Altitude>
+                <altitude>2340</altitude>
             </point>
             <next id ="1">land</next>
             <next id ="2">API07</next>
@@ -509,11 +520,12 @@
         <route name="MILPA1A">
             <Type>STAR</Type>
             <point id="1">
+                <altitude>19000</altitude>
                 <name>MILPA</name>
             </point>
             <point id="2">
                 <name>ENSUI</name>
-                <Altitude>12000</Altitude>
+                <altitude>12000</altitude>
             </point>
             <point id="3">
                 <name>RUNOM</name>
@@ -526,10 +538,11 @@
             <Type>STAR</Type>
             <point id="1">
                 <name>BALSI</name>
+                <altitude>19000</altitude>
             </point>
             <point id="2">
                 <name>ESPRI</name>
-                <Altitude>15000</Altitude>
+                <altitude>15000</altitude>
             </point>
             <point id="3">
                 <name>LTP</name>
@@ -545,23 +558,23 @@
             <Type>APP</Type>
             <point id="1">
                 <name>ARBON</name>
-                <Altitude>8000</Altitude>
+                <altitude>8000</altitude>
             </point>
             <point id="2">
                 <name>VB400</name>
-                <Altitude>8000</Altitude>
+                <altitude>8000</altitude>
             </point>
             <point id="3">
                 <name>IB07L</name>
-                <Altitude>3700</Altitude>
+                <altitude>3700</altitude>
             </point>
             <point id="4">
                 <name>FB07L</name>
-                <Altitude>3700</Altitude>
+                <altitude>3700</altitude>
             </point>
             <point id="5">
                 <name>RW07</name>
-                <Altitude>2340</Altitude>
+                <altitude>2340</altitude>
             </point>
             <next id ="1">land</next>
             <next id ="2">API07</next>
@@ -582,10 +595,11 @@
             <Type>STAR</Type>
             <point id="1">
                 <name>MEN</name>
+                <altitude>19000</altitude>
             </point>
             <point id="2">
                 <name>OSEAN</name>
-                <Altitude>12000</Altitude>
+                <altitude>12000</altitude>
             </point>
             <point id="3">
                 <name>ARBON</name>
@@ -598,10 +612,11 @@
             <Type>STAR</Type>
             <point id="1">
                 <name>MTL</name>
+                <altitude>19000</altitude>
             </point>
             <point id="2">
                 <name>SOLEY</name>
-                <Altitude>12000</Altitude>
+                <altitude>12000</altitude>
             </point>
             <point id="3">
                 <name>ARBON</name>
@@ -614,16 +629,16 @@
             <Type>APP</Type>
             <point id="1">
                 <name>IB07L</name>
-                <Altitude>3700</Altitude>
+                <altitude>3700</altitude>
                 <IAS>210</IAS>
             </point>
             <point id="2">
                 <name>FB07L</name>
-                <Altitude>3700</Altitude>
+                <altitude>3700</altitude>
             </point>
             <point id="3">
                 <name>RW07</name>
-                <Altitude>2340</Altitude>
+                <altitude>2340</altitude>
             </point>
             <next id ="1">land</next>
             <next id ="2">API07</next>
@@ -637,15 +652,7 @@
             <radial>74</radial>
             <next>07Final</next>
             <chevron>IB07L</chevron> # position du chevron soit un point soit une distance
-            <displaySize>20</displaySize> # longueur de l'axe visualisé en Nm
-        </axe>
-
-        <axe name="BST_25R">
-            <point>BST</point>
-            <radial>254</radial>
-            <next>25Final</next>
-            <chevron>10</chevron>
-            <displaySize>20</displaySize>
+            <displaySize>40</displaySize> # longueur de l'axe visualisé en Nm
         </axe>
     </axes>
 
