@@ -383,9 +383,9 @@ def main(server_ip):
                 affListeSecteur.append((point[0]*zoom+plotSize+scroll[0], point[1]*zoom+plotSize+scroll[1]))
             pygame.draw.polygon(win, secteur[0], affListeSecteur)
 
-        '''for segment in listeSegments:
+        for segment in listeSegments['STAR']:
             pygame.draw.line(win, (105, 110, 105), (segment[0][0]*zoom + scroll[0]+plotSize, segment[0][1]*zoom + scroll[1]+plotSize),
-                             (segment[1][0]*zoom + scroll[0]+plotSize, segment[1][1]*zoom + scroll[1]+plotSize), 2)'''
+                             (segment[1][0]*zoom + scroll[0]+plotSize, segment[1][1]*zoom + scroll[1]+plotSize), 2)
 
         for axe in map[5]:
 

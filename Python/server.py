@@ -40,15 +40,16 @@ s.listen(2)
 playerId = 0
 dictAvion = {}
 requests = []
-gameMap = [{}, [], [], []]
+segments ={}
+gameMap = [{}, segments, [], []]
 
 # XML map loading
 
 tree = ET.parse('XML/mapAPS.xml')
 root = tree.getroot()
 mapScale = float(root.find('scale').text)
-print(mapScale)
 size = float(root.find('size').text)
+
 for point in root.find('points'):
     name = point.attrib['name']
     x = int(point.find('x').text) * size
@@ -70,6 +71,14 @@ for secteur in root.find('secteurs'):
         y = int(limite.find('y').text) * size
         contour.append((x, y))
     gameMap[1].append([[int(x) for x in secteur.attrib['color'].split(',')], contour])
+
+# parsing des routes pour conaître tout les types de routes, pour l'affichage des segments
+
+for route in root.find('routes'):
+    if route.find('Type').text not in segments:
+        segments.update({route.find('Type').text: []})
+
+gameMap[2] = segments
 
 for route in root.find('routes'):  # construction des routes
     nomRoute = route.attrib['name']
@@ -93,8 +102,8 @@ for route in root.find('routes'):  # construction des routes
 
         y2 = gameMap[0][point.find('name').text][1]
         x2 = gameMap[0][point.find('name').text][0]
-        if ((x1, y1), (x2, y2)) not in gameMap[2] and x1 != x2 and y1 != y2:
-            gameMap[2].append(((x1, y1), (x2, y2)))
+        if ((x1, y1), (x2, y2)) not in gameMap[2][routeType] and x1 != x2 and y1 != y2:
+            gameMap[2][routeType].append(((x1, y1), (x2, y2)))
         x1 = x2
         y1 = y2
     for next in route.findall('next'):
