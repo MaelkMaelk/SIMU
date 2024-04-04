@@ -40,8 +40,8 @@ s.listen(2)
 playerId = 0
 dictAvion = {}
 requests = []
-segments ={}
-gameMap = [{}, segments, [], []]
+segments = {}
+gameMap = [{}, [], segments, []]
 
 # XML map loading
 
@@ -323,7 +323,7 @@ while Running:
                 dictAvion[req[0]].headingMode = True
                 dictAvion[req[0]].targetHeading = req[2]
             elif req[1] == 'IAS':
-                dictAvion[req[0]].speedIAS = req[2]
+                dictAvion[req[0]].targetIAS = req[2]
             elif req[1] == 'Warning':
                 dictAvion[req[0]].Cwarning()
             elif req[1] == 'Part':

@@ -77,6 +77,23 @@ def calculateIntersection(heading, xAvion, yAvion, radial, point, gameMap = None
     return abs(np.linalg.solve(left_side, right_side))  # résoltution du système pour trouver x et y
 
 
+def calculateRouteTime(route, vitesse, start=None, end=None):
+
+    """ renvoies la distance et le temps que l'avion va passer sur cette route. Attention vitesse ne dépends pas de l'altitude (IAS) mais de la procédure"""
+
+    if start is None:
+        start = 0
+    if end is None:
+        end = len(route)
+
+    temps = 0
+    distance = 0
+    x = route[start]
+    for point in route[start + 1 : end]:
+        distance += 1
+
+
+
 class Game:
     def __init__(self, heure):
         self.ready = False
@@ -120,6 +137,7 @@ class AvionPacket:
             self.altitude = route[2][0]['altitude']
         self.speedIAS = perfos[0]
         self.speedTAS = self.speedIAS + self.altitude / 200
+        self.targetIAS = self.speedIAS
         self.speed = self.speedTAS / gameMap[4] * timeConstant
         self.altitudeEvoTxt = '-'
         self.perfos = perfos
@@ -150,16 +168,22 @@ class AvionPacket:
         # for sortie in self.routeFull[3]:
         #    if sortie[1] < self.PFL < sortie[2]:
         #        self.sortie = sortie[0]
-        self.sortie = 'caca'
+        self.sortie = route[3][0]
+        print(route[3][0])
         self.headingMode = False
         self.routeType = self.routeFull[1]
         self.intercept = False
         self.axe = None
         self.attente = {}  # format attente : # radial, IAS, temps, turnRadius si non standard
+
         if calculateDistance(self.x, self.y, listePoints[self.route[0]['name']][0], listePoints[self.route[0]['name']][1]) <= 4 * self.speed:
             self.nextPointValue = 1
         else:
             self.nextPointValue = 0
+
+        if 'speed' in self.route[self.nextPointValue]:  # on met la vitesse à celle requise au point de spawn
+            self.speedIAS = self.route[self.nextPointValue]['speed']
+
         self.nextPoint = self.route[self.nextPointValue]
         self.nextRouteListe = route[3]
         if route[3]:
@@ -260,11 +284,8 @@ class AvionPacket:
 
         altiCible = self.altitude
         for point in self.route[self.nextPointValue:]:
-            try:
+            if 'altitude' in point:
                 altiCible = point['altitude']
-                break
-            except:
-                pass
 
         if altiCible != self.altitude:
             self.evolution = ((altiCible - self.altitude) /
@@ -460,6 +481,9 @@ class AvionPacket:
         # movement
         self.x += self.speed * math.cos(self.headingRad)
         self.y += self.speed * math.sin(self.headingRad)
+
+        if self.speedIAS != self.targetIAS:  # on change la vitesse par pas de 5
+            self.speedIAS += (self.targetIAS - self.speedIAS)/abs(self.targetIAS - self.speedIAS) * 5
 
         self.speedTAS = self.speedIAS + self.altitude / 200
         self.speed = self.speedTAS / gameMap[4] * timeConstant
@@ -1058,5 +1082,4 @@ class MenuATC:
     def kill(self):
         self.window.kill()
         return self.Idtuple
-
 

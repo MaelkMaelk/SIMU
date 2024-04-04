@@ -432,10 +432,12 @@ def main(server_ip):
             pygame.draw.circle(win, (71, 123, 146), (conflitPoint[0] * zoom + scroll[0] + plotSize,
                                                   conflitPoint[1] * zoom + scroll[1] + plotSize),
                                (conflitRadius + 15/mapScale) * zoom, 1)
+
         if not game.paused:  # oui en fait quand c en pause c False
             img = font.render("gelé", True, (255, 105, 180))
             win.blit(img, (20, 50))
 
+        # dessin Heure
         heures = str(round(game.heure//3600))
         if len(heures) == 1:
             heures = '0' + heures
@@ -445,6 +447,8 @@ def main(server_ip):
 
         img = font.render(heures + ':' + minutes, True, (255, 105, 180))
         win.blit(img, (20, 20))
+
+        # dessin alidad
         if alidad:
             pygame.draw.line(win, (255, 105, 180), alidadPos, pygame.mouse.get_pos())
             distance = round(math.sqrt((alidadPos[0] - pygame.mouse.get_pos()[0]) ** 2 +
