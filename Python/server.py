@@ -40,8 +40,7 @@ s.listen(2)
 playerId = 0
 dictAvion = {}
 requests = []
-segments = {'SID':[], 'STAR':[], 'APP':[], 'TRANSIT': []}
-gameMap = [{}, segments, [], []]
+gameMap = [{}, [], [], []]
 
 # XML map loading
 
@@ -95,9 +94,6 @@ for route in root.find('routes'):  # construction des routes
         y2 = gameMap[0][point.find('name').text][1]
         x2 = gameMap[0][point.find('name').text][0]
         if ((x1, y1), (x2, y2)) not in gameMap[2] and x1 != x2 and y1 != y2:
-            routeAdd[2].update({point.text: gameMap[0][point.text]})
-            y2 = gameMap[0][point.text][1]
-            x2 = gameMap[0][point.text][0]
             gameMap[2].append(((x1, y1), (x2, y2)))
         x1 = x2
         y1 = y2
