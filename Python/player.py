@@ -162,8 +162,10 @@ class AvionPacket:
             self.nextPointValue = 0
         self.nextPoint = self.route[self.nextPointValue]
         self.nextRouteListe = route[3]
-        if route[3] is not []:
+        if route[3]:
             self.nextRoute = route[3][0]
+        else:
+            self.nextRoute = 'bye'
 
         # heading
         if heading is not None:
@@ -263,6 +265,7 @@ class AvionPacket:
                 break
             except:
                 pass
+
         if altiCible != self.altitude:
             self.evolution = ((altiCible - self.altitude) /
                               calculateDistance(self.x, self.y, listePoints[point['name']][0],
@@ -270,6 +273,8 @@ class AvionPacket:
             self.targetFL = altiCible
         else:
             self.evolution = 0
+
+
 
     def changeAxe(self, Axe, gameMap):
         for axeElement in gameMap[5]:
@@ -401,7 +406,7 @@ class AvionPacket:
                     self.y - gameMap[0][self.nextPoint['name']][1]) ** 2) <= 2 * self.speed:
 
                 if self.nextPointValue + 1 == len(self.route):
-                    if self.nextRoute == 'land':
+                    if self.nextRoute in ['land', 'bye']:
                         return True
                     else:
                         self.changeRoute(gameMap)
@@ -943,6 +948,8 @@ class Avion:
 class NouvelAvionWindow:
 
     def __init__(self, routes, avions):
+        routes = [route for route in routes if route[1] in ['SID', 'STAR']]
+        print(routes)
         self.routesFull = routes  # on s'en sert que pour avoir les valeurs de spawn/last au moment de l'apparition
         self.routes = routes
         self.avions = avions

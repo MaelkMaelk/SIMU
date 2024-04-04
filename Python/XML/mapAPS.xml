@@ -13,6 +13,16 @@
             <x>618</x>
             <y>702</y>
         </point>
+        <point name="ATN">
+            <x>490</x>
+            <y>9</y>
+            <balise>True</balise>
+        </point>
+        <point name="DJL">
+            <x>625</x>
+            <y>8</y>
+            <balise>True</balise>
+        </point>
         <point name="LSE">
             <x>686</x>
             <y>371</y>
@@ -103,6 +113,14 @@
             <x>417</x>
             <y>611</y>
         </point>
+        <point name="KELUK">
+            <x>814</x>
+            <y>18</y>
+        </point>
+        <point name="NELLER">
+            <x>606</x>
+            <y>250</y>
+        </point>
         <point name="OGIER">
             <x>409</x>
             <y>590</y>
@@ -155,6 +173,14 @@
             <x>619</x>
             <y>427</y>
         </point>
+        <point name="RETNO">
+            <x>884</x>
+            <y>998</y>
+        </point>
+        <point name="LFVC">
+            <x>773</x>
+            <y>551</y>
+        </point>
 
         
         <point name="VB402">
@@ -190,6 +216,11 @@
         <point name="RW07">
             <x>589</x>
             <y>335</y>
+            <procedure>True</procedure>
+        </point>
+        <point name="DEP07">
+            <x>627</x>
+            <y>321</y>
             <procedure>True</procedure>
         </point>
     </points>
@@ -644,6 +675,114 @@
             <next id ="2">API07</next>
         </route>
 
+        <route name="API07">
+            <Type>APP</Type>
+            <point id="1">
+                <name>RW07</name>
+                <altitude>2000</altitude>
+            </point>
+            <point id="2">
+                <name>VB410</name>
+                <IAS>220</IAS>
+            </point>
+            <point id="3">
+                <name>RUNOM</name>
+                <altitude>5000</altitude>
+            </point>
+            <next id ="1">RUNOM_HLDG</next>
+            <next id ="2">RUNOM07</next>
+        </route>
+
+        <route name="ATN1E">
+            <Type>SID</Type>
+            <point id="1">
+                <name>BST</name>
+                <altitude>2000</altitude>
+            </point>
+            <point id="2">
+                <name>DEP07</name>
+            </point>
+            <point id="3">
+                <name>NELLER</name>
+                <altitude>5000</altitude>
+            </point>
+            <point id="4">
+                <name>NORRE</name>
+            </point>
+            <point id="5">
+                <name>NOTAN</name>
+            </point>
+            <point id="6">
+                <name>ATN</name>
+            </point>
+        </route>
+
+        <route name="DJL1E">
+            <Type>SID</Type>
+            <point id="1">
+                <name>BST</name>
+                <altitude>2000</altitude>
+            </point>
+            <point id="2">
+                <name>DEP07</name>
+            </point>
+            <point id="3">
+                <name>NELLER</name>
+                <altitude>5000</altitude>
+            </point>
+            <point id="4">
+                <name>NORRE</name>
+            </point>
+            <point id="5">
+                <name>NASAL</name>
+            </point>
+            <point id="6">
+                <name>DJL</name>
+            </point>
+        </route>
+
+        <route name="KELUK1E">
+            <Type>SID</Type>
+            <point id="1">
+                <name>BST</name>
+                <altitude>2000</altitude>
+            </point>
+            <point id="2">
+                <name>DEP07</name>
+            </point>
+            <point id="3">
+                <name>NELLER</name>
+                <altitude>5000</altitude>
+            </point>
+            <point id="4">
+                <name>NORRE</name>
+            </point>
+            <point id="5">
+                <name>NESTI</name>
+            </point>
+            <point id="6">
+                <name>KELUK</name>
+            </point>
+        </route>
+
+        <route name="MEN1E">
+            <Type>SID</Type>
+            <point id="1">
+                <name>BST</name>
+                <altitude>2000</altitude>
+            </point>
+            <point id="2">
+                <name>DEP07</name>
+            </point>
+            <point id="3">
+                <name>LSE</name>
+                <altitude>5000</altitude>
+            </point>
+            <point id="4">
+                <name>BRIRO</name>
+            </point>
+        </route>
+
     </routes>
 
     <axes>
@@ -651,7 +790,7 @@
             <point>RW07</point>
             <radial>74</radial>
             <next>07Final</next>
-            <chevron>IB07L</chevron> # position du chevron soit un point soit une distance
+            <chevron>IB07L</chevron> # position du chevron soit un point soit une distance en Nm
             <displaySize>40</displaySize> # longueur de l'axe visualisé en Nm
         </axe>
     </axes>

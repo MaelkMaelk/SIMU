@@ -183,6 +183,7 @@ except:
 
     heure = input('Heure de début de simu, format: hhmm')
     heure = int(heure[0:2]) * 3600 + int(heure[2:]) * 60
+    avionSpawnListe = []
 
 game = Game(heure)
 
