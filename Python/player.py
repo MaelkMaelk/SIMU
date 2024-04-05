@@ -79,15 +79,29 @@ def calculateIntersection(heading, xAvion, yAvion, radial, point, gameMap = None
 
 def calculateRouteTime(route, vitesse, start=None, end=None):
 
-    """ renvoies la distance et le temps que l'avion va passer sur cette route. Attention vitesse ne dépends pas de l'altitude (IAS) mais de la procédure"""
+    """ renvoies la distance et le temps que l'avion va passer sur cette route."""
 
     if start is None:
         start = 0
     if end is None:
         end = len(route)
 
+    vitesseDict = {}
     temps = 0
     distance = 0
+
+    for i in range(len(route)):
+
+
+        if 'altitude' in route[i]:
+            alti = route[i]['altitude']
+            for y in range(i, len(route)):
+                if 'altitude' in route[y]:
+                    break
+            vitesseDict = vitesse
+
+
+
     x = route[start]
     for point in route[start + 1 : end]:
         distance += 1
