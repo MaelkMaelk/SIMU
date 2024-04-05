@@ -776,10 +776,215 @@
             </point>
             <point id="3">
                 <name>LSE</name>
-                <altitude>5000</altitude>
             </point>
             <point id="4">
                 <name>BRIRO</name>
+                <altitude>70</altitude>
+            </point>
+            <point id="5">
+                <name>MEN</name>
+            </point>
+        </route>
+
+        <route name="MTL1E">
+            <Type>SID</Type>
+            <point id="1">
+                <name>BST</name>
+                <altitude>2000</altitude>
+            </point>
+            <point id="2">
+                <name>DEP07</name>
+            </point>
+            <point id="3">
+                <name>LSE</name>
+            </point>
+            <point id="4">
+                <name>AVRIL</name>
+                <altitude>90</altitude>
+            </point>
+            <point id="5">
+                <name>WS</name>
+            </point>
+            <point id="6">
+                <name>SUDER</name>
+            </point>
+            <point id="7">
+                <name>MTL</name>
+            </point>
+        </route>
+
+        <route name="RETNO1E">
+            <Type>SID</Type>
+            <point id="1">
+                <name>BST</name>
+                <altitude>2000</altitude>
+            </point>
+            <point id="2">
+                <name>DEP07</name>
+            </point>
+            <point id="3">
+                <name>LSE</name>
+            </point>
+            <point id="4">
+                <name>AVRIL</name>
+            </point>
+            <point id="5">
+                <name>WS</name>
+            </point>
+            <point id="6">
+                <name>SERAC</name>
+                <altitude>140</altitude>
+            </point>
+            <point id="7">
+                <name>RETNO</name>
+            </point>
+        </route>
+
+        <route name="WS_HLDG">
+            <Type>HLDG</Type>
+            <point id="1">
+                <name>WS</name>
+                <rightTurn>True</rightTurn>
+                <radial>90</radial>
+            </point>
+            <next id ="1">WS09</next>
+        </route>
+
+        <route name="MEN1C">
+            <Type>STAR</Type>
+            <point id="1">
+                <name>MEN</name>
+                <altitude>10000</altitude>
+            </point>
+            <point id="2">
+                <name>OSEAN</name>
+            </point>
+            <point id="3">
+                <name>ARBON</name>
+            </point>
+            <point id="4">
+                <name>WS</name>
+            </point>
+            <next id ="1">WS_HLDG</next>
+        </route>
+
+        <route name="MTL1C">
+            <Type>STAR</Type>
+            <point id="1">
+                <name>MTL</name>
+                <altitude>10000</altitude>
+            </point>
+            <point id="2">
+                <name>SOLEY</name>
+            </point>
+            <point id="3">
+                <name>ARBON</name>
+            </point>
+            <point id="4">
+                <name>WS</name>
+            </point>
+            <next id ="1">WS_HLDG</next>
+        </route>
+
+        <route name="BALSI1C">
+            <Type>STAR</Type>
+            <point id="1">
+                <name>BALSI</name>
+                <altitude>8000</altitude>
+            </point>
+            <point id="2">
+                <name>ESPRI</name>
+            </point>
+            <point id="3">
+                <name>LTP</name>
+            </point>
+            <point id="4">
+                <name>WS</name>
+            </point>
+            <next id ="1">WS_HLDG</next>
+        </route>
+
+        <route name="MEN1M">
+            <Type>SID</Type>
+            <point id="1">
+                <name>LFVC</name>
+                <altitude>2000</altitude>
+            </point>
+            <point id="2">
+                <name>EG</name>
+                <altitude>4000</altitude>
+            </point>
+            <point id="3">
+                <name>LTP</name>
+            </point>
+            <point id="4">
+                <name>AVRIL</name>
+            </point>
+            <point id="5">
+                <name>BRIRO</name>
+            </point>
+            <point id="6">
+                <name>MEN</name>
+            </point>
+        </route>
+
+        <route name="DJL1M">
+            <Type>SID</Type>
+            <point id="1">
+                <name>LFVC</name>
+                <altitude>2000</altitude>
+            </point>
+            <point id="2">
+                <name>EG</name>
+                <altitude>4000</altitude>
+            </point>
+            <point id="3">
+                <name>LTP</name>
+            </point>
+            <point id="4">
+                <name>AVRIL</name>
+            </point>
+            <point id="5">
+                <name>BST</name>
+            </point>
+            <point id="6">
+                <name>NORRE</name>
+            </point>
+            <point id="7">
+                <name>NASAL</name>
+            </point>
+            <point id="8">
+                <name>ATN</name>
+            </point>
+        </route>
+
+        <route name="KELUK1M">
+            <Type>SID</Type>
+            <point id="1">
+                <name>LFVC</name>
+                <altitude>2000</altitude>
+            </point>
+            <point id="2">
+                <name>EG</name>
+                <altitude>4000</altitude>
+            </point>
+            <point id="3">
+                <name>LTP</name>
+            </point>
+            <point id="4">
+                <name>AVRIL</name>
+            </point>
+            <point id="5">
+                <name>BST</name>
+            </point>
+            <point id="6">
+                <name>NORRE</name>
+            </point>
+            <point id="7">
+                <name>NESTI</name>
+            </point>
+            <point id="8">
+                <name>KELUK</name>
             </point>
         </route>
 

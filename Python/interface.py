@@ -12,6 +12,7 @@ def scrollListGen(valueList, rect, container, sliderBool=True):
 
     valueList = list(valueList)
 
+
     if sliderBool:
         slider = pygame_gui.elements.UIVerticalScrollBar(
             relative_rect=pygame.Rect((0, 0), (17, container.get_abs_rect()[3])), container=container,
@@ -20,6 +21,9 @@ def scrollListGen(valueList, rect, container, sliderBool=True):
     else:
         slider = None
         boutonAnchor = {}
+
+    if not valueList:
+        return slider, []
 
     liste = [pygame_gui.elements.UIButton(
         relative_rect=rect,
@@ -100,6 +104,7 @@ class menuAvion:
         tempo = scrollListGen([route for route in avion.nextRouteListe], pygame.Rect((0, 0), (75, 17)),
                               self.routeContainer, sliderBool=False)
         self.routeBoutonliste = tempo[1]
+        print(self.routeBoutonliste)
 
         # génération bouton interception
 

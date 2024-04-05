@@ -92,15 +92,14 @@ def calculateRouteTime(route, vitesse, start=None, end=None):
 
     for i in range(len(route)):
 
+        if 'IAS' in route[i]:
+            print('caca')
 
         if 'altitude' in route[i]:
             alti = route[i]['altitude']
             for y in range(i, len(route)):
                 if 'altitude' in route[y]:
                     break
-            vitesseDict = vitesse
-
-
 
     x = route[start]
     for point in route[start + 1 : end]:
@@ -182,8 +181,6 @@ class AvionPacket:
         # for sortie in self.routeFull[3]:
         #    if sortie[1] < self.PFL < sortie[2]:
         #        self.sortie = sortie[0]
-        self.sortie = route[3][0]
-        print(route[3][0])
         self.headingMode = False
         self.routeType = self.routeFull[1]
         self.intercept = False
@@ -202,8 +199,10 @@ class AvionPacket:
         self.nextRouteListe = route[3]
         if route[3]:
             self.nextRoute = route[3][0]
+            self.sortie = route[3][0]
         else:
             self.nextRoute = 'bye'
+            self.sortie = 'decollage'
 
         # heading
         if heading is not None:
@@ -301,13 +300,17 @@ class AvionPacket:
             if 'altitude' in point:
                 altiCible = point['altitude']
 
-        if altiCible != self.altitude:
-            self.evolution = ((altiCible - self.altitude) /
-                              calculateDistance(self.x, self.y, listePoints[point['name']][0],
-                                                listePoints[point['name']][1])) * self.speed
-            self.targetFL = altiCible
+        self.targetFL = altiCible
+        if self.routeFull[1] == 'SID':
+            self.evolution = self.maxROC
+
         else:
-            self.evolution = 0
+            if altiCible != self.altitude:
+                self.evolution = ((altiCible - self.altitude) /
+                                  calculateDistance(self.x, self.y, listePoints[point['name']][0],
+                                                    listePoints[point['name']][1])) * self.speed
+            else:
+                self.evolution = 0
 
 
 
@@ -993,7 +996,7 @@ class NouvelAvionWindow:
         self.avions = avions
 
         self.window = pygame_gui.elements.UIWindow(pygame.Rect((250, 250), (600, 340)))
-        self.scrollRoutes = pygame_gui.elements.UIScrollingContainer(pygame.Rect((0, 0), (200, 200)),
+        self.scrollRoutes = pygame_gui.elements.UIScrollingContainer(pygame.Rect((0, 0), (200, 300)),
                                                                      container=self.window)
         self.scrollAvions = pygame_gui.elements.UIScrollingContainer(pygame.Rect((0, 0), (200, 200)),
                                                                      container=self.window,
@@ -1002,13 +1005,13 @@ class NouvelAvionWindow:
 
         self.routesBoutons = []
         self.routesBoutons.append(pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((0, 0), (200, 17)),
+            relative_rect=pygame.Rect((0, 0), (200, 15)),
             text=self.routes[0][0],
             container=self.scrollRoutes))
 
         for route in self.routes[1:]:
             self.routesBoutons.append(pygame_gui.elements.UIButton(
-                relative_rect=pygame.Rect((0, 0), (200, 17)),
+                relative_rect=pygame.Rect((0, 0), (200, 15)),
                 text=route[0],
                 container=self.scrollRoutes, anchors={'top': 'top', 'top_target': self.routesBoutons[-1]}))
 
