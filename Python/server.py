@@ -158,12 +158,8 @@ for aircraft in root:
 try:
     tree = ET.parse('XML/' + SIMU)
 
-    if mode_ecriture:
-        heure = input('Heure de début de simu, format: hhmm')
-        heure = int(heure[0:2]) * 3600 + int(heure[2:]) * 60
-    else:
-        heure = tree.find('heure').text
-        heure = int(heure[0:2]) * 3600 + int(heure[2:]) * 60
+    heure = tree.find('heure').text
+    heure = int(heure[0:2]) * 3600 + int(heure[2:]) * 60
 
     avionSpawnListe = []
     for avion in tree.find('avions'):
@@ -195,6 +191,7 @@ SimuTree = ET.Element('simu')
 heureXML = ET.SubElement(SimuTree, 'heure')
 heureXML.text = '1002'
 avionsXML = ET.SubElement(SimuTree, 'avions')
+
 
 def generateAvionXML(parent, heureEcriture, indicatifEcriture, aircraftEcriture, routeEcriture, altitudeEcriture, xEcriture=None, yEcriture=None, headingEcriture=None, PFLEcriture=None):
 
