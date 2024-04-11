@@ -3,15 +3,14 @@ import server_browser
 from player import *
 import pygame_gui
 import math
-import socket
 import interface
 
 address = server_browser.serverBrowser()
 print(address)
 
 pygame.init()
-width = 1920
-height = 1080
+width = 1000
+height = 1000
 
 win = pygame.display.set_mode((width, height))
 manager = pygame_gui.UIManager((width, height),'theme.json')
@@ -81,7 +80,7 @@ def main(server_ip):
     selectedAircraft = None
     selectedAircraftButton = None
     selectedRouteButton = None
-    selectedFL = 310
+    selectedFL = None
     selectedPFL = None
     selectedIndicatif = 'FCACA'
     conflitGen = False

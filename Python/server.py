@@ -9,6 +9,7 @@ import xml.etree.ElementTree as ET
 from xml.dom import minidom
 import time
 import struct
+import platform
 
 SIMU = 'simu.xml'
 mode_ecriture = False
@@ -23,10 +24,15 @@ sock.close()
 
 print(servername, server_ip)
 
+if platform.system() == 'Windows': #on vérifie pour faire marcher le Mcast sur windows
+    mcast_group = ''
+else:
+    mcast_group = MCAST_GRP  # on prend celui de network si on est sur linux
+
 # set up le socket pour le UDP, il répond au scan server coté client
 pingSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
 pingSock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-pingSock.bind((MCAST_GRP, MCAST_PORT))
+pingSock.bind((mcast_group, MCAST_PORT))
 mreq = struct.pack("4sl", socket.inet_aton(MCAST_GRP), socket.INADDR_ANY)
 pingSock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
 
