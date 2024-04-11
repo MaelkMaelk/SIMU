@@ -13,7 +13,7 @@ width = 1000
 height = 1000
 
 win = pygame.display.set_mode((width, height))
-manager = pygame_gui.UIManager((width, height),'theme.json')
+manager = pygame_gui.UIManager((width, height), 'theme.json')
 
 pygame.display.set_caption("Client")
 temps = pygame.time.get_ticks()

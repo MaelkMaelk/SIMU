@@ -9,6 +9,7 @@ def selectButtonInList(liste, event):
         else:
             bouton.enable()
 
+
 def scrollListGen(valueList, rect, container, sliderBool=True):
     """Fonction qui construit une liste de boutons, avec une scrollbar width 17 tout le temps à gauche
     :arg valueList: liste des valeurs en txt ou autre peu importe
@@ -18,7 +19,6 @@ def scrollListGen(valueList, rect, container, sliderBool=True):
     :return (slider, listeBoutons)"""
 
     valueList = list(valueList)
-
 
     if sliderBool:
         slider = pygame_gui.elements.UIVerticalScrollBar(
@@ -241,3 +241,8 @@ class menuAvion:
             self.window.kill()
             return self.avion.Id, self.returnValues
 
+
+class etiquetteAPS:
+
+    def __init__(self):
+        print('caca')

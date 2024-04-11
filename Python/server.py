@@ -12,7 +12,7 @@ import struct
 import platform
 
 SIMU = 'simu.xml'
-mode_ecriture = False
+mode_ecriture = True
 
 # On se connecte a internet pour avoir notre adresse IP locale... Oui oui
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
