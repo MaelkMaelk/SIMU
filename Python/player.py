@@ -989,14 +989,14 @@ class Avion:
 class NouvelAvionWindow:
 
     def __init__(self, routes, avions):
-        routes = [route for route in routes if route[1] in ['SID', 'STAR']]
+        routes = [route for route in routes if route[1] in ['SID', 'STAR','TRANSIT']]
         print(routes)
         self.routesFull = routes  # on s'en sert que pour avoir les valeurs de spawn/last au moment de l'apparition
         self.routes = routes
         self.avions = avions
 
-        self.window = pygame_gui.elements.UIWindow(pygame.Rect((250, 250), (600, 340)))
-        self.scrollRoutes = pygame_gui.elements.UIScrollingContainer(pygame.Rect((0, 0), (200, 300)),
+        self.window = pygame_gui.elements.UIWindow(pygame.Rect((250, 250), (600, 400)))
+        self.scrollRoutes = pygame_gui.elements.UIScrollingContainer(pygame.Rect((0, 0), (200, 400)),
                                                                      container=self.window)
         self.scrollAvions = pygame_gui.elements.UIScrollingContainer(pygame.Rect((0, 0), (200, 200)),
                                                                      container=self.window,

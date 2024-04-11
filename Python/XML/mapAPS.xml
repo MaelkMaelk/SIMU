@@ -19,8 +19,8 @@
             <balise>True</balise>
         </point>
         <point name="DJL">
-            <x>625</x>
-            <y>8</y>
+            <x>650</x>
+            <y>-300</y>
             <balise>True</balise>
         </point>
         <point name="LSE">
@@ -71,6 +71,11 @@
         <point name="EG">
             <x>795</x>
             <y>551</y>
+            <balise>True</balise>
+        </point>
+        <point name="PAS">
+            <x>984</x>
+            <y>159</y>
             <balise>True</balise>
         </point>
         <point name="RYF">
@@ -136,6 +141,10 @@
         <point name="TSARE">
             <x>713</x>
             <y>699</y>
+        </point>
+        <point name="TARIS">
+            <x>682</x>
+            <y>56</y>
         </point>
         <point name="ETULA">
             <x>840</x>
@@ -921,9 +930,12 @@
                 <name>AVRIL</name>
             </point>
             <point id="5">
-                <name>BRIRO</name>
+                <name>BELLY</name>
             </point>
             <point id="6">
+                <name>BRIRO</name>
+            </point>
+            <point id="7">
                 <name>MEN</name>
             </point>
         </route>
@@ -985,6 +997,113 @@
             </point>
             <point id="8">
                 <name>KELUK</name>
+            </point>
+        </route>
+
+        <route name="MEN-DJL">
+            <Type>TRANSIT</Type>
+            <point id="1">
+                <name>MEN</name>
+            </point>
+            <point id="2">
+                <name>BRIRO</name>
+            </point>
+            <point id="3">
+                <name>BELLY</name>
+            </point>
+            <point id="4">
+                <name>LSE</name>
+            </point>
+            <point id="5">
+                <name>TARIS</name>
+            </point>
+            <point id="6">
+                <name>DJL</name>
+            </point>
+        </route>
+
+        <route name="MTL-DJL">
+            <Type>TRANSIT</Type>
+            <point id="1">
+                <name>MTL</name>
+            </point>
+            <point id="2">
+                <name>TSARE</name>
+            </point>
+            <point id="3">
+                <name>LTP</name>
+            </point>
+            <point id="4">
+                <name>RUNOM</name>
+            </point>
+            <point id="5">
+                <name>TARIS</name>
+            </point>
+            <point id="6">
+                <name>DJL</name>
+            </point>
+        </route>
+
+        <route name="MEN-PAS">
+            <Type>TRANSIT</Type>
+            <point id="1">
+                <name>MEN</name>
+            </point>
+            <point id="2">
+                <name>BRIRO</name>
+            </point>
+            <point id="3">
+                <name>BELLY</name>
+            </point>
+            <point id="4">
+                <name>LSE</name>
+            </point>
+            <point id="5">
+                <name>ENEVE</name>
+            </point>
+            <point id="6">
+                <name>PAS</name>
+            </point>
+        </route>
+
+        <route name="PAS-MEN">
+            <Type>TRANSIT</Type>
+            <point id="1">
+                <name>PAS</name>
+            </point>
+            <point id="2">
+                <name>ENEVE</name>
+            </point>
+            <point id="3">
+                <name>LSE</name>
+            </point>
+            <point id="4">
+                <name>BELLY</name>
+            </point>
+            <point id="5">
+                <name>BRIRO</name>
+            </point>
+            <point id="6">
+                <name>MEN</name>
+            </point>
+        </route>
+
+        <route name="MTL-PAS">
+            <Type>TRANSIT</Type>
+            <point id="1">
+                <name>MTL</name>
+            </point>
+            <point id="2">
+                <name>TSARE</name>
+            </point>
+            <point id="3">
+                <name>LTP</name>
+            </point>
+            <point id="4">
+                <name>ETULA</name>
+            </point>
+            <point id="5">
+                <name>PAS</name>
             </point>
         </route>
 

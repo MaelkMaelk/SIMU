@@ -408,8 +408,8 @@ def main(server_ip):
         for nom, point in listePoints.items():
             if not point[3]:
                 pygame.draw.polygon(win, (155, 155, 155), ((point[0]*zoom + scroll[0]+plotSize, point[1]*zoom - 2 + scroll[1]+plotSize), (point[0]*zoom + 2 + scroll[0]+plotSize, point[1]*zoom+2 + scroll[1]+plotSize), (point[0]*zoom-2 + scroll[0]+plotSize, point[1]*zoom+2 + scroll[1]+plotSize)), 1)
-                img = font.render(nom, True, (155, 155, 155))
-                win.blit(img, (point[0]*zoom + 10 + scroll[0], point[1]*zoom+10 + scroll[1]))
+                #img = font.render(nom, True, (155, 155, 155))
+                #win.blit(img, (point[0]*zoom + 10 + scroll[0], point[1]*zoom+10 + scroll[1]))
         if pilote:
             for avion in dictAvionsAff.values():
                 avion.drawPilote(win, zoom, scroll, vecteurs, vecteurSetting, typeAff)
