@@ -6,13 +6,12 @@ import math
 import socket
 import interface
 
-#address = server_browser.serverBrowser()
-address = '10.188.124.237'
+address = server_browser.serverBrowser()
 print(address)
 
 pygame.init()
-width = 1200
-height = 1000
+width = 1920
+height = 1080
 
 win = pygame.display.set_mode((width, height))
 manager = pygame_gui.UIManager((width, height),'theme.json')

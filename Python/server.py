@@ -16,15 +16,17 @@ mode_ecriture = False
 # On se connecte a internet pour avoir notre adresse IP locale... Oui oui
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock.connect(("8.8.8.8", 80))
-servername = "mael"
+servername = input('Nom du serveur:')
 server_ip = sock.getsockname()[0]
 sock.close()
 # fini on ferme le socket
 
+print(servername, server_ip)
+
 # set up le socket pour le UDP, il répond au scan server coté client
 pingSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
 pingSock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-pingSock.bind(('', MCAST_PORT))
+pingSock.bind((MCAST_GRP, MCAST_PORT))
 mreq = struct.pack("4sl", socket.inet_aton(MCAST_GRP), socket.INADDR_ANY)
 pingSock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
 
