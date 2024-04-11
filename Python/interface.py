@@ -133,17 +133,25 @@ class menuAvion:
         """
         change la valeur des boutons en fonction de la position du slider, pour tout le menu
         """
-
+        selectedValue = None
         if self.headingSlider.has_moved_recently:
+            if 'Heading' in self.returnValues:
+                selectedValue = self.returnValues['Heading']
 
             value = round(
                 (360 - 5 * (len(self.headingBoutonListe) - 1)) * (self.headingSlider.start_percentage / 0.8) / 5) * 5
             for bouton in self.headingBoutonListe:
                 bouton.text = str(value)
+                if selectedValue == value:
+                    bouton.select()
+                else:
+                    bouton.unselect()
                 bouton.rebuild()
                 value += 5
 
         elif self.altiSlider.has_moved_recently:
+            if 'Altitude' in self.returnValues:
+                selectedValue = self.returnValues['Altitude']
 
             # la valeur de niveau oscille entre 0 et 410
             value = round(
@@ -151,15 +159,25 @@ class menuAvion:
             for bouton in self.altiBoutonListe:
                 bouton.text = str(value)
                 bouton.rebuild()
+                if selectedValue == value:
+                    bouton.select()
+                else:
+                    bouton.unselect()
                 value += 10
 
         elif self.speedSlider.has_moved_recently:
+            if 'IAS' in self.returnValues:
+                selectedValue = self.returnValues['IAS']
 
             value = round((330 - 10 * (len(self.headingBoutonListe) - 1)) * (
                     self.speedSlider.start_percentage / 0.8) / 10) * 10 + 70
             for bouton in self.speedBoutonListe:
                 bouton.text = str(value)
                 bouton.rebuild()
+                if selectedValue == value:
+                    bouton.select()
+                else:
+                    bouton.unselect()
                 value += 10
 
     def checkEvent(self, event):
@@ -174,10 +192,9 @@ class menuAvion:
         elif event.ui_element in self.headingBoutonListe:
 
             self.returnValues.update({'Heading': int(event.ui_element.text)})
-            try:  # on enlève la direct pour ne pas faire de confusion
+             # on enlève la direct pour ne pas faire de confusion
+            if 'Direct' in self.returnValues:
                 self.returnValues.pop('Direct')
-            except:
-                pass
 
             # ALTI
         elif event.ui_element in self.altiBoutonListe:
@@ -193,10 +210,8 @@ class menuAvion:
         elif event.ui_element in self.pointBoutonListe:
 
             self.returnValues.update({'Direct': event.ui_element.text})
-            try:  # on enlève le heading pour ne pas faire de confusion
+            if 'Heading' in self.returnValues:
                 self.returnValues.pop('Heading')
-            except:
-                pass
 
             # route
         elif event.ui_element in self.routeBoutonliste:
