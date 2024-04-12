@@ -367,7 +367,7 @@ while Running:
                     spawnRoute = route
                     break
             if 'altitude' in spawn[1]:
-                spawnFL = spawn[1]['altitude']
+                spawnFL = round(spawn[1]['altitude']/100)
             else:
                 spawnFL = None
             dictAvion.update({planeId: AvionPacket(gameMap, planeId, spawn[1]['indicatif'], spawn[1]['aircraft'], aircraftType[spawn[1]['aircraft']], spawnRoute, FL=spawnFL)})

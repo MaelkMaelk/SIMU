@@ -146,8 +146,10 @@ class AvionPacket:
         self.comete = []
         if FL is not None:
             self.altitude = FL * 100
-        else:
+        elif 'altitude' in route[2][0]:
             self.altitude = route[2][0]['altitude']
+        else:
+            self.altitude = 12000
         self.speedIAS = perfos[0]
         self.speedTAS = self.speedIAS + self.altitude / 200
         self.targetIAS = self.speedIAS
