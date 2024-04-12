@@ -223,7 +223,7 @@ class AvionPacket:
             self.plotType = 'arrivee'
         elif self.routeFull[1] == 'SID':
             self.plotType = 'depart'
-        elif self.routeFull[1] == 'transit':
+        elif self.routeFull[1] == 'TRANSIT':
             self.plotType = 'transit'
 
     def Cwarning(self):
