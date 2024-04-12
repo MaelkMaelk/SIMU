@@ -244,5 +244,9 @@ class menuAvion:
 
 class etiquetteAPS:
 
-    def __init__(self):
-        print('caca')
+    def __init__(self, avionPacket):
+
+        self.texte = avionPacket.indicatif + '\n' + str(round(avionPacket.altitude)) + '-' + 'm' + str(round(avionPacket.IAS))
+        self.bouton = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((0, 17), (-1, -1)),
+            text=self.texte)
