@@ -366,7 +366,11 @@ while Running:
                 if route[0] == spawn[1]['route']:
                     spawnRoute = route
                     break
-            dictAvion.update({planeId: AvionPacket(gameMap, planeId, spawn[1]['indicatif'], spawn[1]['aircraft'], aircraftType[spawn[1]['aircraft']], spawnRoute)})
+            if 'altitude' in spawn[1]:
+                spawnFL = spawn[1]['altitude']
+            else:
+                spawnFL = None
+            dictAvion.update({planeId: AvionPacket(gameMap, planeId, spawn[1]['indicatif'], spawn[1]['aircraft'], aircraftType[spawn[1]['aircraft']], spawnRoute, FL=spawnFL)})
             toBeRemovedFromSpawn.append(spawn)
             planeId += 1
 
