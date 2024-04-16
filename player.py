@@ -900,8 +900,7 @@ class Avion:
             self.etiquetteList.append([])
 
         # conteneur UI pygameUI pour tout foutre dedans
-        self.etiquetteContainer = pygame_gui.core.ui_container.UIContainer(pygame.Rect((0, 0), (0, 68)),
-                                                                           manager=manager)
+        self.etiquetteContainer = pygame_gui.elements.UIAutoResizingContainer(pygame.Rect((0, 0), (0, 68)))
 
         self.speedBouton = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, 17)), text=str(round(self.speedTAS/10)),
