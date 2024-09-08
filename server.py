@@ -3,7 +3,7 @@ import sys
 from _thread import *
 from queue import Queue
 from network import MCAST_GRP, MCAST_PORT, port
-from player import *
+from paquets_avion import *
 import pickle
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
@@ -14,17 +14,18 @@ import platform
 SIMU = 'simu.xml'
 mode_ecriture = True
 
-# On se connecte a internet pour avoir notre adresse IP locale... Oui oui
+# On se connecte à internet pour avoir notre adresse IP locale... Oui oui
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock.connect(("8.8.8.8", 80))
 servername = input('Nom du serveur:')
 server_ip = sock.getsockname()[0]
 sock.close()
+
 # fini on ferme le socket
 
 print(servername, server_ip)
 
-if platform.system() == 'Windows': #on vérifie pour faire marcher le Mcast sur windows
+if platform.system() == 'Windows':  # on vérifie pour faire marcher le Mcast sur windows
     mcast_group = ''
 else:
     mcast_group = MCAST_GRP  # on prend celui de network si on est sur linux
@@ -36,7 +37,7 @@ pingSock.bind((mcast_group, MCAST_PORT))
 mreq = struct.pack("4sl", socket.inet_aton(MCAST_GRP), socket.INADDR_ANY)
 pingSock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
 
-# socket TCP pour les connections avec les clients
+# socket TCP pour les connecter avec les clients
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 try:
     s.bind((server_ip, port))
@@ -46,56 +47,56 @@ except socket.error as e:
 s.listen(2)
 
 playerId = 0
-dictAvion = {}
-requests = []
+dictAvion = {}  # dict contenant tous les avions
+requests = []  # liste des requêtes que le serveur doit gérer
 segments = {}
-gameMap = [{}, [], segments, []]
+gameMap = {'points': {}, 'secteurs': [], 'segments': [], 'routes': {}, 'mapScale': 0}
 
 # XML map loading
 
 tree = ET.parse('XML/mapAPS.xml')
 root = tree.getroot()
-mapScale = float(root.find('scale').text)
-size = float(root.find('size').text)
+mapScale = float(root.find('scale').text)  # conversion nm-px
 
-for point in root.find('points'):
+for point in root.find('points'):  # on parcourt la liste xml de points
     name = point.attrib['name']
-    x = int(point.find('x').text) * size
-    y = int(point.find('y').text) * size
-    if point.find('balise') is not None:
-        balise = bool(point.find('balise').text)
+    x = int(point.find('x').text)
+    y = int(point.find('y').text)
+
+    if point.find('balise') is not None:  # on regarde si le champ balise est présent
+        balise = bool(point.find('balise').text)  # on ajoute sa valeur
     else:
         balise = False
-    if point.find('procedure') is not None:
-        procedure = bool(point.find('procedure').text)
-    else:
-        procedure = False
-    gameMap[0].update({name: (x, y, balise, procedure)})
+
+    gameMap['points'].update({name: (x, y, balise)})
 
 for secteur in root.find('secteurs'):
-    contour = []
-    for limite in secteur.findall('limite'):  # format secteurs : [[color, [point contours]]]
-        x = int(limite.find('x').text) * size
-        y = int(limite.find('y').text) * size
-        contour.append((x, y))
-    gameMap[1].append([[int(x) for x in secteur.attrib['color'].split(',')], contour])
 
-# parsing des routes pour conaître tout les types de routes, pour l'affichage des segments
+    contour = []  # liste des points délimitant le contour du secteur, dans l'ordre de lecture xml
+
+    for limite in secteur.findall('limite'):
+        x = int(limite.find('x').text)
+        y = int(limite.find('y').text)
+        contour.append((x, y))
+
+    gameMap['secteurs'].append({'couleur': [int(x) for x in secteur.attrib['color'].split(',')], 'contour': contour})
+
+# parsing des routes pour conaître tous les types de routes, pour l'affichage des segments
 
 for route in root.find('routes'):
     if route.find('Type').text not in segments:
         segments.update({route.find('Type').text: []})
 
-gameMap[2] = segments
+gameMap['segments'] = segments  # liste des segments de route pour les dessiner qu'une seule fois
 
 for route in root.find('routes'):  # construction des routes
     nomRoute = route.attrib['name']
     routeType = route.find('Type').text
-    listeNext = []
+    listeSortie = []
     listeRoutePoints = []
 
-    x1 = gameMap[0][route.find('point').find('name').text][0]
-    y1 = gameMap[0][route.find('point').find('name').text][1]
+    x1 = gameMap['points'][route.find('point').find('name').text][0]
+    y1 = gameMap['points'][route.find('point').find('name').text][1]
 
     for point in route.findall('point'):
         pointDict = {}
@@ -108,46 +109,20 @@ for route in root.find('routes'):  # construction des routes
             pointDict.update({XMLpoint.tag: XMLpointValue})
         listeRoutePoints.append(pointDict)
 
-        y2 = gameMap[0][point.find('name').text][1]
-        x2 = gameMap[0][point.find('name').text][0]
-        if ((x1, y1), (x2, y2)) not in gameMap[2][routeType] and x1 != x2 and y1 != y2:
-            gameMap[2][routeType].append(((x1, y1), (x2, y2)))
+        y2 = gameMap['points'][point.find('name').text][1]
+        x2 = gameMap['points'][point.find('name').text][0]
+        if ((x1, y1), (x2, y2)) not in gameMap['segments'][routeType] and x1 != x2 and y1 != y2:
+            gameMap['segments'][routeType].append(((x1, y1), (x2, y2)))
         x1 = x2
         y1 = y2
-    for next in route.findall('next'):
-        listeNext.append(next.text)
-    gameMap[3].append([nomRoute, routeType, listeRoutePoints, listeNext])
-    # format route [nomRoute, routeType, listePoints, next]
+    for sortie in route.findall('sortie'):
+        listeSortie.append(sortie.text)
+    gameMap['routes'].update({nomRoute: {'nom': nomRoute,
+                                         'type': routeType,
+                                         'points': listeRoutePoints,
+                                         'sortie': listeSortie}})
 
-gameMap.append(mapScale)
-axes = []
-
-# format axes = (nom, point, radial, finale, chevron, dsiplaySize)
-for axe in root.find('axes'):
-    try:
-        chevron = int(axe.find('chevron').text)
-    except:
-        chevron = axe.find('chevron').text
-
-    axes.append((axe.attrib['name'], axe.find('point').text, int(axe.find('radial').text), axe.find('next').text, chevron, int(axe.find('displaySize').text)))
-
-zoneListe = []
-
-for zone in root.find('zones'):
-    zoneDict = {}
-    zoneDict.update({'name': zone.attrib['name']})
-
-    for XMLpoint in zone:
-        try:
-            XMLpointValue = int(XMLpoint.text)
-        except:
-            XMLpointValue = XMLpoint.text
-        zoneDict.update({XMLpoint.tag: XMLpointValue})
-    zoneListe.append(zoneDict)
-
-
-gameMap.append(axes)
-gameMap.append(zoneListe)
+gameMap.update({'mapScale': mapScale})
 
 aircraftType = {}
 tree = ET.parse('XML/aircrafts.xml')
@@ -155,13 +130,13 @@ root = tree.getroot()
 
 for aircraft in root:
     aircraftType.update(
-        {aircraft.attrib['name']: (int(aircraft.find('speed').text), int(aircraft.find('maxSpeed').text),
-                                   int(aircraft.find('ceiling').text), int(aircraft.find('ROC').text),
-                                   int(aircraft.find('ROD').text))})
+        {aircraft.attrib['name']: {'IAS': int(aircraft.find('speed').text),
+                                   'plafond': int(aircraft.find('ceiling').text),
+                                   'ROC': int(aircraft.find('ROC').text),
+                                   'ROD': int(aircraft.find('ROD').text)}})
 
-# format map : [points, secteurs, segments, routes, mapScale, axes, zones]
 
-try:
+try: # on essaye de charger une simu, si elle existe
     tree = ET.parse('XML/' + SIMU)
 
     heure = tree.find('heure').text
@@ -183,7 +158,7 @@ try:
         heureSpawn = int(heureSpawn[0:2]) * 3600 + int(heureSpawn[2:]) * 60
 
         avionSpawnListe.append((heureSpawn, avionDict))
-except:
+except:  # sinon, on demande juste l'heure de début
 
     heure = input('Heure de début de simu, format: hhmm')
     heure = int(heure[0:2]) * 3600 + int(heure[2:]) * 60
@@ -296,7 +271,7 @@ while Running:
     inReq = reqQ.get()
     requests.append(inReq)
     for reqSublist in requests:
-        for req in reqSublist:  # [Id avion, type requete, data]
+        for req in reqSublist:  # format requêtes : [Id avion, type requête, data]
             if req[1] == 'Add':
                 req[2].Id = planeId
                 dictAvion.update({planeId: req[2]})
@@ -310,7 +285,7 @@ while Running:
                     if len(minutes) == 1:
                         minutes = '0' + minutes
 
-                    generateAvionXML(avionsXML, heures + minutes, req[2].indicatif, req[2].aircraft, req[2].routeFull[0], req[2].altitude, xEcriture=req[2].x, yEcriture=req[2].y, PFLEcriture=req[2].PFL)
+                    generateAvionXML(avionsXML, heures + minutes, req[2].indicatif, req[2].aircraft, req[2].route['points'], req[2].altitude, xEcriture=req[2].x, yEcriture=req[2].y, PFLEcriture=req[2].PFL)
 
             elif req[1] == 'Remove':
                 dictAvion.pop(req[0])
@@ -321,21 +296,21 @@ while Running:
                     dictAvion[req[0]].evolution = dictAvion[req[0]].maxROC
                 dictAvion[req[0]].targetFL = req[2]
                 dictAvion[req[0]].forcedEvo = True
-            elif req[1] == 'Intercept':
-                dictAvion[req[0]].intercept = True
-                dictAvion[req[0]].changeAxe(req[2], gameMap)
             elif req[1] == 'Heading':
                 dictAvion[req[0]].headingMode = True
-                dictAvion[req[0]].targetHeading = req[2]
+                dictAvion[req[0]].selectedHeading = req[2]
             elif req[1] == 'IAS':
-                dictAvion[req[0]].targetIAS = req[2]
+                dictAvion[req[0]].selectedIAS = req[2]
             elif req[1] == 'Warning':
-                dictAvion[req[0]].Cwarning()
+                dictAvion[req[0]].warning = not dictAvion[req[0]].warning
             elif req[1] == 'Part':
-                dictAvion[req[0]].Cpart()
+                dictAvion[req[0]].part = not dictAvion[req[0]].part
             elif req[1] == 'Direct':
                 dictAvion[req[0]].headingMode = False
-                dictAvion[req[0]].CnextPoint(req[2])
+                for point in dictAvion[req[0]].route['points']:
+                    if point['name'] == req[2]:
+                        dictAvion[req[0]].nextPoint = point
+                        break
             elif req[1] == 'Route':
                 dictAvion[req[0]].nextRoute = req[2]
                 dictAvion[req[0]].changeRoute(gameMap)
@@ -362,7 +337,7 @@ while Running:
     toBeRemovedFromSpawn = []
     for spawn in avionSpawnListe:
         if spawn[0] <= game.heure:
-            for route in gameMap[3]:
+            for route in gameMap['routes']:
                 if route[0] == spawn[1]['route']:
                     spawnRoute = route
                     break
@@ -388,14 +363,14 @@ while Running:
         for avion in suppListe:
             dictAvion.pop(avion)
         for avion in list(dictAvion.values()):
-            # tout les calculs de distances sont ici effectués en pixel, la conversion se fait avec le mapScale
+            # tous les calculs de distances sont ici effectués en pixel, la conversion se fait avec le mapScale
             STCAtriggered = False
             predictedPos = []
             VspeedOne = avion.evolution
             AltitudeOne = avion.altitude
             for i in range(12):
-                predictedPos.append((avion.x + avion.speed * 15 / radarRefresh * (i + 1) * math.cos(avion.headingRad),
-                                     avion.y + avion.speed * 15 / radarRefresh * (i + 1) * math.sin(avion.headingRad),
+                predictedPos.append((avion.x + avion.speedGS * 15 / radarRefresh * (i + 1) * math.cos(avion.headingRad),
+                                     avion.y + avion.speedGS * 15 / radarRefresh * (i + 1) * math.sin(avion.headingRad),
                                      AltitudeOne + VspeedOne * (i + 1) * 15 / radarRefresh))
             for avion2 in list(dictAvion.values()):
                 if avion != avion2:
@@ -403,10 +378,10 @@ while Running:
                     AltitudeTwo = avion2.altitude
                     for i in range(12):
                         if math.sqrt((predictedPos[i][0] - (
-                                avion2.x + avion2.speed * 15 / radarRefresh * (i + 1) * math.cos(
+                                avion2.x + avion2.speedGS * 15 / radarRefresh * (i + 1) * math.cos(
                                 avion2.headingRad))) ** 2 +
                                      (predictedPos[i][1] - (
-                                             avion2.y + avion2.speed * 15 / radarRefresh * (i + 1) * math.sin(
+                                             avion2.y + avion2.speedGS * 15 / radarRefresh * (i + 1) * math.sin(
                                          avion2.headingRad))) ** 2) <= 5 / mapScale and abs(
                             predictedPos[i][2] - AltitudeTwo - VspeedTwo * (i + 1) * 15 / radarRefresh) < float(
                                 1000) and abs(avion.altitude - avion2.altitude) <= 2500:

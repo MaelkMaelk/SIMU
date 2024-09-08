@@ -910,7 +910,7 @@
             <point id="4">
                 <name>WS</name>
             </point>
-            <next id ="1">WS_HLDG</next>
+            <next id ="1">secteur en sortie</next>
         </route>
 
         <route name="MEN1M">

@@ -3,13 +3,13 @@
 <aircrafts>
 
     <aircraft name="B738">
-        <speed>290</speed>
+        <speed>330</speed>
         <ceiling>410</ceiling>
         <ROC>2000</ROC>
         <ROD>3000</ROD>
     </aircraft>
     <aircraft name="AT72">
-        <speed>200</speed>
+        <speed>220</speed>
         <ceiling>450</ceiling>
         <ROC>1500</ROC>
         <ROD>2000</ROD>
@@ -21,7 +21,7 @@
         <ROD>1500</ROD>
     </aircraft>
     <aircraft name="A320">
-        <speed>290</speed>
+        <speed>330</speed>
         <ceiling>410</ceiling>
         <ROC>2000</ROC>
         <ROD>2500</ROD>
@@ -33,7 +33,7 @@
         <ROD>1500</ROD>
     </aircraft>
     <aircraft name="A320">
-        <speed>110</speed>
+        <speed>330</speed>
         <ceiling>450</ceiling>
         <ROC>500</ROC>
         <ROD>1000</ROD>
@@ -57,7 +57,7 @@
         <ROD>3000</ROD>
     </aircraft>
     <aircraft name="FA50">
-        <speed>290</speed>
+        <speed>330</speed>
         <ceiling>550</ceiling>
         <ROC>2000</ROC>
         <ROD>2500</ROD>
@@ -69,13 +69,13 @@
         <ROD>2500</ROD>
     </aircraft>
     <aircraft name="E145">
-        <speed>300</speed>
+        <speed>330</speed>
         <ceiling>550</ceiling>
         <ROC>1500</ROC>
         <ROD>2000</ROD>
     </aircraft>
     <aircraft name="E195">
-        <speed>300</speed>
+        <speed>330</speed>
         <ceiling>550</ceiling>
         <ROC>2500</ROC>
         <ROD>3000</ROD>
