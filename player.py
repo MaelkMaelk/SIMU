@@ -2,6 +2,8 @@ from typing import Iterable
 import pygame
 import math
 import pygame_gui
+
+import geometry
 import interface
 
 plotSize = 6
@@ -42,8 +44,8 @@ class Avion:
             [pygame.BUTTON_LEFT, pygame.BUTTON_RIGHT, pygame.BUTTON_MIDDLE])
 
         # Radar display
-        self.drawRoute = False
         self.visible = True
+        self.predictionPoint = None  # point pour la prédiction de route
 
         # etiquette
         self.etiquetteX = papa.x + 60
@@ -57,8 +59,11 @@ class Avion:
         # init de l'étiquette
         self.etiquette = interface.etiquetteAPS(self)
 
+        # interaction avec les events
+        self.returnValues = {}
+
     def positionEtiquette(self):
-        """On place l'étiquette dans une des positions possibles (NE, NO, SE, SO)"""
+        """On place l'étiquette dans une des positions possibles (nord est, NO, SE, SO)"""
 
         value = 45  # distance de l'etiquette par rapport au plot
         if self.etiquettePos % 4 == 0:
@@ -100,12 +105,16 @@ class Avion:
                                2)
 
     def draw(self, win, zoom, scroll, vecteurs, vecteurSetting, typeAff):
-        # updates
-        self.affX = self.papa.x - plotSize
-        self.affY = self.papa.y - plotSize
 
-        self.positionEtiquette()  # on détermine la position de l'étiquette
-        self.etiquette.update(self)  # on l'update via la fonction de l'étiquette
+        # updates
+
+        # ces coordonées correspondent au sommet haut gauche du plot avion
+        self.affX = self.papa.x * zoom - plotSize + scroll[0]
+        self.affY = self.papa.y * zoom - plotSize + scroll[1]
+
+        self.positionEtiquette()  # on détermine la position de l'étiquette (nord est, SE, NO, SO)
+        self.etiquette.update(self)  # on update via la fonction de l'étiquette
+        self.updateBouton()
 
         # Dessin
         if self.visible:
@@ -123,114 +132,96 @@ class Avion:
 
             radius = 1
             for plot in self.papa.comete:
-                affPlot = [(plot[0] - plotSize) * zoom + plotSize + scroll[0],
-                           (plot[1] - plotSize) * zoom + plotSize + scroll[1]]
+                affPlot = [plot[0] * zoom + scroll[0],
+                           plot[1] * zoom + scroll[1]]
                 pygame.draw.circle(win, color, affPlot, int(round(radius)), 1)
                 radius += 0.7
             pygame.draw.line(win, (255, 255, 255), (self.affX + plotSize, self.affY + plotSize),
                              (self.etiquetteX, self.etiquetteY))
 
-    def update(self, papa, zoom, scroll):
+    def drawRoute(self, points, temps, win, zoom, scroll):
+        """
+        Dessine la route future de l'avion jusuq'à un certain point défini par une valeur de temps
+        C'est une bonne approximation de la future position de l'avion, à vitesse constante
+        :param points: la liste des points récupérer les coords
+        :param temps: combien de temps doit faire la route dessinée
+        :param win: l'écran pygame
+        :param zoom: le niveau de zoom
+        :param scroll: le scroll format [x, y]
+        :return:
+        """
 
+        route = self.papa.route['points']  # on n'a besoin que des noms des points
+        nextPoint = self.papa.nextPoint
+        ratio = 0
+
+        route = route[route.index(nextPoint):]  # on ne considère que la route devant l'avion
+        pointUn = [self.papa.x, self.papa.y]  # on commence à dessiner à partir de l'avion
+        distance = temps * self.papa.speedPx  # on établit la distance de la route avec notre vitesse
+
+        for point in route:
+            pointDeux = [points[point['name']][0], points[point['name']][1]]
+
+            # on calcule la distance de la branche
+            legDistance = geometry.calculateDistance(pointUn[0], pointUn[1], pointDeux[0], pointDeux[1])
+
+            if legDistance > distance:  # si le trajet restant est plus petit que la prochaine branche
+                ratio = distance/legDistance  # on regarde le pourcentage de recouvrement
+
+                # on détermine le point final du dessin avec ce ratio
+                pointDeux = [pointUn[0] + (pointDeux[0] - pointUn[0]) * ratio,
+                             pointUn[1] + (pointDeux[1] - pointUn[1]) * ratio]
+
+                # on dessine alors la dernière branche
+                pygame.draw.line(win, (0, 255, 0),
+                                 (pointUn[0] * zoom + scroll[0], pointUn[1] * zoom + scroll[1]),
+                                 (pointDeux[0] * zoom + scroll[0], pointDeux[1] * zoom + scroll[1]))
+
+                self.predictionPoint = pointDeux
+
+                break  # on casse la boucle for, pas la peine de faire des calculs pour plus loin, la prédi est finie
+
+            else:  # si le trajet s'arrête après la branche, on dessine la branche en entier
+                pygame.draw.line(win, (0, 255, 0),
+                                 (pointUn[0] * zoom + scroll[0], pointUn[1] * zoom + scroll[1]),
+                                 (pointDeux[0] * zoom + scroll[0], pointDeux[1] * zoom + scroll[1]))
+
+            distance -= legDistance  # on enlève la distance de la branche parcourue à la distance à parcourir
+            pointUn = pointDeux  # on passe au prochain point
+
+    def checkEvent(self, event, pilote):
+
+        """
+        Vérifie si un bouton associé à l'avion correspond à l'event
+        :param event: événement à vérifier
+        :param pilote: si l'interface est en mode pilote ou non
+        :return:
+        """
+
+        if event.ui_element == self.bouton:
+            if event.mouse_button == 2 and not pilote:
+                return self.Id, 'Warning'
+
+            elif event.mouse_button == 1:
+                self.etiquettePos += 1
+
+            elif event.mouse_button == 3 and pilote:
+                return self.Id, 'Remove'
+
+        elif event.ui_element == self.etiquette.bouton:
+            if event.mouse_button == 1 and pilote:
+                return 'menu'
+
+    def update(self, papa):
         self.papa = papa
 
-        # bouton
-        self.bouton.rect = pygame.Rect((self.affX, self.affY), (20, 20))
-        self.bouton.rebuild()
-
+    def updateBouton(self):
         self.bouton.rect = pygame.Rect((self.affX, self.affY), (20, 20))
         self.bouton.rebuild()
 
     def kill(self):
         self.bouton.kill()
         self.etiquette.kill()
-
-
-class NouvelAvionWindow:
-
-    def __init__(self, routes, avions):
-        routes = [route for route in routes.values() if route['type'] in ['SID', 'STAR','TRANSIT']]
-        self.routesFull = routes  # on s'en sert que pour avoir les valeurs de spawn/last au moment de l'apparition
-        self.routes = routes
-        self.avions = avions
-
-        self.window = pygame_gui.elements.UIWindow(pygame.Rect((250, 250), (600, 400)))
-        self.scrollRoutes = pygame_gui.elements.UIScrollingContainer(pygame.Rect((0, 0), (200, 400)),
-                                                                     container=self.window)
-        self.scrollAvions = pygame_gui.elements.UIScrollingContainer(pygame.Rect((0, 0), (200, 200)),
-                                                                     container=self.window,
-                                                                     anchors={'left': 'left',
-                                                                              'left_target': self.scrollRoutes})
-
-        self.routesBoutons = []
-        self.routesBoutons.append(pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((0, 0), (200, 15)),
-            text=self.routes[0]['nom'],
-            container=self.scrollRoutes))
-
-        for route in self.routes[1:]:
-            self.routesBoutons.append(pygame_gui.elements.UIButton(
-                relative_rect=pygame.Rect((0, 0), (200, 15)),
-                text=route['nom'],
-                container=self.scrollRoutes, anchors={'top': 'top', 'top_target': self.routesBoutons[-1]}))
-
-        self.avionsBoutons = []
-        self.avionsBoutons.append(pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((0, 0), (200, 17)),
-            text=list(avions.keys())[0],
-            container=self.scrollAvions))
-
-        for avion in list(avions.keys())[1:]:
-            self.avionsBoutons.append(pygame_gui.elements.UIButton(
-                relative_rect=pygame.Rect((0, 0), (200, 17)),
-                text=avion,
-                container=self.scrollAvions, anchors={'top': 'top', 'top_target': self.avionsBoutons[-1]}))
-        self.conflitsBouton = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((0, 20), (200, 17)),
-            text='Générateur de conflits',
-            container=self.window, anchors={'top': 'top', 'top_target': self.scrollAvions, 'left': 'left',
-                                            'left_target': self.scrollRoutes})
-        self.validationBouton = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((0, 5), (200, 17)),
-            text='Ok',
-            container=self.window, anchors={'top': 'top', 'top_target': self.conflitsBouton, 'left': 'left',
-                                            'left_target': self.scrollRoutes})
-
-        self.indicatiflabel = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, 0), (200, 17)),
-                                                          container=self.window,
-                                                          anchors={'left': 'left', 'left_target': self.scrollAvions},
-                                                          text='Indicatif')
-        self.indicatifinput = pygame_gui.elements.UITextEntryBox(relative_rect=pygame.Rect((0, 0), (200, 30)),
-                                                                 container=self.window,
-                                                                 anchors={'left': 'left',
-                                                                          'left_target': self.scrollAvions,
-                                                                          'top': 'top',
-                                                                          'top_target': self.indicatiflabel})
-        self.FLlabel = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, 0), (200, 17)),
-                                                   container=self.window,
-                                                   anchors={'left': 'left', 'left_target': self.scrollAvions,
-                                                            'top': 'top',
-                                                            'top_target': self.indicatifinput},
-                                                   text='FL')
-        self.FLinput = pygame_gui.elements.UITextEntryBox(relative_rect=pygame.Rect((0, 0), (200, 30)),
-                                                          container=self.window,
-                                                          anchors={'left': 'left', 'left_target': self.scrollAvions,
-                                                                   'top': 'top',
-                                                                   'top_target': self.FLlabel})
-        self.PFLlabel = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, 0), (200, 17)),
-                                                    container=self.window,
-                                                    anchors={'left': 'left', 'left_target': self.scrollAvions,
-                                                             'top': 'top',
-                                                             'top_target': self.FLinput},
-                                                    text='PFL')
-        self.PFLinput = pygame_gui.elements.UITextEntryBox(relative_rect=pygame.Rect((0, 0), (200, 30)),
-                                                           container=self.window,
-                                                           anchors={'left': 'left', 'left_target': self.scrollAvions,
-                                                                    'top': 'top',
-                                                                    'top_target': self.PFLlabel})
-
-    def kill(self):
-        self.window.kill()
 
 
 class MenuATC:

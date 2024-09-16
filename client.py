@@ -32,6 +32,7 @@ def main(server_ip):
     global width
     run = True
 
+    distance = 10
     # menus
     menuAvion = None
     menuOptionsATC = MenuATC((0, 0), 0, 0)
@@ -75,19 +76,8 @@ def main(server_ip):
     affichage_type_avion = False
     vecteurSetting = 6
 
-    # fenetre nouvel avion
+    # fenêtre nouvel avion
     nouvelAvionWin = None
-    selectedRoute = None
-    selectedAircraft = None
-    selectedAircraftButton = None
-    selectedRouteButton = None
-    selectedFL = None
-    selectedPFL = None
-    selectedIndicatif = 'FCACA'
-    conflitGen = False
-    conflitAvion = None  # l'avion avec lequel on veut un conflit
-    conflitPoint = None  # le point ou on veut le conflit
-    selectConflitState = 0  # états possibles : inactif 0, avion 1, point 2, spawn 3
 
     # pour qu'on n'ait qu'un seul appui par touche
     pressing = False
@@ -107,7 +97,7 @@ def main(server_ip):
 
             if avionId in dictAvionsAff.keys():  # si l'avion est deja dans notre liste locale
                 # on l'update avec la methode update de la classe avion
-                dictAvionsAff[avionId].update(avion, zoom, scroll)
+                dictAvionsAff[avionId].update(avion)
             else:  # sinon
                 # on l'ajoute avec methode update de la classe dict
                 dictAvionsAff.update({avionId: Avion(avionId, avion)})
@@ -128,27 +118,37 @@ def main(server_ip):
         triggered = False  # si un bouton est pressé, on s'en sert pour ne pas drag alors qu'on voulait appuyer bouton
 
         for event in pygame.event.get():
+
             if event.type == pygame.QUIT:
                 run = False
                 pygame.quit()
+
+            # zoom géré ici
             if event.type == pygame.MOUSEWHEEL:
                 zoom = zoom+event.y/14
 
                 scroll[0] = width/2 * (1 - zoom)
                 scroll[1] = height/2 * (1 - zoom)
 
-            if event.type == pygame_gui.UI_BUTTON_START_PRESS and not curseur_alidad and selectConflitState == 0:
-                '''faut mettre le menu quelque part ici'''
+            # on vérifie que l'alidade n'est pas actif
+            if event.type == pygame_gui.UI_BUTTON_START_PRESS and not curseur_alidad:
+
+                # si un bouton est appuyé
+                triggered = True
+
+                # on regarde si notre menu pour le pilote est actif
                 if menuAvion is not None:
+
+                    # si on valide les modifs, alors la fonction checkEvent retourne les modifs
                     modifications = menuAvion.checkEvent(event)
-                    if modifications is not None:
+                    if modifications:
+                        # on applique alors les modifs
                         avionId = modifications[0]
                         modifications = modifications[1]
 
+                        # pour chaque modif, on prépare une requête au serveur
                         for changement, valeur in modifications.items():
                             localRequests.append((avionId, changement, valeur))
-
-                triggered = True
 
                 if event.ui_element == menuOptionsATC.partBouton and event.mouse_button == 1:
                     avionId = menuOptionsATC.kill()
@@ -162,121 +162,49 @@ def main(server_ip):
                 elif event.ui_element == menuOptionsATC.FLBouton and event.mouse_button == 1:
                     avionId = menuOptionsATC.kill()
                     localRequests.append((avionId, 'FL?'))
+
                 else:
-                    for avion in dictAvionsAff.values():
+                    for avion in dictAvionsAff.values():  # pour chaque avion
 
-                        if event.ui_element == avion.bouton:
-                            if event.mouse_button == 2 and not pilote:
-                                localRequests.append((avion.Id, 'Warning'))
-                            elif event.mouse_button == 2:
-                                avion.onFrequency = not avion.onFrequency
-                            elif event.mouse_button == 1:
-                                avion.etiquettePos +=1
-                            elif event.mouse_button == 1:
-                                avion.etiquettePos += 1
-                            elif event.mouse_button == 3 and pilote:
-                                localRequests.append((avion.Id, 'Remove'))
+                        action = avion.checkEvent(event, pilote)  # on vérifie si l'event est associé avec ses boutons
 
-                        elif event.ui_element == avion.etiquette.bouton:
-                            if event.mouse_button == 1 and pilote:
-                                menuAvion = interface.menuAvion(avion, map)
+                        if type(action) in [list, tuple]:  # si c'est un tuple alors cela correspond à une requête
+                            localRequests.append(action)
 
-                        # Menu de selection nouvel avion
-                if nouvelAvionWin is not None:
-                    if event.ui_element in nouvelAvionWin.avionsBoutons:
-                        for bouton in range(len(nouvelAvionWin.avionsBoutons)):
-                            if event.ui_element == nouvelAvionWin.avionsBoutons[bouton]:
-                                selectedAircraft = list(nouvelAvionWin.avions.keys())[bouton]
-                                selectedAircraftButton = nouvelAvionWin.avionsBoutons[bouton]
-                            else:
-                                nouvelAvionWin.avionsBoutons[bouton].unselect()
+                        elif action == 'menu' and menuAvion is None:  # si c'est menu alors, on vérifie qu'on peut menu
+                            menuAvion = interface.menuAvion(avion, carte)
 
-                    elif event.ui_element in nouvelAvionWin.routesBoutons:
-                        for bouton in range(len(nouvelAvionWin.routesBoutons)):
-                            if event.ui_element == nouvelAvionWin.routesBoutons[bouton]:
-                                selectedRoute = nouvelAvionWin.routesFull[bouton]
-                                selectedRouteButton = nouvelAvionWin.routesBoutons[bouton]
-                            else:
-                                nouvelAvionWin.routesBoutons[bouton].unselect()
-                    elif event.ui_element == nouvelAvionWin.validationBouton and len(dictAvionsAff) != 0 and conflitGen:
-                        selectConflitState = 1
-                        pygame.mouse.set_cursor(pygame.cursors.diamond)
-                        conflitGen = False
-                        nouvelAvionWin.kill()
-                        nouvelAvionWin = None
+                    # Menu de selection nouvel avion
+                    # si notre menu est ouvert
+                    if nouvelAvionWin is not None:
+                        # si on appuie sur le bouton valider, alors le menu renvoie les valeurs
+                        newPlaneData = nouvelAvionWin.checkEvent(event)
 
-                    elif event.ui_element == nouvelAvionWin.validationBouton :
-                        nouvelAvionWin.kill()
-                        nouvelAvionWin = None
-                        conflitGen = False
-                        if selectedRoute is not None and selectedAircraft is not None:
-                            localRequests.append((len(dictAvions), "Add",
-                                                 AvionPacket(carte, len(dictAvions), selectedIndicatif,
-                                                             selectedAircraft, perfos[selectedAircraft],
-                                                             selectedRoute, FL=selectedFL, PFL=selectedPFL)))
-                            selectedRoute = None
-                            selectedAircraft = None
-                            selectedRouteButton = None
-                            selectedAircraftButton = None
-                            selectedFL = None
-                            selectedIndicatif = 'FCACA'
+                        # on vérifie que newPlane n'est pas None (les valeurs ont été renvoyés)
+                        if newPlaneData:
+                            # on crée alors un nouvel avion
 
-            elif event.type == pygame_gui.UI_BUTTON_PRESSED and nouvelAvionWin is not None:
-                if event.ui_element == nouvelAvionWin.conflitsBouton:
-                    conflitGen = not conflitGen
-                    if nouvelAvionWin.conflitsBouton.is_selected:
-                        nouvelAvionWin.conflitsBouton.unselect()
-                    else:
-                        nouvelAvionWin.conflitsBouton.select()
+                            newPlane = AvionPacket(
+                                carte,
+                                len(dictAvions),  # id de l'avion, correspond au dernier avion créé
+                                newPlaneData['indicatif'],
+                                newPlaneData['avion'],
+                                perfos[newPlaneData['avion']],  # on va chercher les perfos complètes
+                                carte['routes'][newPlaneData['route']],  # on va chercher la route en entier dans la map
+                                FL=newPlaneData['FL'],
+                                PFL=newPlaneData['PFL'])
 
-            elif event.type == pygame_gui.UI_BUTTON_START_PRESS and not curseur_alidad and selectConflitState == 1:
-                for avion in dictAvionsAff.values():
-                    if event.ui_element == avion.bouton and event.mouse_button == 3 and selectConflitState == 1:
-                        conflitAvion = avion
-                        selectConflitState = 2
-            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 3 and selectConflitState == 2:
-                conflitPoint = ((pygame.mouse.get_pos()[0] - scroll[0]/zoom),
-                                (pygame.mouse.get_pos()[1] - scroll[1]/zoom))
-                speedRatio = conflitAvion.papa.speedGS/perfos[selectedAircraft][0]
-                selectConflitState = 3
-            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 3 and selectConflitState == 3:
-                spawnPoint = ((pygame.mouse.get_pos()[0] - scroll[0])/zoom,
-                                (pygame.mouse.get_pos()[1] - scroll[1])/zoom)
-                selectConflitState = 0
-                localRequests.append((len(dictAvions), "Add", AvionPacket(map, len(dictAvions), selectedIndicatif,
-                                                             selectedAircraft, perfos[selectedAircraft], selectedRoute, x=spawnPoint[0], y=spawnPoint[1],
-                                                             FL=selectedFL, PFL=selectedPFL)))
-                AvionPacket(map, len(dictAvions), selectedIndicatif,
-                            selectedAircraft, perfos[selectedAircraft],
-                            selectedRoute, FL=selectedFL, PFL=selectedPFL)
-                pygame.mouse.set_cursor(pygame.cursors.arrow)
+                            localRequests.append((len(dictAvions), "Add", newPlane))
 
-
-            elif event.type == pygame_gui.UI_TEXT_ENTRY_CHANGED:
-                if event.ui_element == nouvelAvionWin.FLinput:
-                    try:
-                        selectedFL = int(event.text)
-                    except:
-                        selectedFL = 310
-                elif event.ui_element == nouvelAvionWin.PFLinput:
-                    try:
-                        selectedPFL = int(event.text)
-                    except:
-                        selectedPFL = None
-                elif event.ui_element == nouvelAvionWin.indicatifinput:
-                    selectedIndicatif = event.text
-
-            elif event.type == pygame_gui.UI_WINDOW_CLOSE:
-                if nouvelAvionWin is not None:
-                    if event.ui_element == nouvelAvionWin.window:
-                        nouvelAvionWin.kill()
-                        nouvelAvionWin = None
             # dragging
+            if menuAvion or nouvelAvionWin:
+                pass
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and drag == [0, 0] and not curseur_alidad:
                 drag = [pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1]]
                 dragging = True
             elif event.type == pygame.MOUSEBUTTONUP and event.button == 1 and not curseur_alidad:
                 dragging = False
+
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and curseur_alidad:
                 alidad = True
                 alidadPos = pygame.mouse.get_pos()
@@ -286,12 +214,10 @@ def main(server_ip):
                 pygame.mouse.set_cursor(pygame.cursors.arrow)
 
             manager.process_events(event)
+
         if menuAvion is not None:
             menuAvion.checkSliders()
-        if selectedRouteButton is not None:
-            selectedRouteButton.select()
-        if selectedAircraftButton is not None:
-            selectedAircraftButton.select()
+
         if triggered:
             dragging = False
             drag = [0, 0]
@@ -306,9 +232,14 @@ def main(server_ip):
             drag = [0, 0]
 
         if not pressing and nouvelAvionWin is None:
-            if keys[pygame.K_r]: # reset zoom & scroll
+
+            if keys[pygame.K_r]:  # reset zoom & scroll
                 zoom = zoomDef
                 scroll = scrollDef
+                pressing = True
+                delaiPressage = pygame.time.get_ticks()
+            if keys[pygame.K_t]:  # type avions
+                affichage_type_avion = not affichage_type_avion
                 pressing = True
                 delaiPressage = pygame.time.get_ticks()
             if keys[pygame.K_a]:  # alidad start
@@ -316,12 +247,10 @@ def main(server_ip):
                 pygame.mouse.set_cursor(pygame.cursors.broken_x)
                 pressing = True
                 delaiPressage = pygame.time.get_ticks()
-            if keys[pygame.K_3]:  # vecteurs
+
+                # commandes vecteurs
+            if keys[pygame.K_3]:
                 vecteurSetting = 3
-                pressing = True
-                delaiPressage = pygame.time.get_ticks()
-            if keys[pygame.K_t]:  # type avions
-                affichage_type_avion = not affichage_type_avion
                 pressing = True
                 delaiPressage = pygame.time.get_ticks()
             if keys[pygame.K_6]:
@@ -336,14 +265,18 @@ def main(server_ip):
                 vecteurs = not vecteurs
                 pressing = True
                 delaiPressage = pygame.time.get_ticks()
+
+                # commandes pilote
             if keys[pygame.K_n] and nouvelAvionWin is None and pilote:
-                nouvelAvionWin = NouvelAvionWindow(carte['routes'], perfos)
+                nouvelAvionWin = interface.NouvelAvionWindow(carte['routes'], perfos)
                 pressing = True
                 delaiPressage = pygame.time.get_ticks()
             if keys[pygame.K_DOWN]:
                 pilote = False
             if keys[pygame.K_UP]:
                 pilote = True
+
+                # commandes temps et sauvegarde
             if keys[pygame.K_SPACE]:
                 localRequests.append((0, 'Pause'))
                 pressing = True
@@ -358,9 +291,24 @@ def main(server_ip):
                 localRequests.append((0, 'Save'))
                 delaiPressage = pygame.time.get_ticks()
         elif True not in pygame.key.ScancodeWrapper() and pygame.time.get_ticks() - delaiPressage >= 150:
+            # on vérifie que plus aucune touche n'est pressée et on remet la variable à son état initial
             pressing = False
 
+        # on se débarrasse des menus inutils
+        if menuAvion is not None:
+            if not menuAvion.checkAlive():
+                menuAvion = None
+
+        if nouvelAvionWin is not None:
+            if not nouvelAvionWin.checkAlive():
+                nouvelAvionWin = None
+
+        '''partie affichage'''
+
+        # on remplit d'abord avec une couleur
         win.fill((55, 65, 75))
+
+        # on dessine les secteurs
         for secteur in carte['secteurs']:
             liste_affichage_secteurs = []
             for point in secteur['contour']:
@@ -368,26 +316,31 @@ def main(server_ip):
                 liste_affichage_secteurs.append((pos[0], pos[1]))
             pygame.draw.polygon(win, secteur['couleur'], liste_affichage_secteurs)
 
+        # on dessine les routes
         for segment in carte['segments']['STAR']:
             pygame.draw.line(win, (105, 110, 105), (segment[0][0]*zoom + scroll[0], segment[0][1]*zoom + scroll[1]),
                              (segment[1][0]*zoom + scroll[0], segment[1][1]*zoom + scroll[1]), 2)
 
+        # on dessine les points
         for nom, point in carte['points'].items():
-
             pygame.draw.polygon(win, (155, 155, 155), ((point[0]*zoom + scroll[0], point[1]*zoom - 2 + scroll[1]), (point[0]*zoom + 2 + scroll[0], point[1]*zoom+2 + scroll[1]), (point[0]*zoom-2 + scroll[0], point[1]*zoom+2 + scroll[1])), 1)
-            #img = font.render(nom, True, (155, 155, 155))
-            #win.blit(img, (point[0]*zoom + 10 + scroll[0], point[1]*zoom+10 + scroll[1]))
+            # img = font.render(nom, True, (155, 155, 155))
+            # win.blit(img, (point[0]*zoom + 10 + scroll[0], point[1]*zoom+10 + scroll[1]))
+
+        # on affiche les avions
         if pilote:
             for avion in dictAvionsAff.values():
                 avion.draw(win, zoom, scroll, vecteurs, vecteurSetting, affichage_type_avion)
         else:
             for avion in dictAvionsAff.values():
                 avion.draw(win, zoom, scroll, vecteurs, vecteurSetting, affichage_type_avion)
+                avion.drawRoute(carte['points'], distance, win, zoom, scroll)
 
+        # on affiche les boutons
         manager.draw_ui(win)
         manager.update(time_delta)
 
-        if selectConflitState == 3:
+        """if selectConflitState == 3:
             # on convertit la position du cercle pour l'affichage
             pos = positionAffichage(conflitPoint[0], conflitPoint[1], zoom, scroll[0], scroll[1])
             # on détermine le rayon du cercle
@@ -402,7 +355,7 @@ def main(server_ip):
                                (conflitRadius - 15/mapScale) * zoom, 1)
 
             pygame.draw.circle(win, (71, 123, 146), (pos[0], pos[1]),
-                               (conflitRadius + 15/mapScale) * zoom, 1)
+                               (conflitRadius + 15/mapScale) * zoom, 1)"""
 
         if not game.paused:  # oui en fait quand c en pause c False
             img = font.render("gelé", True, (255, 105, 180))
@@ -427,16 +380,19 @@ def main(server_ip):
             img = font.render(str(distance), True, (255, 105, 180))
             win.blit(img, (pygame.mouse.get_pos()[0] + 20, pygame.mouse.get_pos()[1]))
 
+        # envoi des packets
+        # on fait avec un try and except au cas où un paquet se perde
+
         try:
             if localRequests is not []:
-                packetId = (packetId + 1) % 100
+                packetId = (packetId + 1) % 100  # l'Id du paquet permet au serveur de mettre en ordre les données
                 packet = Packet(packetId, game=game, requests=localRequests)
             else:
                 packet = Packet(game)
                 packetId = packet.Id
             packet = n.send(packet)
 
-        except:
+        except:  # dans le cas où l'on perd un paquet, on garde les données précédentes
             print('Paquet perdu')
             packet = tempoPacket
         pygame.display.update()

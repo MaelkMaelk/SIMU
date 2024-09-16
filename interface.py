@@ -48,11 +48,126 @@ def scrollListGen(valueList, rect, container, sliderBool=True):
     return slider, liste
 
 
+class NouvelAvionWindow:
+
+    def __init__(self, routes, avions):
+
+        # le dictionnaire utilisé pour renvoyer les valeurs sélectionnées par nos boutons
+        self.returnValues = {'indicatif': 'FCACA', 'avion': 'B738', 'FL': 310, 'PFL': 310}
+        
+        # la fenêtre du menu
+        self.window = pygame_gui.elements.UIWindow(pygame.Rect((250, 250), (600, 400)))
+        
+        # la liste des routes
+        self.routeContainer = pygame_gui.elements.UIScrollingContainer(
+            pygame.Rect((0, 34), (150, 200)), container=self.window, allow_scroll_x=False)
+        
+        self.routeBoutonListe = scrollListGen(list(routes.keys()),
+                                              pygame.Rect((0, 0), (125, 17)), self.routeContainer, False)[1]
+        
+        # la liste des types avion
+        self.typeAvionContainer = pygame_gui.elements.UIScrollingContainer(pygame.Rect((0, 34), (150, 200)),
+        container=self.window, anchors={'left': 'left', 'left_target': self.routeContainer}, allow_scroll_x=False)
+
+        self.typeAvionBoutonListe = scrollListGen(
+            list(avions.keys()), pygame.Rect((0, 0), (125, 17)), self.typeAvionContainer, False)[1]
+
+        # les divers autres boutons et champs
+        
+        self.conflitsBouton = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((0, 20), (200, 17)),
+            text='Générateur de conflits',
+            container=self.window, 
+            anchors={'top': 'top', 'top_target': self.typeAvionContainer, 'left': 'left', 'left_target': self.routeContainer})
+        
+        self.validerBouton = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((0, 5), (200, 17)),
+            text='Ok',
+            container=self.window, 
+            anchors={'top': 'top', 'top_target': self.conflitsBouton, 'left': 'left', 'left_target': self.routeContainer})
+
+        self.indicatiflabel = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect((0, 0), (200, 17)), container=self.window, anchors={'left': 'left', 'left_target': self.typeAvionContainer},
+            text='Indicatif')
+        
+        self.indicatifinput = pygame_gui.elements.UITextEntryBox(
+            relative_rect=pygame.Rect((0, 0), (200, 30)), container=self.window,
+            anchors={'left': 'left', 'left_target': self.typeAvionContainer, 'top': 'top', 'top_target': self.indicatiflabel})
+        
+        self.FLlabel = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect((0, 0), (200, 17)), container=self.window,
+            anchors={'left': 'left', 'left_target': self.typeAvionContainer, 'top': 'top', 'top_target': self.indicatifinput},
+            text='FL')
+        
+        self.FLinput = pygame_gui.elements.UITextEntryBox(
+            relative_rect=pygame.Rect((0, 0), (200, 30)), container=self.window,
+            anchors={'left': 'left', 'left_target': self.typeAvionContainer, 'top': 'top', 'top_target': self.FLlabel})
+        
+        self.PFLlabel = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect((0, 0), (200, 17)), container=self.window,
+            anchors={'left': 'left', 'left_target': self.typeAvionContainer, 'top': 'top', 'top_target': self.FLinput},
+            text='PFL')
+        
+        self.PFLinput = pygame_gui.elements.UITextEntryBox(
+            relative_rect=pygame.Rect((0, 0), (200, 30)), container=self.window,
+            anchors={'left': 'left', 'left_target': self.typeAvionContainer, 'top': 'top', 'top_target': self.PFLlabel})
+
+    def checkEvent(self, event):
+
+        """
+        Vérifie si un des boutons ou textbox du menu a été pressé ou modifié, et modifie les données en conséquence
+        :arg event: l'évenement qu'il faut vérifier
+        :returns: le dictionaire de valeurs si on valide, None sinon
+        """
+        
+        # on vérifie d'abord les champs de text
+        if event.type == pygame_gui.UI_TEXT_ENTRY_CHANGED:
+            
+            # on vérifie le FL
+            if event.ui_element == self.FLinput:
+                try:
+                    self.returnValues.update({'FL': int(event.text)})
+                    
+                except:  # si l'utilisateur rentre n'importe quoi, on remet à la valeur de base
+                    self.returnValues.update({'FL': 310})
+                    
+            # on vérifie le PFL        
+            elif event.ui_element == self.PFLinput:
+                try:
+                    self.returnValues.update({'PFL': int(event.text)})
+                    
+                except:  # si l'utilisateur rentre n'importe quoi, on remet à la valeur du FL
+                    self.returnValues.update({'PFL': self.returnValues['FL']})
+            
+            # on vérifie l'indicatif
+            elif event.ui_element == self.indicatifinput:
+                self.returnValues.update({'indicatif': event.text})
+                
+        elif event.ui_element in self.typeAvionBoutonListe:
+
+            event.ui_element.select()
+            self.returnValues.update({'avion': event.ui_element.text})
+        
+        elif event.ui_element in self.routeBoutonListe:
+
+            event.ui_element.select()
+            self.returnValues.update({'route': event.ui_element.text})
+        
+        elif event.ui_element == self.validerBouton:
+            self.window.kill()
+            return self.returnValues
+
+    def kill(self):
+        self.window.kill()
+
+    def checkAlive(self):
+        return self.window.alive()
+
 class menuAvion:
 
     def __init__(self, avion, gameMap):
         self.avion = avion
-        self.window = self.window = pygame_gui.elements.UIWindow(pygame.Rect((400, 400), (600, 600)))
+        self.window = self.window = pygame_gui.elements.UIWindow(pygame.Rect((400, 400), (600, 300)))
 
         # génération boutons heading
         self.headingLabel = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, 17), (100, 17)),
@@ -101,7 +216,6 @@ class menuAvion:
         tempo = scrollListGen([point['name'] for point in avion.papa.route['points']], pygame.Rect((0, 0), (75, 17)),
                               self.pointContainer, sliderBool=False)
         self.pointBoutonListe = tempo[1]
-        print('cacz')
 
         # génération boutons next routes
 
@@ -112,7 +226,6 @@ class menuAvion:
         tempo = scrollListGen([route for route in avion.papa.route['sortie']], pygame.Rect((0, 0), (75, 17)),
                               self.routeContainer, sliderBool=False)
         self.routeBoutonliste = tempo[1]
-        print(self.routeBoutonliste)
 
         # bouton validation
 
@@ -122,6 +235,9 @@ class menuAvion:
 
         # dict pour les valeurs que le menu renverra
         self.returnValues = {}
+
+    def checkAlive(self):
+        return self.window.alive()
 
     def checkSliders(self):
 
@@ -178,8 +294,11 @@ class menuAvion:
 
     def checkEvent(self, event):
 
-        """Vérifie si un des boutons du menu a été pressé et modifie les données en conséquence
-        :returns: le dictionaire de valeurs si on valide, None sinon"""
+        """
+        Vérifie si un des boutons du menu a été pressé et modifie les données en conséquence
+        :arg event: l'évenement qu'il faut vérifier
+        :returns: le dictionaire de valeurs si on valide, None sinon
+        """
 
         if event.type == pygame_gui.UI_TEXT_ENTRY_CHANGED:
             print('caca')

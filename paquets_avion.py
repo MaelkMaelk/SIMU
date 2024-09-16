@@ -1,13 +1,12 @@
 from geometry import *
 
-plotSize = 6   # taille en px des plots d'avion
 radarRefresh = 4  # temps en s pour le refresh radar
 heureEnRefresh = radarRefresh / 3600  # pour calculer la vitesse des avions (conversion par heure en par refresh)
 etiquetteLines = 4
 nmToFeet = 6076
 altiDefault = 24000  # alti en pied par défault, si on ne rentre pas d'alti pour spawn un avion
 acceldefault = 3  # accélération/decelération de kt par refresh
-turnRateDefault = 5  # turnrate/refresh par défault
+turnRateDefault = 10  # turnrate/refresh par défault
 
 class Game:
     def __init__(self, heure):
@@ -28,7 +27,6 @@ class Packet:
 
 class AvionPacket:
     global heureEnRefresh
-    global plotSize
 
     def __init__(self, gameMap, Id, indicatif, aircraft, perfos, route, FL=None, x=None, y=None, heading=None, PFL=None):
 
@@ -88,8 +86,6 @@ class AvionPacket:
             self.nextPoint = self.route['points'][1]
         else:
             self.nextPoint = self.route['points'][0]
-        print(self.route)
-        print(self.nextPoint)
 
         if route['sortie']:
             self.sortie = route['sortie'][0]
@@ -163,7 +159,7 @@ class AvionPacket:
         # comete
         if len(self.comete) >= 6:  # si la comète est de taille max, on enlève le premier point, le + vieux
             self.comete = self.comete[1:6]
-        self.comete.append((self.x + plotSize, self.y + plotSize))
+        self.comete.append((self.x, self.y))
 
         self.updateAlti()  # on change le niveau de l'avion si on est en evolution
 
