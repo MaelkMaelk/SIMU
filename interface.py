@@ -428,9 +428,9 @@ class etiquette:
             anchors={'top': 'top', 'top_target': self.indicatif, 'left': 'left', 'left_target': self.EFL},
             container=self.container)
 
-
     def update(self, avion):
 
+        # on ajuste la position du container en fonction de son point cardinal par rapport au plot
         if avion.etiquettePos % 4 == 0:
             Xvalue = 0
             Yvalue = - self.container.get_rect()[3]
@@ -444,8 +444,10 @@ class etiquette:
             Xvalue = - self.container.get_rect()[2]
             Yvalue = - self.container.get_rect()[3]
 
-        # speed et rate
-        if avion.papa.evolution == 0:
+        # mise à jour des boutons
+
+        # speed et C/D rate
+        if avion.papa.evolution == 0:  # on affiche la rate que si l'avion est en evo
             evo = ""
         else:
             evo = "  " + str(avion.papa.evolution)[:3]
