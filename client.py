@@ -24,8 +24,6 @@ clock = pygame.time.Clock()
 font = pygame.font.SysFont('arial', 18)
 
 
-
-
 def main(server_ip):
     global temps
     global height
@@ -90,8 +88,8 @@ def main(server_ip):
         localRequests = []
         tempoPacket = packet
 
-        time_delta = clock.tick(40) / 1000.0
-        clock.tick(40)
+        time_delta = clock.tick(60) / 1000.0
+        clock.tick(60)
 
         for avionId, avion in packet.dictAvions.items():  # on parcourt le paquet qu'on a reçu du serveur
 
@@ -142,6 +140,7 @@ def main(server_ip):
                     # si on valide les modifs, alors la fonction checkEvent retourne les modifs
                     modifications = menuAvion.checkEvent(event)
                     if modifications:
+
                         # on applique alors les modifs
                         avionId = modifications[0]
                         modifications = modifications[1]

@@ -5,9 +5,12 @@ port = 5555
 MCAST_GRP = '224.1.1.1'
 MCAST_PORT = 5007
 
+
 class Network:
+
     global port
     def __init__(self, server_ip):
+
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server = server_ip
         self.port = port

@@ -163,11 +163,12 @@ class NouvelAvionWindow:
     def checkAlive(self):
         return self.window.alive()
 
+
 class menuAvion:
 
     def __init__(self, avion, gameMap):
         self.avion = avion
-        self.window = self.window = pygame_gui.elements.UIWindow(pygame.Rect((400, 400), (600, 300)))
+        self.window = self.window = pygame_gui.elements.UIWindow(pygame.Rect((400, 400), (600, 350)))
 
         # génération boutons heading
         self.headingLabel = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, 17), (100, 17)),
@@ -348,36 +349,80 @@ class etiquetteAPS:
 
     def __init__(self, avion):
 
-        self.evolution = avion.papa.altitudeEvoTxt
+        self.container = pygame_gui.elements.UIAutoResizingContainer(
+            pygame.Rect((0, 0), (0, 0)), pygame.Rect((0, 0), (0, 0)), resize_top=False, resize_left=False)
 
-        self.text = avion.papa.indicatif + str(round(avion.papa.altitude/100)) + self.evolution + '   M' + str(round(avion.papa.speedIAS/10))
-        self.bouton = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((0, 0), (80, 34)),
-            text='self.text', object_id=pygame_gui.core.ObjectID('@etiquette', 'button'))
+        self.speedGS = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((0, 0), (-1, -1)),
+            text=str(avion.papa.speedGS)[:2],
+            object_id=pygame_gui.core.ObjectID('@etiquette', 'button'),
+            container=self.container)
+
+        self.indicatif = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((0, 0), (-1, -1)),
+            text=avion.papa.indicatif,
+            object_id=pygame_gui.core.ObjectID('@etiquette', 'button'),
+            anchors={'top': 'top', 'top_target': self.speedGS},
+            container=self.container)
+
+        self.type_dest = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect((0, 0), (-1, -1)),
+            object_id=pygame_gui.core.ObjectID('@etiquette', 'button'),
+            text=avion.papa.aircraft + " " + "LFVB",
+            anchors={'left': 'left', 'left_target': self.indicatif, 'top': 'top', 'top_target': self.speedGS},
+            container=self.container
+        )
+
+        self.AFL = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((0, 0), (-1, -1)),
+            text=str(round(avion.papa.altitude/100)),
+            object_id=pygame_gui.core.ObjectID('@etiquette', 'button'),
+            anchors={'top': 'top', 'top_target': self.indicatif},
+            container=self.container)
+
+        self.EFL = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((0, 0), (-1, -1)),
+            text=str(round(avion.papa.altitude / 100))[:2],
+            object_id=pygame_gui.core.ObjectID('@etiquette', 'button'),
+            anchors={'top': 'top', 'top_target': self.indicatif, 'left': 'left', 'left_target': self.AFL},
+            container=self.container)
+
+        self.DCT = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((0, 0), (-1, -1)),
+            text=avion.papa.nextPoint['name'],
+            object_id=pygame_gui.core.ObjectID('@etiquette', 'button'),
+            anchors={'top': 'top', 'top_target': self.indicatif, 'left': 'left', 'left_target': self.EFL},
+            container=self.container)
+
 
     def update(self, avion):
 
-        self.evolution = avion.papa.altitudeEvoTxt
-
         if avion.etiquettePos % 4 == 0:
             Xvalue = 0
-            Yvalue = -34
+            Yvalue = - self.container.get_rect()[3]
         elif avion.etiquettePos % 4 == 1:
             Xvalue = 0
             Yvalue = 0
         elif avion.etiquettePos % 4 == 2:
-            Xvalue = -80
+            Xvalue = - self.container.get_rect()[2]
             Yvalue = 0
         else:
-            Xvalue = -80
-            Yvalue = -34
+            Xvalue = - self.container.get_rect()[2]
+            Yvalue = - self.container.get_rect()[3]
 
-        self.text = avion.papa.indicatif + '\n' + str(round(avion.papa.altitude/100)) + self.evolution + '   M' + str(
-            round(avion.papa.speedIAS/10))
-        self.bouton.rect = pygame.Rect((avion.etiquetteX + Xvalue, avion.etiquetteY + Yvalue), (80, 34))
-        self.bouton.text = self.text
-        self.bouton.rebuild()
-        self.bouton.show()
+        # speed et rate
+        if avion.papa.evolution == 0:
+            evo = ""
+        else:
+            evo = "  " + str(avion.papa.evolution)[:3]
+        self.speedGS.set_text(str(avion.papa.speedGS)[:2] + evo)
+
+        # alti
+        self.AFL.set_text(str(round(avion.papa.altitude/100)) + " " + avion.papa.altitudeEvoTxt)
+
+        self.container.set_position((avion.etiquetteX + Xvalue, avion.etiquetteY + Yvalue))
+        self.container.rebuild()
+        self.container.update_containing_rect_position()
 
     def kill(self):
         self.bouton.kill()

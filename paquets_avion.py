@@ -62,8 +62,8 @@ class AvionPacket:
 
         # perfo
         self.turnRate = turnRateDefault
-        self.maxROC = perfos['ROC'] / 60 * radarRefresh  # on transforme pied/min en pied/refresh radar
-        self.maxROD = perfos['ROD'] / 60 * radarRefresh
+        self.maxROC = perfos['ROC']
+        self.maxROD = perfos['ROD']
         
         # altis
         self.evolution = 0  # taux de variation/radar refresh
@@ -110,19 +110,21 @@ class AvionPacket:
         
         if self.altitude != self.selectedAlti:  # on regarde s'il faut évoluer
             
-            if self.altitude - self.selectedAlti > 0:               
-                if abs(self.altitude - self.selectedAlti) <= abs(self.evolution):  # on arrive dans moins d'un refresh ?
+            if self.altitude - self.selectedAlti > 0:
+                # on arrive dans moins d'un refresh ?
+                if abs(self.altitude - self.selectedAlti) <= abs(self.evolution / 60 * radarRefresh):
                     self.altitude = self.selectedAlti  # alors, on met le niveau cible
                 else:
-                    self.altitude += self.evolution  # sinon, on descend juste au taux sélecté
-                    self.altitudeEvoTxt = '↘'
+                    self.altitude += self.evolution / 60 * radarRefresh  # sinon, on descend juste au taux sélecté
+                    self.altitudeEvoTxt = 'v'
                     
             else:
-                if abs(self.altitude - self.selectedAlti) <= abs(self.evolution):  # on arrive dans moins d'un refresh ?
+                # on arrive dans moins d'un refresh ?
+                if abs(self.altitude - self.selectedAlti) <= abs(self.evolution / 60 * radarRefresh):
                     self.altitude = self.selectedAlti  # alors, on met le niveau cible
                 else:
-                    self.altitude += self.evolution  # sinon, on monte au taux sélecté
-                    self.altitudeEvoTxt = '↗'
+                    self.altitude += self.evolution / 60 * radarRefresh  # sinon, on monte au taux sélecté
+                    self.altitudeEvoTxt = '^'
                     
         else:  # si on n'évolue pas, on met ce texte
             self.altitudeEvoTxt = '-'

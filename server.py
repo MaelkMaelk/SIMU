@@ -294,8 +294,7 @@ while Running:
                     dictAvion[req[0]].evolution = - dictAvion[req[0]].maxROD
                 else:
                     dictAvion[req[0]].evolution = dictAvion[req[0]].maxROC
-                dictAvion[req[0]].targetFL = req[2]
-                dictAvion[req[0]].forcedEvo = True
+                dictAvion[req[0]].selectedAlti = req[2]
             elif req[1] == 'Heading':
                 dictAvion[req[0]].headingMode = True
                 dictAvion[req[0]].selectedHeading = req[2]

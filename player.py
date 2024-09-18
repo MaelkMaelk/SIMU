@@ -208,7 +208,7 @@ class Avion:
             elif event.mouse_button == 3 and pilote:
                 return self.Id, 'Remove'
 
-        elif event.ui_element == self.etiquette.bouton:
+        elif event.ui_element == self.etiquette.indicatif:
             if event.mouse_button == 1 and pilote:
                 return 'menu'
 
