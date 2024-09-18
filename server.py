@@ -136,7 +136,7 @@ for aircraft in root:
                                    'ROD': int(aircraft.find('ROD').text)}})
 
 
-try: # on essaye de charger une simu, si elle existe
+try:  # on essaye de charger une simu, si elle existe
     tree = ET.parse('XML/' + SIMU)
 
     heure = tree.find('heure').text

@@ -57,7 +57,7 @@ class Avion:
         self.affY = 0
 
         # init de l'étiquette
-        self.etiquette = interface.etiquetteAPS(self)
+        self.etiquette = interface.etiquette(self)
 
         # interaction avec les events
         self.returnValues = {}

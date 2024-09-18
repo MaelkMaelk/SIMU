@@ -87,24 +87,30 @@ class NouvelAvionWindow:
             anchors={'top': 'top', 'top_target': self.conflitsBouton, 'left': 'left', 'left_target': self.routeContainer})
 
         self.indicatiflabel = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((0, 0), (200, 17)), container=self.window, anchors={'left': 'left', 'left_target': self.typeAvionContainer},
+            relative_rect=pygame.Rect((0, 0), (200, 17)),
+            container=self.window,
+            anchors={'left': 'left', 'left_target': self.typeAvionContainer},
             text='Indicatif')
         
         self.indicatifinput = pygame_gui.elements.UITextEntryBox(
-            relative_rect=pygame.Rect((0, 0), (200, 30)), container=self.window,
+            relative_rect=pygame.Rect((0, 0), (200, 30)),
+            container=self.window,
             anchors={'left': 'left', 'left_target': self.typeAvionContainer, 'top': 'top', 'top_target': self.indicatiflabel})
         
         self.FLlabel = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((0, 0), (200, 17)), container=self.window,
+            relative_rect=pygame.Rect((0, 0), (200, 17)),
+            container=self.window,
             anchors={'left': 'left', 'left_target': self.typeAvionContainer, 'top': 'top', 'top_target': self.indicatifinput},
             text='FL')
         
         self.FLinput = pygame_gui.elements.UITextEntryBox(
-            relative_rect=pygame.Rect((0, 0), (200, 30)), container=self.window,
+            relative_rect=pygame.Rect((0, 0), (200, 30)),
+            container=self.window,
             anchors={'left': 'left', 'left_target': self.typeAvionContainer, 'top': 'top', 'top_target': self.FLlabel})
         
         self.PFLlabel = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((0, 0), (200, 17)), container=self.window,
+            relative_rect=pygame.Rect((0, 0), (200, 17)),
+            container=self.window,
             anchors={'left': 'left', 'left_target': self.typeAvionContainer, 'top': 'top', 'top_target': self.FLinput},
             text='PFL')
         
@@ -171,68 +177,96 @@ class menuAvion:
         self.window = self.window = pygame_gui.elements.UIWindow(pygame.Rect((400, 400), (600, 350)))
 
         # génération boutons heading
-        self.headingLabel = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, 17), (100, 17)),
-                                                        container=self.window,
-                                                        text=('Cap - ' + str(round(avion.papa.heading))))
-        self.headingContainer = pygame_gui.elements.UIScrollingContainer(pygame.Rect((0, 34), (100, 200)),
-                                                                         container=self.window)
+        self.headingLabel = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect((0, 17), (100, 17)),
+            container=self.window,
+            text=('Cap - ' + str(round(avion.papa.heading))))
+
+        self.headingContainer = pygame_gui.elements.UIScrollingContainer(
+            pygame.Rect((0, 34), (100, 200)),
+            container=self.window)
+
         tempo = scrollListGen(range(round(avion.papa.heading / 5) * 5 - 25, round(avion.papa.heading / 5) * 5 + 30, 5),
                               pygame.Rect((0, 0), (75, 17)), self.headingContainer)
+
         self.headingBoutonListe = tempo[1]
         self.headingSlider = tempo[0]
         self.headingSlider.set_scroll_from_start_percentage((round(avion.papa.heading / 5) * 5 - 15) / 300 * 0.8)
 
         # génération boutons Alti
-        self.altiLabel = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, 17), (100, 17)),
-                                                     container=self.window,
-                                                     text=('FL - ' + str(round(avion.papa.altitude / 100))),
-                                                     anchors={'left': 'left', 'left_target': self.headingLabel})
-        self.altiContainer = pygame_gui.elements.UIScrollingContainer(pygame.Rect((0, 34), (100, 200)),
-                                                                      container=self.window, anchors={'left': 'left',
-                                                                                                      'left_target': self.headingContainer})
-        tempo = scrollListGen(range(round(avion.papa.altitude / 1000) * 10 - 50, round(avion.papa.altitude / 1000) * 10 + 60, 10),
-                              pygame.Rect((0, 0), (75, 17)), self.altiContainer)
+        self.altiLabel = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect((0, 17), (100, 17)),
+            container=self.window,
+            text=('FL - ' + str(round(avion.papa.altitude / 100))),
+            anchors={'left': 'left', 'left_target': self.headingLabel})
+
+        self.altiContainer = pygame_gui.elements.UIScrollingContainer(
+            pygame.Rect((0, 34), (100, 200)),
+            container=self.window,
+            anchors={'left': 'left', 'left_target': self.headingContainer})
+
+        tempo = scrollListGen(
+            range(round(avion.papa.altitude / 1000) * 10 - 50, round(avion.papa.altitude / 1000) * 10 + 60, 10),
+            pygame.Rect((0, 0), (75, 17)), self.altiContainer)
+
         self.altiBoutonListe = tempo[1]
         self.altiSlider = tempo[0]
+
         self.altiSlider.set_scroll_from_start_percentage((round(avion.papa.altitude / 1000) * 10 - 30) / 410 * 0.8)
 
         # génération boutons speed
-        self.speedLabel = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((0, 17), (100, 17)),
-                                                      container=self.window, text=('IAS - ' + str(avion.papa.speedIAS)),
-                                                      anchors={'left': 'left', 'left_target': self.altiLabel})
-        self.speedContainer = pygame_gui.elements.UIScrollingContainer(pygame.Rect((0, 34), (100, 200)),
-                                                                       container=self.window, anchors={'left': 'left',
-                                                                                                       'left_target': self.altiContainer})
+        self.speedLabel = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect((0, 17), (100, 17)),
+            container=self.window, text=('IAS - ' + str(avion.papa.speedIAS)),
+            anchors={'left': 'left', 'left_target': self.altiLabel})
+
+        self.speedContainer = pygame_gui.elements.UIScrollingContainer(
+            pygame.Rect((0, 34), (100, 200)),
+            container=self.window,
+            anchors={'left': 'left', 'left_target': self.altiContainer})
+
         tempo = scrollListGen(range(round(avion.papa.speedIAS / 10) * 10 - 50, round(avion.papa.speedIAS / 10) * 10 + 60, 10),
                               pygame.Rect((0, 0), (75, 17)), self.speedContainer)
+
         self.speedBoutonListe = tempo[1]
         self.speedSlider = tempo[0]
         self.speedSlider.set_scroll_from_start_percentage((round(avion.papa.speedIAS / 10) * 10 - 100) / 330 * 0.8)
 
         # génération boutons points
 
-        self.pointContainer = pygame_gui.elements.UIScrollingContainer(pygame.Rect((0, 0), (100, 200)),
-                                                                       container=self.window, anchors={'left': 'left',
-                                                                                                       'left_target': self.speedContainer})
-        tempo = scrollListGen([point['name'] for point in avion.papa.route['points']], pygame.Rect((0, 0), (75, 17)),
-                              self.pointContainer, sliderBool=False)
+        self.pointContainer = pygame_gui.elements.UIScrollingContainer(
+            pygame.Rect((0, 0), (100, 200)),
+            container=self.window,
+            anchors={'left': 'left','left_target': self.speedContainer})
+
+        tempo = scrollListGen([point['name'] for point in avion.papa.route['points']],
+                              pygame.Rect((0, 0), (75, 17)),
+                              self.pointContainer,
+                              sliderBool=False)
+
         self.pointBoutonListe = tempo[1]
 
         # génération boutons next routes
 
-        self.routeContainer = pygame_gui.elements.UIScrollingContainer(pygame.Rect((0, 0), (100, 200)),
-                                                                       container=self.window, anchors={'left': 'left',
-                                                                                                       'left_target': self.pointContainer})
+        self.routeContainer = pygame_gui.elements.UIScrollingContainer(
+            pygame.Rect((0, 0), (100, 200)),
+            container=self.window,
+            anchors={'left': 'left', 'left_target': self.pointContainer})
 
-        tempo = scrollListGen([route for route in avion.papa.route['sortie']], pygame.Rect((0, 0), (75, 17)),
-                              self.routeContainer, sliderBool=False)
+        tempo = scrollListGen([route for route in avion.papa.route['sortie']],
+                              pygame.Rect((0, 0), (75, 17)),
+                              self.routeContainer,
+                              sliderBool=False)
+
         self.routeBoutonliste = tempo[1]
 
         # bouton validation
 
-        self.validerBouton = pygame_gui.elements.UIButton(pygame.Rect((200, 90), (75, 17)), text='valider',
-                                                          container=self.window,
-                                                          anchors={'top': 'top', 'top_target': self.pointContainer})
+        self.validerBouton = pygame_gui.elements.UIButton(
+            pygame.Rect((200, 90), (75, 17)),
+            text='valider',
+            container=self.window,
+            anchors={'top': 'top', 'top_target': self.pointContainer})
 
         # dict pour les valeurs que le menu renverra
         self.returnValues = {}
@@ -345,7 +379,7 @@ class menuAvion:
             return self.avion.Id, self.returnValues
 
 
-class etiquetteAPS:
+class etiquette:
 
     def __init__(self, avion):
 
@@ -425,4 +459,4 @@ class etiquetteAPS:
         self.container.update_containing_rect_position()
 
     def kill(self):
-        self.bouton.kill()
+        self.container.kill()
