@@ -123,23 +123,9 @@ def main(server_ip):
                 run = False
                 pygame.quit()
 
-            # zoom géré ici
-            if event.type == pygame.MOUSEWHEEL:
-
-                before_x_pos = (width/2 - scroll[0]) / zoom
-                before_y_pos = (height/2 - scroll[1]) / zoom
-
-                zoom = zoom+event.y/14
-
-                after_x_pos = (width/2 - scroll[0]) / zoom
-                after_y_pos = (height/2 - scroll[1]) / zoom
-
-                scroll[0] += (after_x_pos - before_x_pos) * zoom
-                scroll[1] += (after_y_pos - before_y_pos) * zoom
-
             if event.type == pygame_gui.UI_BUTTON_ON_HOVERED:
                 for avion in dictAvionsAff.values():
-                    if avion.checkExtent(event):  # renvoies True quand le bouton correspond à cette etiquette
+                    if avion.checkEtiquetteOnHover(event):  # renvoies True quand le bouton correspond à cette etiquette
                         break  # dès qu'on a trouvé le responsable, on casse
 
             # on vérifie que l'alidade n'est pas actif
@@ -214,6 +200,21 @@ def main(server_ip):
             # dragging
             if menuAvion or nouvelAvionWin:
                 pass
+
+            #zoom géré ici
+            elif event.type == pygame.MOUSEWHEEL:
+
+                before_x_pos = (width/2 - scroll[0]) / zoom
+                before_y_pos = (height/2 - scroll[1]) / zoom
+
+                zoom = zoom+event.y/14
+
+                after_x_pos = (width/2 - scroll[0]) / zoom
+                after_y_pos = (height/2 - scroll[1]) / zoom
+
+                scroll[0] += (after_x_pos - before_x_pos) * zoom
+                scroll[1] += (after_y_pos - before_y_pos) * zoom
+
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and drag == [0, 0] and not curseur_alidad:
                 drag = [pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1]]
                 dragging = True
