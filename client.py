@@ -194,6 +194,8 @@ def main(server_ip):
                                 PFL=newPlaneData['PFL'])
 
                             localRequests.append((len(dictAvions), "Add", newPlane))
+            elif event.type == pygame_gui.UI_TEXT_ENTRY_CHANGED:
+                nouvelAvionWin.checkFields(event)
 
             # dragging
             if menuAvion or nouvelAvionWin:
@@ -334,10 +336,9 @@ def main(server_ip):
             for avion in dictAvionsAff.values():
                 avion.draw(win, zoom, scroll, vecteurs, vecteurSetting, carte['points'])
 
-
         # on affiche les boutons
-        manager.draw_ui(win)
         manager.update(time_delta)
+        manager.draw_ui(win)
 
         if not game.paused:  # oui en fait quand c en pause c False
             img = font.render("gelé", True, (255, 105, 180))

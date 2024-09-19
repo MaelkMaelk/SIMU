@@ -127,29 +127,7 @@ class NouvelAvionWindow:
         """
 
         # on vérifie d'abord les champs de text
-        if event.type == pygame_gui.UI_TEXT_ENTRY_CHANGED:
-
-            # on vérifie le FL
-            if event.ui_element == self.FLinput:
-                try:
-                    self.returnValues.update({'FL': int(event.text)})
-
-                except:  # si l'utilisateur rentre n'importe quoi, on remet à la valeur de base
-                    self.returnValues.update({'FL': 310})
-
-            # on vérifie le PFL        
-            elif event.ui_element == self.PFLinput:
-                try:
-                    self.returnValues.update({'PFL': int(event.text)})
-
-                except:  # si l'utilisateur rentre n'importe quoi, on remet à la valeur du FL
-                    self.returnValues.update({'PFL': self.returnValues['FL']})
-
-            # on vérifie l'indicatif
-            elif event.ui_element == self.indicatifinput:
-                self.returnValues.update({'indicatif': event.text})
-
-        elif event.ui_element in self.typeAvionBoutonListe:
+        if event.ui_element in self.typeAvionBoutonListe:
 
             event.ui_element.select()
             self.returnValues.update({'avion': event.ui_element.text})
@@ -162,6 +140,28 @@ class NouvelAvionWindow:
         elif event.ui_element == self.validerBouton:
             self.window.kill()
             return self.returnValues
+
+    def checkFields(self, event):
+
+        # on vérifie le FL
+        if event.ui_element == self.FLinput:
+            try:
+                self.returnValues.update({'FL': int(event.text)})
+
+            except:  # si l'utilisateur rentre n'importe quoi, on remet à la valeur de base
+                self.returnValues.update({'FL': 310})
+
+        # on vérifie le PFL
+        elif event.ui_element == self.PFLinput:
+            try:
+                self.returnValues.update({'PFL': int(event.text)})
+
+            except:  # si l'utilisateur rentre n'importe quoi, on remet à la valeur du FL
+                self.returnValues.update({'PFL': self.returnValues['FL']})
+
+        # on vérifie l'indicatif
+        elif event.ui_element == self.indicatifinput:
+            self.returnValues.update({'indicatif': event.text})
 
     def kill(self):
         self.window.kill()
@@ -335,11 +335,8 @@ class menuAvion:
         :returns: le dictionaire de valeurs si on valide, None sinon
         """
 
-        if event.type == pygame_gui.UI_TEXT_ENTRY_CHANGED:
-            print('caca')
-
-            # heading
-        elif event.ui_element in self.headingBoutonListe:
+        # heading
+        if event.ui_element in self.headingBoutonListe:
 
             self.returnValues.update({'Heading': int(event.ui_element.text)})
             selectButtonInList(self.headingBoutonListe, event.ui_element)
@@ -377,7 +374,6 @@ class menuAvion:
 
             self.window.kill()
             return self.avion.Id, self.returnValues
-
 
 class etiquette:
 

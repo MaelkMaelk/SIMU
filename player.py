@@ -57,6 +57,7 @@ class Avion:
         self.visible = True
         self.predictionPoint = None  # point pour la prédiction de route
         self.drawRouteBool = False
+        self.locWarning = False
 
         # etiquette
         self.etiquetteX = papa.x + 60
@@ -134,21 +135,23 @@ class Avion:
         if self.visible:
             if self.papa.warning:
                 color = (255, 120, 60)
+            elif self.locWarning:
+                color = (100, 200, 100)
             elif self.papa.part:
                 color = (30, 144, 255)
             else:
                 color = (255, 255, 255)
 
-            pygame.draw.rect(win, color, (self.affX, self.affY, plotSize * 2, plotSize * 2), 1)
+            pygame.draw.circle(win, (255, 255, 255), (self.affX + plotSize, self.affY + plotSize), plotSize, 1)
 
-            if vecteurs or self.papa.warning:  # si on doit dessiner les vecteurs
+            if vecteurs or self.papa.warning or self.locWarning:  # si on doit dessiner les vecteurs
                 self.drawVector(color, win, vecteurSetting, zoom)  # on appelle la fonction
 
             radius = 1
             for plot in self.papa.comete:
                 affPlot = [plot[0] * zoom + scroll[0],
                            plot[1] * zoom + scroll[1]]
-                pygame.draw.circle(win, color, affPlot, int(round(radius)), 1)
+                pygame.draw.circle(win, (255, 255, 255), affPlot, int(round(radius)), 1)
                 radius += 0.7
             pygame.draw.line(win, (255, 255, 255), (self.affX + plotSize, self.affY + plotSize),
                              (self.etiquetteX, self.etiquetteY))
@@ -242,14 +245,16 @@ class Avion:
         """
 
         if event.ui_element == self.bouton:
-            if event.mouse_button == 2 and not pilote:
+            if event.mouse_button == 2 and not pilote:  # clic milieu
                 return self.Id, 'Warning'
 
-            elif event.mouse_button == 1:
+            elif event.mouse_button == 1:  # clic gauche
                 self.etiquettePos += 1
 
-            elif event.mouse_button == 3 and pilote:
-                return self.Id, 'Remove'
+            elif event.mouse_button == 3:
+                if pilote:  # si on est en pilote alors ça supp l'avion
+                    return self.Id, 'Remove'
+                self.locWarning = not self.locWarning  # toggle les warnings locs
 
         elif event.ui_element == self.etiquette.indicatif:
             if event.mouse_button == 1 and pilote:
