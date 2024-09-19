@@ -16,7 +16,7 @@ axe = 74
 axePoint = 'BST'
 
 
-def positionAffichage(x, y, zoom, scrollX, scrollY):
+def positionAffichage(x, y, zoom, scrollX, scrollY):  # TODO rassembler x, y en (x,y) pareil pour le scroll
     """
     :param x: position en x
     :param y: position en y
@@ -29,6 +29,16 @@ def positionAffichage(x, y, zoom, scrollX, scrollY):
     x = x * zoom + scrollX
     y = y * zoom + scrollY
     return x, y
+
+
+def positionBrute(position, zoom, scroll):  # TODO remplacer les endroits ou on utilise pas la fonction
+    """
+    Transforme une position graphique en une position sur la gameMap
+    :param position: vecteur2 (x, y)
+    :param zoom: scalaire de zoom
+    :param scroll: vecteur2 (scrollx, scrolly)
+    :return: x, y
+    """
 
 
 class Avion:
@@ -46,6 +56,7 @@ class Avion:
         # Radar display
         self.visible = True
         self.predictionPoint = None  # point pour la prédiction de route
+        self.drawRouteBool = False
 
         # etiquette
         self.etiquetteX = papa.x + 60
@@ -104,7 +115,7 @@ class Avion:
                                                 self.papa.headingRad)),
                                2)
 
-    def draw(self, win, zoom, scroll, vecteurs, vecteurSetting, typeAff):
+    def draw(self, win, zoom, scroll, vecteurs, vecteurSetting, points):
 
         # updates
 
@@ -115,6 +126,9 @@ class Avion:
         self.positionEtiquette()  # on détermine la position de l'étiquette (nord est, SE, NO, SO)
         self.etiquette.update(self)  # on update via la fonction de l'étiquette
         self.bouton.set_position((self.affX, self.affY))
+
+        if self.drawRouteBool:
+            self.drawRoute(points, win, zoom, scroll)
 
         # Dessin
         if self.visible:
@@ -139,7 +153,7 @@ class Avion:
             pygame.draw.line(win, (255, 255, 255), (self.affX + plotSize, self.affY + plotSize),
                              (self.etiquetteX, self.etiquetteY))
 
-    def drawRoute(self, points, temps, win, zoom, scroll):
+    def drawEstimatedRoute(self, points, temps, win, zoom, scroll):
         """
         Dessine la route future de l'avion jusuq'à un certain point défini par une valeur de temps
         C'est une bonne approximation de la future position de l'avion, à vitesse constante
@@ -182,11 +196,40 @@ class Avion:
                 break  # on casse la boucle for, pas la peine de faire des calculs pour plus loin, la prédi est finie
 
             else:  # si le trajet s'arrête après la branche, on dessine la branche en entier
-                pygame.draw.line(win, (0, 255, 0),
+                pygame.draw.line(win, (0, 255, 0),  # TODO changer avec la fct positionAffichage
                                  (pointUn[0] * zoom + scroll[0], pointUn[1] * zoom + scroll[1]),
                                  (pointDeux[0] * zoom + scroll[0], pointDeux[1] * zoom + scroll[1]))
 
             distance -= legDistance  # on enlève la distance de la branche parcourue à la distance à parcourir
+            pointUn = pointDeux  # on passe au prochain point
+
+    def drawRoute(self, points, win, zoom, scroll):
+        """
+        Dessine la route future de l'avion avec les estimées en temps
+        :param points: la liste des points récupérer les coords
+        :param win: l'écran pygame
+        :param zoom: le niveau de zoom
+        :param scroll: le scroll format [x, y]
+        :return:
+        """
+
+        route = self.papa.route['points']  # on n'a besoin que des noms des points
+        nextPoint = self.papa.nextPoint
+        ratio = 0
+
+        point1 = points[route[route.index(nextPoint) - 1]['name']][:2]
+        point2 = points[nextPoint['name']][:2]
+        pointUn = geometry.calculateShortestPoint(point1, point2, [self.papa.x, self.papa.y])
+        # TODO heure de passage pour chaque point
+        route = route[route.index(nextPoint):]  # on ne considère que la route devant l'avion
+
+        for point in route:
+            pointDeux = [points[point['name']][0], points[point['name']][1]]
+
+            pygame.draw.line(win, (25, 25, 170),  # TODO changer avec la fct positionAffichage
+                             (pointUn[0] * zoom + scroll[0], pointUn[1] * zoom + scroll[1]),
+                             (pointDeux[0] * zoom + scroll[0], pointDeux[1] * zoom + scroll[1]), 2)
+
             pointUn = pointDeux  # on passe au prochain point
 
     def checkEvent(self, event, pilote):
@@ -211,6 +254,10 @@ class Avion:
         elif event.ui_element == self.etiquette.indicatif:
             if event.mouse_button == 1 and pilote:
                 return 'menu'
+
+        elif event.ui_element == self.etiquette.XPT:
+            if event.mouse_button == 1 and not pilote:
+                self.drawRouteBool = not self.drawRouteBool
 
     def update(self, papa):
         self.papa = papa

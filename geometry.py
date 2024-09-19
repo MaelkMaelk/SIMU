@@ -1,4 +1,5 @@
 import math
+import numpy as np
 
 
 def calculateHeading(x, y, xPoint, yPoint):
@@ -21,6 +22,31 @@ def calculateHeading(x, y, xPoint, yPoint):
 
 def calculateDistance(x1, y1, x2, y2):
     return math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+
+
+def calculateShortestPoint(pointDroite1, pointDroite2, point):
+    """
+    Calcule le point sur une droite où la distance ets la plus courte à un point
+    :param pointDroite1: 1er point pour définir la droite, vecteur2 (x, y)
+    :param pointDroite2: 2em point pour définir la droite, vecteur2 (x, y)
+    :param point: point avec lequel on fait le calcul
+    :return: retourne le point d'intersection du segment et de la droite (x, y)
+    """
+
+    # on calcule le coeff directeur de la droite
+    coeffdroite1 = (pointDroite1[1] - pointDroite2[1]) / (pointDroite1[0] - pointDroite2[0])
+    # on calcule l'ordonnée à l'origine
+    ordonnee1 = pointDroite1[1] - coeffdroite1 * pointDroite1[0]
+    # on prend l'opposée de l'inverse de ce coeff, qui correspond celui de la droite perpendiculaire
+    coeffdroitePerp = - 1 / coeffdroite1
+    # on calcule l'ordonnée à l'origine à partir du point
+    ordonnee2 = point[1] - coeffdroitePerp * point[0]
+
+    left_side = np.array([[-coeffdroite1, 1], [-coeffdroitePerp, 1]])
+    right_side = np.array([ordonnee1, ordonnee2])
+
+    # solve for x and y
+    return np.linalg.inv(left_side).dot(right_side)
 
 
 def calculateAngle(principal, secondaire):

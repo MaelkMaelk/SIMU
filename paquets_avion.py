@@ -176,4 +176,3 @@ class AvionPacket:
         self.x += self.speedPx * math.cos(self.headingRad)
         self.y += self.speedPx * math.sin(self.headingRad)
 
-# format map : [points, secteurs, segments, routes, mapScale, axes, zones]

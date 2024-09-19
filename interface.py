@@ -494,19 +494,20 @@ class etiquette:
             Xvalue = - self.container.get_rect()[2]
             Yvalue = - self.container.get_rect()[3]
 
-        self.boutonAgauche()  # #TODO utiliser cette fonction que quand c'est nécessaire
+        self.boutonAgauche()  # TODO utiliser cette fonction que quand c'est nécessaire
 
         # speed et C/D rate
         if avion.papa.evolution == 0:  # on affiche la rate que si l'avion est en evo
             evo = ""
         else:
             evo = "  " + str(avion.papa.evolution)[:3]
+
         self.speedGS.set_text(str(avion.papa.speedGS)[:2] + evo)
 
         # alti
         self.AFL.set_text(str(round(avion.papa.altitude/100)) + " " + avion.papa.altitudeEvoTxt)
 
-        self.CFL.set_text(str(round(avion.papa.selectedAlti/1000)))  # #TODO changer en CFL
+        self.CFL.set_text(str(round(avion.papa.selectedAlti/1000)))  # TODO changer en CFL
 
         # container
         self.container.set_position((avion.etiquetteX + Xvalue, avion.etiquetteY + Yvalue))
@@ -519,19 +520,24 @@ class etiquette:
         Méthode qui met les boutons le plus à gauche possible de l'étiquette en fonction des boutons visibles
         """
         for ligne in [self.ligneDeux, self.ligneTrois, self.ligneQuatre]:  # on le fait pour chaque ligne
-            for numBouton in range(len(self.ligneTrois)):  # on fait avec un range pour pouvoir tronquer la liste
+            for numBouton in range(len(ligne)):  # on fait avec un range pour pouvoir tronquer la liste
 
-                bouton = self.ligneTrois[numBouton]  # on récupère le bouton
+                bouton = ligne[numBouton]  # on récupère le bouton
                 ancres = bouton.get_anchors()  # on récupère ses ancres
-                a = updateAncres(self.ligneTrois[:numBouton])  # on calcule ses nouvelles ancres
 
-                if a is not None:
-                    ancres.update(a)
+                if bouton.visible:  # on regarde s'il est visible
+
+                    a = updateAncres(ligne[:numBouton])  # on calcule ses nouvelles ancres
+
+                    if a is not None:
+                        ancres.update(a)
+                    else:
+
+                        ancres.pop('left', None)
+                        ancres.pop('left_target', None)
                 else:
-
                     ancres.pop('left', None)
                     ancres.pop('left_target', None)
-
                 bouton.set_anchors(ancres)
 
     def kill(self):

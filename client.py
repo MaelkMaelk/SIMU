@@ -329,39 +329,22 @@ def main(server_ip):
         # on affiche les avions
         if pilote:
             for avion in dictAvionsAff.values():
-                avion.draw(win, zoom, scroll, vecteurs, vecteurSetting, affichage_type_avion)
+                avion.draw(win, zoom, scroll, vecteurs, vecteurSetting, carte['points'])
         else:
             for avion in dictAvionsAff.values():
-                avion.draw(win, zoom, scroll, vecteurs, vecteurSetting, affichage_type_avion)
-                avion.drawRoute(carte['points'], distance, win, zoom, scroll)
+                avion.draw(win, zoom, scroll, vecteurs, vecteurSetting, carte['points'])
+
 
         # on affiche les boutons
         manager.draw_ui(win)
         manager.update(time_delta)
-
-        """if selectConflitState == 3:
-            # on convertit la position du cercle pour l'affichage
-            pos = positionAffichage(conflitPoint[0], conflitPoint[1], zoom, scroll[0], scroll[1])
-            # on détermine le rayon du cercle
-            conflitRadius = math.sqrt((conflitPoint[0] - conflitAvion.papa.x) ** 2 + (conflitPoint[1] - conflitAvion.papa.y) ** 2) \
-                            / speedRatio
-
-            # on dessine les trois cercles
-            pygame.draw.circle(win, (255, 0, 0), (pos[0], pos[1]),
-                               conflitRadius*zoom, 1)
-
-            pygame.draw.circle(win, (71, 123, 146), (pos[0], pos[1]),
-                               (conflitRadius - 15/mapScale) * zoom, 1)
-
-            pygame.draw.circle(win, (71, 123, 146), (pos[0], pos[1]),
-                               (conflitRadius + 15/mapScale) * zoom, 1)"""
 
         if not game.paused:  # oui en fait quand c en pause c False
             img = font.render("gelé", True, (255, 105, 180))
             win.blit(img, (20, 50))
 
         # dessin Heure
-        heures = str(round(game.heure//3600))
+        heures = str(round(game.heure//3600 % 24))
         if len(heures) == 1:
             heures = '0' + heures
         minutes = str(round(game.heure % 3600//60))
