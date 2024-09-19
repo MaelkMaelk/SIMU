@@ -125,10 +125,17 @@ def main(server_ip):
 
             # zoom géré ici
             if event.type == pygame.MOUSEWHEEL:
+
+                before_x_pos = (width/2 - scroll[0]) / zoom
+                before_y_pos = (height/2 - scroll[1]) / zoom
+
                 zoom = zoom+event.y/14
 
-                scroll[0] = width/2 * (1 - zoom)
-                scroll[1] = height/2 * (1 - zoom)
+                after_x_pos = (width/2 - scroll[0]) / zoom
+                after_y_pos = (height/2 - scroll[1]) / zoom
+
+                scroll[0] += (after_x_pos - before_x_pos) * zoom
+                scroll[1] += (after_y_pos - before_y_pos) * zoom
 
             if event.type == pygame_gui.UI_BUTTON_ON_HOVERED:
                 for avion in dictAvionsAff.values():
