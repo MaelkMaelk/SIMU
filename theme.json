@@ -27,7 +27,21 @@
            "text_vert_alignment": "top",
            "text_vert_alignment_padding": "0",
             "shadow_width" : "0"
-       }
+       },
+      "font":
+
+         {
+
+             "name": "regular",
+
+             "size": "12",
+
+             "regular_path": "liberation_serif/LiberationSerif-Regular.ttf",
+             "bold_path": "liberation_serif/LiberationSerif-Bold.ttf",
+             "italic_path": "liberation_serif/LiberationSerif-Italic.ttf",
+             "bold_italic_path": "liberation_serif/LiberationSerif-BoldItalic.ttf"
+
+             }
    },
       "@etiquette":
      {

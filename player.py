@@ -39,7 +39,7 @@ class Avion:
     def __init__(self, Id, papa):
         self.Id = Id
         self.papa = papa
-        self.bouton = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((self.papa.x, self.papa.y), (20, 20)), text='')
+        self.bouton = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((self.papa.x, self.papa.y), (plotSize * 2, plotSize * 2)), text='')
         self.bouton.generate_click_events_from: Iterable[int] = frozenset(
             [pygame.BUTTON_LEFT, pygame.BUTTON_RIGHT, pygame.BUTTON_MIDDLE])
 
@@ -114,7 +114,7 @@ class Avion:
 
         self.positionEtiquette()  # on détermine la position de l'étiquette (nord est, SE, NO, SO)
         self.etiquette.update(self)  # on update via la fonction de l'étiquette
-        self.updateBouton()
+        self.bouton.set_position((self.affX, self.affY))
 
         # Dessin
         if self.visible:
@@ -214,10 +214,6 @@ class Avion:
 
     def update(self, papa):
         self.papa = papa
-
-    def updateBouton(self):
-        self.bouton.rect = pygame.Rect((self.affX, self.affY), (20, 20))
-        self.bouton.rebuild()
 
     def kill(self):
         self.bouton.kill()

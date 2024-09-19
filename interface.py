@@ -54,17 +54,17 @@ class NouvelAvionWindow:
 
         # le dictionnaire utilisé pour renvoyer les valeurs sélectionnées par nos boutons
         self.returnValues = {'indicatif': 'FCACA', 'avion': 'B738', 'FL': 310, 'PFL': 310}
-        
+
         # la fenêtre du menu
         self.window = pygame_gui.elements.UIWindow(pygame.Rect((250, 250), (600, 400)))
-        
+
         # la liste des routes
         self.routeContainer = pygame_gui.elements.UIScrollingContainer(
             pygame.Rect((0, 34), (150, 200)), container=self.window, allow_scroll_x=False)
-        
+
         self.routeBoutonListe = scrollListGen(list(routes.keys()),
                                               pygame.Rect((0, 0), (125, 17)), self.routeContainer, False)[1]
-        
+
         # la liste des types avion
         self.typeAvionContainer = pygame_gui.elements.UIScrollingContainer(pygame.Rect((0, 34), (150, 200)),
         container=self.window, anchors={'left': 'left', 'left_target': self.routeContainer}, allow_scroll_x=False)
@@ -73,17 +73,17 @@ class NouvelAvionWindow:
             list(avions.keys()), pygame.Rect((0, 0), (125, 17)), self.typeAvionContainer, False)[1]
 
         # les divers autres boutons et champs
-        
+
         self.conflitsBouton = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 20), (200, 17)),
             text='Générateur de conflits',
-            container=self.window, 
+            container=self.window,
             anchors={'top': 'top', 'top_target': self.typeAvionContainer, 'left': 'left', 'left_target': self.routeContainer})
-        
+
         self.validerBouton = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 5), (200, 17)),
             text='Ok',
-            container=self.window, 
+            container=self.window,
             anchors={'top': 'top', 'top_target': self.conflitsBouton, 'left': 'left', 'left_target': self.routeContainer})
 
         self.indicatiflabel = pygame_gui.elements.UILabel(
@@ -91,29 +91,29 @@ class NouvelAvionWindow:
             container=self.window,
             anchors={'left': 'left', 'left_target': self.typeAvionContainer},
             text='Indicatif')
-        
+
         self.indicatifinput = pygame_gui.elements.UITextEntryBox(
             relative_rect=pygame.Rect((0, 0), (200, 30)),
             container=self.window,
             anchors={'left': 'left', 'left_target': self.typeAvionContainer, 'top': 'top', 'top_target': self.indicatiflabel})
-        
+
         self.FLlabel = pygame_gui.elements.UILabel(
             relative_rect=pygame.Rect((0, 0), (200, 17)),
             container=self.window,
             anchors={'left': 'left', 'left_target': self.typeAvionContainer, 'top': 'top', 'top_target': self.indicatifinput},
             text='FL')
-        
+
         self.FLinput = pygame_gui.elements.UITextEntryBox(
             relative_rect=pygame.Rect((0, 0), (200, 30)),
             container=self.window,
             anchors={'left': 'left', 'left_target': self.typeAvionContainer, 'top': 'top', 'top_target': self.FLlabel})
-        
+
         self.PFLlabel = pygame_gui.elements.UILabel(
             relative_rect=pygame.Rect((0, 0), (200, 17)),
             container=self.window,
             anchors={'left': 'left', 'left_target': self.typeAvionContainer, 'top': 'top', 'top_target': self.FLinput},
             text='PFL')
-        
+
         self.PFLinput = pygame_gui.elements.UITextEntryBox(
             relative_rect=pygame.Rect((0, 0), (200, 30)), container=self.window,
             anchors={'left': 'left', 'left_target': self.typeAvionContainer, 'top': 'top', 'top_target': self.PFLlabel})
@@ -125,40 +125,40 @@ class NouvelAvionWindow:
         :arg event: l'évenement qu'il faut vérifier
         :returns: le dictionaire de valeurs si on valide, None sinon
         """
-        
+
         # on vérifie d'abord les champs de text
         if event.type == pygame_gui.UI_TEXT_ENTRY_CHANGED:
-            
+
             # on vérifie le FL
             if event.ui_element == self.FLinput:
                 try:
                     self.returnValues.update({'FL': int(event.text)})
-                    
+
                 except:  # si l'utilisateur rentre n'importe quoi, on remet à la valeur de base
                     self.returnValues.update({'FL': 310})
-                    
+
             # on vérifie le PFL        
             elif event.ui_element == self.PFLinput:
                 try:
                     self.returnValues.update({'PFL': int(event.text)})
-                    
+
                 except:  # si l'utilisateur rentre n'importe quoi, on remet à la valeur du FL
                     self.returnValues.update({'PFL': self.returnValues['FL']})
-            
+
             # on vérifie l'indicatif
             elif event.ui_element == self.indicatifinput:
                 self.returnValues.update({'indicatif': event.text})
-                
+
         elif event.ui_element in self.typeAvionBoutonListe:
 
             event.ui_element.select()
             self.returnValues.update({'avion': event.ui_element.text})
-        
+
         elif event.ui_element in self.routeBoutonListe:
 
             event.ui_element.select()
             self.returnValues.update({'route': event.ui_element.text})
-        
+
         elif event.ui_element == self.validerBouton:
             self.window.kill()
             return self.returnValues
@@ -414,7 +414,7 @@ class etiquette:
             anchors={'top': 'top', 'top_target': self.indicatif},
             container=self.container)
 
-        self.EFL = pygame_gui.elements.UIButton(
+        self.CFL = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
             text=str(round(avion.papa.altitude / 100))[:2],
             object_id=pygame_gui.core.ObjectID('@etiquette', 'button'),
@@ -425,10 +425,60 @@ class etiquette:
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
             text=avion.papa.nextPoint['name'],
             object_id=pygame_gui.core.ObjectID('@etiquette', 'button'),
-            anchors={'top': 'top', 'top_target': self.indicatif, 'left': 'left', 'left_target': self.EFL},
+            anchors={'top': 'top', 'top_target': self.indicatif, 'left': 'left', 'left_target': self.CFL},
             container=self.container)
 
+        self.speedIAS = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((0, 0), (-1, -1)),
+            text="S",
+            object_id=pygame_gui.core.ObjectID('@etiquette', 'button'),
+            anchors={'top': 'top', 'top_target': self.indicatif, 'left': 'left', 'left_target': self.DCT},
+            container=self.container)
+
+        self.rate = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((0, 0), (-1, -1)),
+            text="R",
+            object_id=pygame_gui.core.ObjectID('@etiquette', 'button'),
+            anchors={'top': 'top', 'top_target': self.indicatif, 'left': 'left', 'left_target': self.speedIAS},
+            container=self.container)
+
+        self.XPT = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((0, 0), (-1, -1)),
+            text=avion.papa.route['points'][-1]['name'],
+            object_id=pygame_gui.core.ObjectID('@etiquette', 'button'),
+            anchors={'top': 'top', 'top_target': self.AFL},
+            container=self.container)
+
+        self.XFL = pygame_gui.elements.UIButton(  # #TODO associer XFL ici
+            relative_rect=pygame.Rect((0, 0), (-1, -1)),
+            text="120",
+            object_id=pygame_gui.core.ObjectID('@etiquette', 'button'),
+            anchors={'top': 'top', 'top_target': self.AFL, 'left': 'left', 'left_target': self.XPT},
+            container=self.container)
+
+        self.PFL = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((0, 0), (-1, -1)),
+            text="120",
+            object_id=pygame_gui.core.ObjectID('@etiquette', 'button'),
+            anchors={'top': 'top', 'top_target': self.AFL, 'left': 'left', 'left_target': self.XFL},
+            container=self.container)
+
+        self.nextSector = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((0, 0), (-1, -1)),
+            text="I2",
+            object_id=pygame_gui.core.ObjectID('@etiquette', 'button'),
+            anchors={'top': 'top', 'top_target': self.AFL, 'left': 'left', 'left_target': self.PFL},
+            container=self.container)
+
+        self.ligneDeux = [self.indicatif, self.type_dest]
+        self.ligneTrois = [self.AFL, self.CFL, self.DCT, self.speedIAS, self.rate]
+        self.ligneQuatre = [self.XPT, self.XFL, self.PFL, self.nextSector]
+
     def update(self, avion):
+
+        """
+        On ajuste tous les paramètres de l'étiquette : sa position ainsi que les valeurs textes dans les boutons
+        """
 
         # on ajuste la position du container en fonction de son point cardinal par rapport au plot
         if avion.etiquettePos % 4 == 0:
@@ -444,7 +494,7 @@ class etiquette:
             Xvalue = - self.container.get_rect()[2]
             Yvalue = - self.container.get_rect()[3]
 
-        # mise à jour des boutons
+        self.boutonAgauche()  # #TODO utiliser cette fonction que quand c'est nécessaire
 
         # speed et C/D rate
         if avion.papa.evolution == 0:  # on affiche la rate que si l'avion est en evo
@@ -456,9 +506,53 @@ class etiquette:
         # alti
         self.AFL.set_text(str(round(avion.papa.altitude/100)) + " " + avion.papa.altitudeEvoTxt)
 
+        self.CFL.set_text(str(round(avion.papa.selectedAlti/1000)))  # #TODO changer en CFL
+
+        # container
         self.container.set_position((avion.etiquetteX + Xvalue, avion.etiquetteY + Yvalue))
         self.container.rebuild()
         self.container.update_containing_rect_position()
 
+    def boutonAgauche(self):
+
+        """
+        Méthode qui met les boutons le plus à gauche possible de l'étiquette en fonction des boutons visibles
+        """
+        for ligne in [self.ligneDeux, self.ligneTrois, self.ligneQuatre]:  # on le fait pour chaque ligne
+            for numBouton in range(len(self.ligneTrois)):  # on fait avec un range pour pouvoir tronquer la liste
+
+                bouton = self.ligneTrois[numBouton]  # on récupère le bouton
+                ancres = bouton.get_anchors()  # on récupère ses ancres
+                a = updateAncres(self.ligneTrois[:numBouton])  # on calcule ses nouvelles ancres
+
+                if a is not None:
+                    ancres.update(a)
+                else:
+
+                    ancres.pop('left', None)
+                    ancres.pop('left_target', None)
+
+                bouton.set_anchors(ancres)
+
     def kill(self):
         self.container.kill()
+
+
+def updateAncres(liste):
+    """
+    Calcule des ancres pour un élément, en fonction de la non-visibilité de ses voisins de ligne sur sa gauche,
+     pour qu'il soit le plus à gauche possible.
+    :arg liste: Liste correspondant à la ligne à vérifier. Les éléments sont triés de la gauche vers la droite,
+     et la liste ne comprend que les voisins à la gauche de l'élément en question
+    :return les nouvelles ancres pour l'élément dans un dict:
+    """
+
+    liste.reverse()  # on inverse la ligne pour partir du voisin direct
+
+    if not liste:  # si la liste n'est pas vide, il a donc des voisins à gauche
+        return {}  # on renvoie un dict vide s'il n'y a pas d'élément sur sa gauche
+
+    for element in liste:  # on parcourt tous les éléments à sa gauche
+        if element.visible:
+            return {'left': 'left', 'left_target': element}  # on renvoie des ancres au 1er élément visible à sa gauche
+    return None  # on renvoie None si tous les éléments à sa gauche sont invisibles
