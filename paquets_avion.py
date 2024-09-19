@@ -7,6 +7,8 @@ nmToFeet = 6076
 altiDefault = 24000  # alti en pied par défault, si on ne rentre pas d'alti pour spawn un avion
 acceldefault = 3  # accélération/decelération de kt par refresh
 turnRateDefault = 10  # turnrate/refresh par défault
+liste_etat_freq = ['previousFreq', 'previousShoot', 'inFreq', 'nextCoord', 'nextShoot', 'nextFreq']
+
 
 class Game:
     def __init__(self, heure):
@@ -57,8 +59,9 @@ class AvionPacket:
         self.warning = False
         self.part = False
         self.STCA = False
-        self.FLInterro = False
         self.montrer = False
+        # états possibles : previousFreq, previousShoot, inFreq, nextCoord, nextShoot, nextFreq
+        self.etatFrequence = "previousFreq"
 
         # perfo
         self.turnRate = turnRateDefault

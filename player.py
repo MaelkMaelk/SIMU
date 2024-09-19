@@ -58,6 +58,8 @@ class Avion:
         self.predictionPoint = None  # point pour la prédiction de route
         self.drawRouteBool = False
         self.locWarning = False
+        self.etiquetteExtended = False
+        self.unHoverTime = pygame.time.get_ticks()
 
         # etiquette
         self.etiquetteX = papa.x + 60
@@ -263,6 +265,42 @@ class Avion:
         elif event.ui_element == self.etiquette.XPT:
             if event.mouse_button == 1 and not pilote:
                 self.drawRouteBool = not self.drawRouteBool
+
+    def checkEtiquetteOnHover(self, event):
+        """
+        Vérifie si on doit ou non étendre l'étiquette
+        :return: True si l'event appartient à cette étiquette
+        """
+        for ligne in [self.etiquette.ligneDeux, self.etiquette.ligneTrois, self.etiquette.ligneQuatre, [self.etiquette.speedGS]]:
+            if event.ui_element in ligne:
+                self.etiquetteExtended = True
+                return True
+
+        return False
+
+    def checkEcheckEtiquetteOnUnhover(self):
+        """
+        Vérifie si on doit ou non désétendre l'étiquette
+        """
+        hovered = False
+        if self.etiquetteExtended:
+            for ligne in [self.etiquette.ligneDeux, self.etiquette.ligneTrois, self.etiquette.ligneQuatre, [self.etiquette.speedGS]]:
+                for bouton in ligne:
+                    if bouton.hovered:
+                        hovered = True
+                        break
+            if hovered:
+                self.unHoverTime = pygame.time.get_ticks()
+            elif pygame.time.get_ticks() - self.unHoverTime > 200:
+                self.etiquetteExtended = False
+
+    def extendEtiquette(self):
+        """
+        Étend ou range l'étiquette
+        """
+
+        if self.etiquetteExtended and self.etiquette.extended:
+
 
     def update(self, papa):
         self.papa = papa

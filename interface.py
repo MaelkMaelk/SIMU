@@ -379,6 +379,8 @@ class etiquette:
 
     def __init__(self, avion):
 
+        self.extended = False  # relate de si l'étiquette est étendue ou non
+
         self.container = pygame_gui.elements.UIAutoResizingContainer(
             pygame.Rect((0, 0), (0, 0)), pygame.Rect((0, 0), (0, 0)), resize_top=False, resize_left=False)
 

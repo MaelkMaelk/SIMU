@@ -117,6 +117,8 @@ def main(server_ip):
 
         for event in pygame.event.get():
 
+
+
             if event.type == pygame.QUIT:
                 run = False
                 pygame.quit()
@@ -128,8 +130,13 @@ def main(server_ip):
                 scroll[0] = width/2 * (1 - zoom)
                 scroll[1] = height/2 * (1 - zoom)
 
+            if event.type == pygame_gui.UI_BUTTON_ON_HOVERED:
+                for avion in dictAvionsAff.values():
+                    if avion.checkExtent(event):  # renvoies True quand le bouton correspond à cette etiquette
+                        break  # dès qu'on a trouvé le responsable, on casse
+
             # on vérifie que l'alidade n'est pas actif
-            if event.type == pygame_gui.UI_BUTTON_START_PRESS and not curseur_alidad:
+            elif event.type == pygame_gui.UI_BUTTON_START_PRESS and not curseur_alidad:
 
                 # si un bouton est appuyé
                 triggered = True

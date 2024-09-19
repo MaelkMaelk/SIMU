@@ -32,7 +32,7 @@
         <ROC>1000</ROC>
         <ROD>1500</ROD>
     </aircraft>
-    <aircraft name="A320">
+    <aircraft name="TB10">
         <speed>330</speed>
         <ceiling>450</ceiling>
         <ROC>500</ROC>
