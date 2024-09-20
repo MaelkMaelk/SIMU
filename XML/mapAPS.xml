@@ -49,7 +49,7 @@
             <y>709</y>
         </point>
         <point name="MEN">
-            <x>1008</x>
+            <x>995</x>
             <y>1146</y>
         </point>
         <point name="MINDI">
@@ -121,7 +121,7 @@
             <y>1467</y>
         </point>
         <point name="ABISA">
-            <x>1375</x>
+            <x>1374</x>
             <y>1644</y>
         </point>
         <point name="SPIDY">
@@ -224,7 +224,7 @@
 
     <routes>
         <route>
-            <Type>TRANSIT</Type>
+            <Type>DEPART</Type>
             <point>
                 <name>GVA</name>
                 <FL>120</FL>
@@ -244,6 +244,12 @@
             </point>
             <point>
                 <name>MEN</name>
+            </point>
+            <point>
+                <name>LOBOS</name>
+            </point>
+            <point>
+                <name>GAI</name>
             </point>
             <sortie min="245" max="285">OM</sortie>
             <sortie min="285" max="365">OS</sortie>
@@ -273,7 +279,12 @@
             <point>
                 <name>MEN</name>
             </point>
-            <arrival secteur="EI">250</arrival>
+            <point>
+                <name>LOBOS</name>
+            </point>
+            <point>
+                <name>GAI</name>
+            </point>
             <sortie min="245" max="285">OM</sortie>
             <sortie min="285" max="365">OS</sortie>
         </route>
@@ -351,10 +362,122 @@
                 <name>ETORI</name>
             </point>
             <point>
+                <name>ONGHI</name>
+            </point>
+            <point>
                 <name>GAI</name>
             </point>
             <sortie min="245" max="285">OM</sortie>
             <sortie min="285" max="365">OS</sortie>
+        </route>
+
+        <route>
+            <Type>TRANSIT</Type>
+            <point>
+                <name>GAI</name>
+            </point>
+            <point>
+                <name>ONGHI</name>
+            </point>
+            <point>
+                <name>ETORI</name>
+            </point>
+            <point>
+                <name>SPIDY</name>
+            </point>
+            <point>
+                <name>MTL</name>
+            </point>
+            <point>
+                <name>GRENA</name>
+            </point>
+            <point>
+                <name>BOSUA</name>
+            </point>
+            <point>
+                <name>JUVEN</name>
+            </point>
+            <arrival secteur="M2">260</arrival>
+            <sortie min="245" max="365">M2</sortie>
+        </route>
+
+        <route>
+            <Type>TRANSIT</Type>
+            <point>
+                <name>GAI</name>
+            </point>
+            <point>
+                <name>ONGHI</name>
+            </point>
+            <point>
+                <name>ETORI</name>
+            </point>
+            <point>
+                <name>SPIDY</name>
+            </point>
+            <point>
+                <name>MTL</name>
+            </point>
+            <point>
+                <name>LTP</name>
+            </point>
+            <point>
+                <name>MOZAO</name>
+            </point>
+            <point>
+                <name>SEVET</name>
+            </point>
+            <arrival secteur="EI">250</arrival>
+            <sortie min="245" max="365">G2</sortie>
+        </route>
+
+        <route>
+            <Type>TRANSIT</Type>
+            <point>
+                <name>ABISA</name>
+            </point>
+            <point>
+                <name>MAJOR</name>
+            </point>
+            <point>
+                <name>MTL</name>
+            </point>
+            <point>
+                <name>LTP</name>
+            </point>
+            <point>
+                <name>MOZAO</name>
+            </point>
+            <point>
+                <name>SEVET</name>
+            </point>
+            <arrival secteur="EI">250</arrival>
+            <sortie min="245" max="365">G2</sortie>
+        </route>
+
+        <route>
+            <Type>TRANSIT</Type>
+            <point>
+                <name>ABISA</name>
+            </point>
+            <point>
+                <name>MAJOR</name>
+            </point>
+            <point>
+                <name>MTL</name>
+            </point>
+            <point>
+                <name>MINDI</name>
+            </point>
+
+            <point>
+                <name>CFA</name>
+            </point>
+            <point>
+                <name>VULCA</name>
+            </point>
+            <sortie min="245" max="285">N2</sortie>
+            <sortie min="285" max="365">N3</sortie>
         </route>
     </routes>
 
