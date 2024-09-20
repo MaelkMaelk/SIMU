@@ -182,6 +182,12 @@ def main(server_ip):
                         # on vérifie que newPlane n'est pas None (les valeurs ont été renvoyés)
                         if newPlaneData:
                             # on crée alors un nouvel avion
+                            FL = None
+                            PFL = None
+                            if 'FL' in newPlaneData:
+                                FL = newPlaneData['FL']
+                            if 'PFL' in newPlaneData:
+                                PFL = newPlaneData['PFL']
 
                             newPlane = AvionPacket(
                                 carte,
@@ -190,8 +196,9 @@ def main(server_ip):
                                 newPlaneData['avion'],
                                 perfos[newPlaneData['avion']],  # on va chercher les perfos complètes
                                 carte['routes'][newPlaneData['route']],  # on va chercher la route en entier dans la map
-                                FL=newPlaneData['FL'],
-                                PFL=newPlaneData['PFL'])
+                                newPlaneData['arrival'],
+                                FL=FL,
+                                PFL=PFL)
 
                             localRequests.append((len(dictAvions), "Add", newPlane))
             elif event.type == pygame_gui.UI_TEXT_ENTRY_CHANGED:
@@ -333,7 +340,7 @@ def main(server_ip):
             pygame.draw.polygon(win, secteur['couleur'], liste_affichage_secteurs)
 
         # on dessine les routes
-        for segment in carte['segments']['DESSIN']:
+        for segment in carte['segments']['TRANSIT']:
             pygame.draw.line(win, (105, 110, 105), (segment[0][0]*zoom + scroll[0], segment[0][1]*zoom + scroll[1]),
                              (segment[1][0]*zoom + scroll[0], segment[1][1]*zoom + scroll[1]), 2)
 

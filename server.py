@@ -58,13 +58,16 @@ tree = ET.parse('XML/mapAPS.xml')
 root = tree.getroot()
 mapScale = float(root.find('scale').text)  # conversion nm-px
 
+gameMap.update({"ceiling": int(root.find('ceiling').text)})  # on récupère plancher et plafond
+gameMap.update({"floor": int(root.find('floor').text)})
+
 for point in root.find('points'):  # on parcourt la liste xml de points
     name = point.attrib['name']
     x = int(point.find('x').text)
     y = int(point.find('y').text)
 
-    if point.find('balise') is not None:  # on regarde si le champ balise est présent
-        balise = bool(point.find('balise').text)  # on ajoute sa valeur
+    if point.find('invisible'):  # on regarde si le champ balise est présent
+        balise = bool(point.find('invisible').text)  # on ajoute sa valeur
     else:
         balise = False
 
@@ -90,10 +93,14 @@ for route in root.find('routes'):
 gameMap['segments'] = segments  # liste des segments de route pour les dessiner qu'une seule fois
 
 for route in root.find('routes'):  # construction des routes
-    nomRoute = route.attrib['name']
+    if 'name' in route.attrib:
+        nomRoute = route.attrib['name']
+    else:
+        nomRoute = route.findall('point')[0].find('name').text + "-" + route.findall('point')[-1].find('name').text
     routeType = route.find('Type').text
     listeSortie = []
     listeRoutePoints = []
+    arrival = False
 
     x1 = gameMap['points'][route.find('point').find('name').text][0]
     y1 = gameMap['points'][route.find('point').find('name').text][1]
@@ -115,12 +122,15 @@ for route in root.find('routes'):  # construction des routes
             gameMap['segments'][routeType].append(((x1, y1), (x2, y2)))
         x1 = x2
         y1 = y2
+    if route.find('arrival') is not None:
+        arrival = {'XFL': int(route.find('arrival').text), 'secteur': route.find('arrival').attrib['secteur']}
     for sortie in route.findall('sortie'):
-        listeSortie.append(sortie.text)
+        listeSortie.append({'name': sortie.text, 'min': int(sortie.attrib['min']), 'max': int(sortie.attrib['max'])})
     gameMap['routes'].update({nomRoute: {'nom': nomRoute,
                                          'type': routeType,
                                          'points': listeRoutePoints,
-                                         'sortie': listeSortie}})
+                                         'sortie': listeSortie,
+                                         'arrival': arrival}})
 
 gameMap.update({'mapScale': mapScale})
 
@@ -290,10 +300,6 @@ while Running:
             elif req[1] == 'Remove':
                 dictAvion.pop(req[0])
             elif req[1] == 'Altitude':
-                if req[2] <= dictAvion[req[0]].altitude:
-                    dictAvion[req[0]].evolution = - dictAvion[req[0]].maxROD
-                else:
-                    dictAvion[req[0]].evolution = dictAvion[req[0]].maxROC
                 dictAvion[req[0]].selectedAlti = req[2]
             elif req[1] == 'Heading':
                 dictAvion[req[0]].headingMode = True
@@ -358,8 +364,8 @@ while Running:
         temps = time.time()
         suppListe = []
         for avion in list(dictAvion.values()):
-            supp = avion.move(gameMap)  # si jamais l'avion doit etre supp, il le renvoie à la fin du move, sinon None
-            if supp is not None:
+            # si jamais l'avion doit etre supp, il le renvoie à la fin du move, sinon None
+            if avion.move(gameMap):
                 suppListe.append(avion.Id)
         for avion in suppListe:
             dictAvion.pop(avion)

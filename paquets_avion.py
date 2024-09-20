@@ -31,11 +31,12 @@ class Packet:
 class AvionPacket:
     global heureEnRefresh
 
-    def __init__(self, gameMap, Id, indicatif, aircraft, perfos, route, FL=None, x=None, y=None, heading=None, PFL=None):
+    def __init__(self, gameMap, Id, indicatif, aircraft, perfos, route, arrival, FL=None, x=None, y=None, heading=None, PFL=None):
 
         self.Id = Id
         self.indicatif = indicatif
         self.aircraft = aircraft
+        self.arrival = arrival and route['arrival']
         
         if x is not None:  # si on a défini un point de spawn pendant le setup
             self.x = x
@@ -47,8 +48,11 @@ class AvionPacket:
 
         self.comete = []
 
+        # altis
         if FL is not None:  # si on a défini un FL pendant le setup
             self.altitude = FL * 100  # en pieds
+        elif 'FL' in route['points'][0]:  # si on a une alti de spawn
+            self.altitude = route['points'][0]['FL'] * 100
         else:
             self.altitude = altiDefault
 
@@ -68,27 +72,12 @@ class AvionPacket:
         self.turnRate = turnRateDefault
         self.maxROC = perfos['ROC']
         self.maxROD = perfos['ROD']
-        
-        # altis
-        self.evolution = 0  # taux de variation/radar refresh
-        self.altitudeEvoTxt = '-'
-        if PFL is not None:
-            self.PFL = PFL
-        else:
-            self.PFL = FL
-
-        if secteurBoundaries[0] > self.PFL > secteurBoundaries[1]:
-            self.XFL = self.PFL
-        else:
-            self.XFL = 360
-
 
         # format route {nomRoute, routeType, listeRoutePoints, sortie} points : {caractéristiques eg : nom alti IAS}
         self.route = route
 
-
         self.headingMode = False
-
+        # TODO changer ça pour pouvoir mettre un avion nimporte ou sur la route
         if calculateDistance(self.x, self.y, gameMap['points'][self.route['points'][0]['name']][0],
                              gameMap['points'][self.route['points'][0]['name']][1]) <= 4 * self.speedPx:
             self.nextPoint = self.route['points'][1]
@@ -101,6 +90,45 @@ class AvionPacket:
             self.nextRoute = 'bye'
             self.sortie = 'decollage'
 
+        self.evolution = 0  # taux de variation/radar refresh
+        self.altitudeEvoTxt = '-'
+        if PFL is not None:
+            self.PFL = PFL
+        elif gameMap['floor'] < self.altitude/100 < gameMap['ceiling']:
+            self.PFL = int(self.altitude / 100)
+        else:
+            self.PFL = 300
+
+        self.nextSector = None
+
+        if self.arrival:
+            self.XFL = route['arrival']['XFL']
+        elif gameMap['floor'] < self.PFL < gameMap['ceiling']:
+            self.XFL = self.PFL
+        elif self.PFL > gameMap["ceiling"]:
+            self.XFL = 360
+        else:
+            self.XFL = 300
+
+        if self.arrival:
+            self.nextSector = route['arrival']['secteur']
+        else:
+            for sortie in self.route['sortie']:
+                print(sortie['min'] < self.PFL < sortie['max'])
+                if sortie['min'] < self.PFL < sortie['max']:
+                    self.nextSector = sortie['name']
+
+        if not self.nextSector:
+            self.nextSector = 'RU'
+
+        self.CFL = None
+
+        for point in route['points'][route['points'].index(self.nextPoint):]:
+            if 'EFL' in point:
+                self.CFL = point['EFL'] * 100
+        if not self.CFL:
+            self.CFL = round(self.altitude / 100)
+
         # heading
         if heading is not None:
             self.heading = heading
@@ -110,9 +138,20 @@ class AvionPacket:
         self.headingRad = (self.heading - 90) / 180 * math.pi
 
         # selected 
-        self.selectedAlti = self.altitude
+        self.selectedAlti = self.CFL * 100
         self.selectedHeading = self.heading
         self.selectedIAS = self.speedIAS
+
+    def changeSortie(self):
+
+        if self.PFL > 365 and not self.arrival:
+            self.nextSector = "RU"
+            self.XFL = 360
+
+        for sortie in self.route['sortie']:
+            if sortie['min'] < self.PFL < sortie['max']:
+                self.nextSector = sortie['name']
+                break
 
     def updateEtatFreq(self, nouvelEtat=None) -> None:
         """
@@ -133,6 +172,8 @@ class AvionPacket:
         if self.altitude != self.selectedAlti:  # on regarde s'il faut évoluer
             
             if self.altitude - self.selectedAlti > 0:
+                self.evolution = - self.maxROD
+
                 # on arrive dans moins d'un refresh ?
                 if abs(self.altitude - self.selectedAlti) <= abs(self.evolution / 60 * radarRefresh):
                     self.altitude = self.selectedAlti  # alors, on met le niveau cible
@@ -141,6 +182,8 @@ class AvionPacket:
                     self.altitudeEvoTxt = '↓'
                     
             else:
+                self.evolution = self.maxROC
+
                 # on arrive dans moins d'un refresh ?
                 if abs(self.altitude - self.selectedAlti) <= abs(self.evolution / 60 * radarRefresh):
                     self.altitude = self.selectedAlti  # alors, on met le niveau cible
@@ -150,6 +193,7 @@ class AvionPacket:
                     
         else:  # si on n'évolue pas, on met ce texte
             self.altitudeEvoTxt = '-'
+            self.evolution = 0
 
     def move(self, gameMap):
         

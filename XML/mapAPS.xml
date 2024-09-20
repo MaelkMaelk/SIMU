@@ -2,7 +2,10 @@
 <map>
     <mapType>APS</mapType>
     <scale>0.09376</scale>
-    <size>2</size>
+
+    <floor>245</floor>  # plancher de notre secteur
+    <ceiling>365</ceiling> # plafond
+
  
     <points>
         <point name="ARBON">
@@ -140,13 +143,15 @@
     </secteurs>
 
     <routes>
-        <route name="UN1">
-            <Type>DESSIN</Type>
+        <route>
+            <Type>TRANSIT</Type>
             <point>
                 <name>MAJOR</name>
+                <FL>120</FL>
             </point>
             <point>
                 <name>MTL</name>
+                <EFL>240</EFL>
             </point>
             <point>
                 <name>LTP</name>
@@ -154,10 +159,32 @@
             <point>
                 <name>MOZAO</name>
             </point>
+            <arrival secteur="EI">250</arrival>
+            <sortie min="245" max="365">M2</sortie>
+
         </route>
 
-        <route name="cac">
-            <Type>DESSIN</Type>
+        <route>
+            <Type>TRANSIT</Type>
+            <point>
+                <name>PAS</name>
+            </point>
+            <point>
+                <name>LIMAN</name>
+            </point>
+            <point>
+                <name>LSE</name>
+            </point>
+            <point>
+                <name>MINDI</name>
+            </point>
+            <point>
+                <name>MEN</name>
+            </point>
+        </route>
+
+        <route>
+            <Type>TRANSIT</Type>
             <point>
                 <name>PAS</name>
             </point>

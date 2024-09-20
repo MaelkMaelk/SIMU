@@ -352,7 +352,6 @@ class Avion:
                 couleur = bouton.get_class_ids()[1]  # on regarde si le bouton est en gras ou non
                 bouton.change_object_id(pygame_gui.core.ObjectID('@etiquette', couleur))
 
-
     def updateEtatFrequence(self, etat) -> None:
 
         """
@@ -394,7 +393,6 @@ class Avion:
                 for bouton in ligne:
                     gras = bouton.get_object_ids()[1]  # on regarde si le bouton est en gras ou non
                     bouton.change_object_id(pygame_gui.core.ObjectID(gras, 'marron'))
-
 
     def kill(self):
         self.bouton.kill()

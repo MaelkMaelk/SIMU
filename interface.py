@@ -54,7 +54,7 @@ class NouvelAvionWindow:
     def __init__(self, routes, avions):
 
         # le dictionnaire utilisé pour renvoyer les valeurs sélectionnées par nos boutons
-        self.returnValues = {'indicatif': 'FCACA', 'avion': 'B738', 'FL': 310, 'PFL': 310}
+        self.returnValues = {'indicatif': 'FCACA', 'avion': 'B738', 'arrival': False}
 
         # la fenêtre du menu
         self.window = pygame_gui.elements.UIWindow(pygame.Rect((250, 250), (600, 400)))
@@ -81,11 +81,18 @@ class NouvelAvionWindow:
             container=self.window,
             anchors={'top': 'top', 'top_target': self.typeAvionContainer, 'left': 'left', 'left_target': self.routeContainer})
 
+        self.arrivalBouton = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((0, 5), (200, 17)),
+            text='Arrivée?',
+            container=self.window,
+            anchors={'top': 'top', 'top_target': self.conflitsBouton, 'left': 'left',
+                     'left_target': self.routeContainer})
+
         self.validerBouton = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 5), (200, 17)),
             text='Ok',
             container=self.window,
-            anchors={'top': 'top', 'top_target': self.conflitsBouton, 'left': 'left', 'left_target': self.routeContainer})
+            anchors={'top': 'top', 'top_target': self.arrivalBouton, 'left': 'left', 'left_target': self.routeContainer})
 
         self.indicatiflabel = pygame_gui.elements.UILabel(
             relative_rect=pygame.Rect((0, 0), (200, 17)),
@@ -137,6 +144,13 @@ class NouvelAvionWindow:
 
             event.ui_element.select()
             self.returnValues.update({'route': event.ui_element.text})
+
+        elif event.ui_element == self.arrivalBouton:
+            self.returnValues['arrival'] = not self.returnValues['arrival']
+            if not self.arrivalBouton.is_selected:
+                self.arrivalBouton.select()
+            else:
+                self.arrivalBouton.unselect()
 
         elif event.ui_element == self.validerBouton:
             self.window.kill()
@@ -254,13 +268,6 @@ class menuAvion:
             container=self.window,
             anchors={'left': 'left', 'left_target': self.pointContainer})
 
-        tempo = scrollListGen([route for route in avion.papa.route['sortie']],
-                              pygame.Rect((0, 0), (75, 17)),
-                              self.routeContainer,
-                              sliderBool=False)
-
-        self.routeBoutonliste = tempo[1]
-
         # bouton validation
 
         self.validerBouton = pygame_gui.elements.UIButton(
@@ -365,12 +372,6 @@ class menuAvion:
             if 'Heading' in self.returnValues:
                 self.returnValues.pop('Heading')
 
-            # route
-        elif event.ui_element in self.routeBoutonliste:
-
-            selectButtonInList(self.routeBoutonliste, event.ui_element)
-            self.returnValues.update({'Route': event.ui_element.text})
-
         elif event.ui_element is self.validerBouton:
 
             self.window.kill()
@@ -451,21 +452,21 @@ class etiquette:
 
         self.XFL = pygame_gui.elements.UIButton(  # #TODO associer XFL ici
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
-            text=str(avion.papa.XFL),
+            text="x" + str(avion.papa.XFL)[:2],
             object_id=pygame_gui.core.ObjectID('@etiquetteBold', 'rose'),
             anchors={'top': 'top', 'top_target': self.AFL},
             container=self.container)
 
         self.PFL = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
-            text=str(avion.papa.PFL),
+            text=str(avion.papa.PFL)[:2],
             object_id=pygame_gui.core.ObjectID('@etiquetteBold', 'rose'),
             anchors={'top': 'top', 'top_target': self.AFL},
             container=self.container)
 
         self.nextSector = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
-            text="I2",
+            text=avion.papa.nextSector,
             object_id=pygame_gui.core.ObjectID('@etiquetteBold', 'rose'),
             anchors={'top': 'top', 'top_target': self.AFL},
             container=self.container)
@@ -503,14 +504,14 @@ class etiquette:
         if avion.papa.evolution == 0:  # on affiche la rate que si l'avion est en evo
             evo = ""
         else:
-            evo = "  " + str(avion.papa.evolution)[:3]
+            evo = "    " + str(round(avion.papa.evolution / 100))
 
         self.speedGS.set_text(str(avion.papa.speedGS)[:2] + evo)
 
         # alti
         self.AFL.set_text(str(round(avion.papa.altitude/100)) + " " + avion.papa.altitudeEvoTxt)
 
-        self.CFL.set_text(str(avion.papa.PFL))  # TODO appeler les changements textes CFL etc que quand on les change
+        self.CFL.set_text(str(avion.papa.CFL)[:2])
 
         # container
         self.container.set_position((avion.etiquetteX + Xvalue, avion.etiquetteY + Yvalue))
@@ -537,7 +538,7 @@ class etiquette:
         self.container.kill()
 
 
-def updateDistanceGauche(liste):
+def updateDistanceGauche(liste) -> int:
     """
     Calcule de la distance à gauche pour un élément, en fonction de la non-visibilité de ses voisins de ligne sur
      sa gauche, pour qu'il soit le plus à gauche possible.
