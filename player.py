@@ -14,6 +14,7 @@ etiquetteLines = 4
 nmToFeet = 6076
 axe = 74
 axePoint = 'BST'
+liste_etat_freq = ['previousFreq', 'previousShoot', 'inFreq', 'nextCoord', 'nextShoot', 'nextFreq']
 
 
 def positionAffichage(x, y, zoom, scrollX, scrollY):  # TODO rassembler x, y en (x,y) pareil pour le scroll
@@ -39,6 +40,20 @@ def positionBrute(position, zoom, scroll):  # TODO remplacer les endroits ou on 
     :param scroll: vecteur2 (scrollx, scrolly)
     :return: x, y
     """
+
+
+def etatFrequenceInit(avion) -> None:
+
+    """
+    Colore les boutons en fonction de l'état freq initial. À utiliser pour l'initialisation, car elle
+     n'incrémente pas sur l'état précédent, mais par de 0
+    :param avion: L'avion auquel est associée cette etiquette
+    :return:
+    """
+
+    if avion.papa.etatFrequence != 'previousFreq':
+        for etat in liste_etat_freq[:liste_etat_freq.index(avion.papa.etatFrequence) + 1]:
+            avion.updateEtatFrequence(etat)
 
 
 class Avion:
@@ -72,6 +87,7 @@ class Avion:
 
         # init de l'étiquette
         self.etiquette = interface.etiquette(self)
+        etatFrequenceInit(self)
 
         # interaction avec les events
         self.returnValues = {}
@@ -324,23 +340,23 @@ class Avion:
     def update(self, papa):
 
         if self.papa.etatFrequence != papa.etatFrequence:
-            self.updateEtatFrequence(papa)
+            self.updateEtatFrequence(papa.etatFrequence)
 
         self.papa = papa
 
-    def updateEtatFrequence(self, papa):
+    def updateEtatFrequence(self, etat):
 
         """
-        Incrémente l'état fréquence de l'avion
-        :param papa:
+        Met à jour la couleur des boutons en fonction de l'état fréquence.
+        :param etat:
         :return:
         """
 
-        if papa.etatFrequence == 'previousShoot':
+        if etat == 'previousShoot':
             gras = self.etiquette.indicatif.get_object_ids()[1]  # on regarde si le bouton est en gras ou non
             self.etiquette.indicatif.change_object_id(pygame_gui.core.ObjectID(gras, 'blanc'))
 
-        elif self.papa.etatFrequence == 'inFreq':
+        elif etat == 'inFreq':
 
             for ligne in [[self.etiquette.speedGS], self.etiquette.ligneDeux,
                           self.etiquette.ligneTrois, self.etiquette.ligneQuatre]:
@@ -349,7 +365,7 @@ class Avion:
                     gras = bouton.get_object_ids()[1]  # on regarde si le bouton est en gras ou non
                     bouton.change_object_id(pygame_gui.core.ObjectID(gras, 'blanc'))
 
-        elif papa.etatFrequence == 'nextCoord':
+        elif etat == 'nextCoord':
 
             gras = self.etiquette.XPT.get_object_ids()[1]  # on regarde si le bouton est en gras ou non
             self.etiquette.XPT.change_object_id(pygame_gui.core.ObjectID(gras, 'marron'))
@@ -357,11 +373,11 @@ class Avion:
             gras = self.etiquette.nextSector.get_object_ids()[1]  # on regarde si le bouton est en gras ou non
             self.etiquette.nextSector.change_object_id(pygame_gui.core.ObjectID(gras, 'marron'))
 
-        if papa.etatFrequence == 'nextShoot':
+        elif etat == 'nextShoot':
             gras = self.etiquette.indicatif.get_object_ids()[1]  # on regarde si le bouton est en gras ou non
             self.etiquette.indicatif.change_object_id(pygame_gui.core.ObjectID(gras, 'marron'))
 
-        elif papa.etatFrequence == 'nextFreq':
+        elif etat == 'nextFreq':
 
             for ligne in [[self.etiquette.speedGS], self.etiquette.ligneDeux,
                           self.etiquette.ligneTrois, self.etiquette.ligneQuatre]:
