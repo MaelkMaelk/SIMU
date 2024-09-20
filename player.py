@@ -282,8 +282,12 @@ class Avion:
         elif event.ui_element == self.etiquette.indicatif:
             if event.mouse_button == 1 and pilote:
                 return 'menu'
+
             elif event.mouse_button == 1:
                 return self.Id, 'EtatFreq', None
+
+            elif event.mouse_button == 3:
+                self.unBold()
 
         elif event.ui_element == self.etiquette.XPT:
             if event.mouse_button == 1 and not pilote:
@@ -337,14 +341,19 @@ class Avion:
             self.etiquette.CFL.hide()
             self.etiquette.PFL.hide()
 
-    def update(self, papa):
+    def unBold(self) -> None:
+        """
+        Dégraisse l'étiquette de l'avion
+        """
+        for ligne in [[self.etiquette.speedGS], self.etiquette.ligneDeux,
+                      self.etiquette.ligneTrois, self.etiquette.ligneQuatre]:
 
-        if self.papa.etatFrequence != papa.etatFrequence:
-            self.updateEtatFrequence(papa.etatFrequence)
+            for bouton in ligne:
+                couleur = bouton.get_class_ids()[1]  # on regarde si le bouton est en gras ou non
+                bouton.change_object_id(pygame_gui.core.ObjectID('@etiquette', couleur))
 
-        self.papa = papa
 
-    def updateEtatFrequence(self, etat):
+    def updateEtatFrequence(self, etat) -> None:
 
         """
         Met à jour la couleur des boutons en fonction de l'état fréquence.
@@ -387,10 +396,16 @@ class Avion:
                     bouton.change_object_id(pygame_gui.core.ObjectID(gras, 'marron'))
 
 
-
     def kill(self):
         self.bouton.kill()
         self.etiquette.kill()
+
+    def update(self, papa):
+
+        if self.papa.etatFrequence != papa.etatFrequence:
+            self.updateEtatFrequence(papa.etatFrequence)
+
+        self.papa = papa
 
 
 class MenuATC:

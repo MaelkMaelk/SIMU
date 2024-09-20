@@ -1,5 +1,6 @@
 import pygame
 import pygame_gui
+from typing import Iterable
 
 
 def selectButtonInList(liste, event):
@@ -388,19 +389,19 @@ class etiquette:
         self.speedGS = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
             text=str(avion.papa.speedGS)[:2],
-            object_id=pygame_gui.core.ObjectID('@etiquette', 'rose'),
+            object_id=pygame_gui.core.ObjectID('@etiquetteBold', 'rose'),
             container=self.container)
 
         self.indicatif = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
             text=avion.papa.indicatif,
-            object_id=pygame_gui.core.ObjectID('@etiquette', 'rose'),
+            object_id=pygame_gui.core.ObjectID('@etiquetteBold', 'rose'),
             anchors={'top': 'top', 'top_target': self.speedGS},
             container=self.container)
 
         self.type_dest = pygame_gui.elements.UILabel(
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
-            object_id=pygame_gui.core.ObjectID('@etiquette', 'rose'),
+            object_id=pygame_gui.core.ObjectID('@etiquetteBold', 'rose'),
             text=avion.papa.aircraft + " " + "LFVB",
             anchors={'top': 'top', 'top_target': self.speedGS},
             container=self.container
@@ -409,65 +410,68 @@ class etiquette:
         self.AFL = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
             text=str(round(avion.papa.altitude/100)),
-            object_id=pygame_gui.core.ObjectID('@etiquette', 'rose'),
+            object_id=pygame_gui.core.ObjectID('@etiquetteBold', 'rose'),
             anchors={'top': 'top', 'top_target': self.indicatif},
             container=self.container)
 
         self.CFL = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
             text=str(round(avion.papa.altitude / 100))[:2],
-            object_id=pygame_gui.core.ObjectID('@etiquette', 'rose'),
+            object_id=pygame_gui.core.ObjectID('@etiquetteBold', 'rose'),
             anchors={'top': 'top', 'top_target': self.indicatif,},
             container=self.container)
 
         self.DCT = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
             text=avion.papa.nextPoint['name'],
-            object_id=pygame_gui.core.ObjectID('@etiquette', 'rose'),
+            object_id=pygame_gui.core.ObjectID('@etiquetteBold', 'rose'),
             anchors={'top': 'top', 'top_target': self.indicatif},
             container=self.container)
 
         self.speedIAS = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
             text="S",
-            object_id=pygame_gui.core.ObjectID('@etiquette', 'rose'),
+            object_id=pygame_gui.core.ObjectID('@etiquetteBold', 'rose'),
             anchors={'top': 'top', 'top_target': self.indicatif},
             container=self.container)
 
         self.rate = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
             text="R",
-            object_id=pygame_gui.core.ObjectID('@etiquette', 'rose'),
+            object_id=pygame_gui.core.ObjectID('@etiquetteBold', 'rose'),
             anchors={'top': 'top', 'top_target': self.indicatif},
             container=self.container)
 
         self.XPT = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
             text=avion.papa.route['points'][-1]['name'],
-            object_id=pygame_gui.core.ObjectID('@etiquette', 'rose'),
+            object_id=pygame_gui.core.ObjectID('@etiquetteBold', 'rose'),
             anchors={'top': 'top', 'top_target': self.AFL},
             container=self.container)
 
         self.XFL = pygame_gui.elements.UIButton(  # #TODO associer XFL ici
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
             text=str(avion.papa.XFL),
-            object_id=pygame_gui.core.ObjectID('@etiquette', 'rose'),
+            object_id=pygame_gui.core.ObjectID('@etiquetteBold', 'rose'),
             anchors={'top': 'top', 'top_target': self.AFL},
             container=self.container)
 
         self.PFL = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
             text=str(avion.papa.PFL),
-            object_id=pygame_gui.core.ObjectID('@etiquette', 'rose'),
+            object_id=pygame_gui.core.ObjectID('@etiquetteBold', 'rose'),
             anchors={'top': 'top', 'top_target': self.AFL},
             container=self.container)
 
         self.nextSector = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
             text="I2",
-            object_id=pygame_gui.core.ObjectID('@etiquette', 'rose'),
+            object_id=pygame_gui.core.ObjectID('@etiquetteBold', 'rose'),
             anchors={'top': 'top', 'top_target': self.AFL},
             container=self.container)
+
+        self.indicatif.generate_click_events_from: Iterable[int] = frozenset(
+            [pygame.BUTTON_LEFT, pygame.BUTTON_RIGHT, pygame.BUTTON_MIDDLE])
 
         self.ligneDeux = [self.indicatif, self.type_dest]
         self.ligneTrois = [self.AFL, self.CFL, self.DCT, self.speedIAS, self.rate]
