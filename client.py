@@ -125,7 +125,7 @@ def main(server_ip):
 
             if event.type == pygame_gui.UI_BUTTON_ON_HOVERED:
                 for avion in dictAvionsAff.values():
-                    if avion.checkEtiquetteOnHover(event):  # renvoies True quand le bouton correspond à cette etiquette
+                    if avion.checkEtiquetteOnHover():  # renvoies True quand le bouton correspond à cette etiquette
                         break  # dès qu'on a trouvé le responsable, on casse
 
             # on vérifie que l'alidade n'est pas actif
@@ -201,7 +201,7 @@ def main(server_ip):
             if menuAvion or nouvelAvionWin:
                 pass
 
-            #zoom géré ici
+            # zoom géré ici
             elif event.type == pygame.MOUSEWHEEL:
 
                 before_x_pos = (width/2 - scroll[0]) / zoom
@@ -333,7 +333,7 @@ def main(server_ip):
             pygame.draw.polygon(win, secteur['couleur'], liste_affichage_secteurs)
 
         # on dessine les routes
-        for segment in carte['segments']['STAR']:
+        for segment in carte['segments']['DESSIN']:
             pygame.draw.line(win, (105, 110, 105), (segment[0][0]*zoom + scroll[0], segment[0][1]*zoom + scroll[1]),
                              (segment[1][0]*zoom + scroll[0], segment[1][1]*zoom + scroll[1]), 2)
 

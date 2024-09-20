@@ -126,12 +126,17 @@ class Avion:
         self.affX = self.papa.x * zoom - plotSize + scroll[0]
         self.affY = self.papa.y * zoom - plotSize + scroll[1]
 
-        self.positionEtiquette()  # on détermine la position de l'étiquette (nord est, SE, NO, SO)
-        self.etiquette.update(self)  # on update via la fonction de l'étiquette
         self.bouton.set_position((self.affX, self.affY))
 
         if self.drawRouteBool:
             self.drawRoute(points, win, zoom, scroll)
+
+        self.positionEtiquette()  # on détermine la position de l'étiquette (nord est, SE, NO, SO)
+        self.checkEcheckEtiquetteOnUnhover()
+        self.extendEtiquette()
+        self.etiquette.update(self)  # on update via la fonction de l'étiquette
+
+
 
         # Dessin
         if self.visible:
@@ -266,41 +271,52 @@ class Avion:
             if event.mouse_button == 1 and not pilote:
                 self.drawRouteBool = not self.drawRouteBool
 
-    def checkEtiquetteOnHover(self, event):
+    def checkEtiquetteOnHover(self):
         """
         Vérifie si on doit ou non étendre l'étiquette
         :return: True si l'event appartient à cette étiquette
         """
-        for ligne in [self.etiquette.ligneDeux, self.etiquette.ligneTrois, self.etiquette.ligneQuatre, [self.etiquette.speedGS]]:
-            if event.ui_element in ligne:
-                self.etiquetteExtended = True
-                return True
 
+        if self.etiquette.container.are_contents_hovered():
+            self.etiquetteExtended = True
+            return True
         return False
 
     def checkEcheckEtiquetteOnUnhover(self):
+
         """
         Vérifie si on doit ou non désétendre l'étiquette
         """
-        hovered = False
-        if self.etiquetteExtended:
-            for ligne in [self.etiquette.ligneDeux, self.etiquette.ligneTrois, self.etiquette.ligneQuatre, [self.etiquette.speedGS]]:
-                for bouton in ligne:
-                    if bouton.hovered:
-                        hovered = True
-                        break
-            if hovered:
-                self.unHoverTime = pygame.time.get_ticks()
-            elif pygame.time.get_ticks() - self.unHoverTime > 200:
-                self.etiquetteExtended = False
+
+        if self.etiquette.container.are_contents_hovered():
+            self.unHoverTime = pygame.time.get_ticks()
+        elif pygame.time.get_ticks() - self.unHoverTime > 400:
+            self.etiquetteExtended = False
 
     def extendEtiquette(self):
         """
         Étend ou range l'étiquette
         """
 
-        if self.etiquetteExtended and self.etiquette.extended:
+        if self.etiquetteExtended and not self.etiquette.extended:  # si on doit etendre et elle n'est pas étendue
+            self.etiquette.extended = True
 
+            for ligne in [self.etiquette.ligneDeux, self.etiquette.ligneTrois, self.etiquette.ligneQuatre]:
+                for bouton in ligne:
+                    bouton.show()
+
+        elif self.etiquette.extended and not self.etiquetteExtended:  # si on doit rentrer et elle est étendue
+            self.etiquette.extended = False
+
+            self.etiquette.type_dest.hide()
+            self.etiquette.DCT.hide()
+
+            self.etiquette.speedIAS.hide()  # TODO faire en sorte qu'ils ne se cache pas en -h ou -r
+            self.etiquette.rate.hide()
+            self.etiquette.nextSector.hide()
+
+            self.etiquette.XFL.hide()  # TODO faire en sorte qu'ils ne se cache pas si les FL sont pas pareils
+            self.etiquette.CFL.hide()
 
     def update(self, papa):
         self.papa = papa

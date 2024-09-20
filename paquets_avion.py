@@ -8,6 +8,7 @@ altiDefault = 24000  # alti en pied par défault, si on ne rentre pas d'alti pou
 acceldefault = 3  # accélération/decelération de kt par refresh
 turnRateDefault = 10  # turnrate/refresh par défault
 liste_etat_freq = ['previousFreq', 'previousShoot', 'inFreq', 'nextCoord', 'nextShoot', 'nextFreq']
+secteurBoundaries = [245, 365]
 
 
 class Game:
@@ -71,18 +72,22 @@ class AvionPacket:
         # altis
         self.evolution = 0  # taux de variation/radar refresh
         self.altitudeEvoTxt = '-'
-
-        # format route {nomRoute, routeType, listeRoutePoints, sortie} points : {caractéristiques eg : nom alti IAS}
-        self.route = route
-
         if PFL is not None:
             self.PFL = PFL
         else:
             self.PFL = FL
 
+        if secteurBoundaries[0] > self.PFL > secteurBoundaries[1]:
+            self.XFL = self.PFL
+        else:
+            self.XFL = 360
+
+
+        # format route {nomRoute, routeType, listeRoutePoints, sortie} points : {caractéristiques eg : nom alti IAS}
+        self.route = route
+
+
         self.headingMode = False
-        self.intercept = False
-        self.axe = None
 
         if calculateDistance(self.x, self.y, gameMap['points'][self.route['points'][0]['name']][0],
                              gameMap['points'][self.route['points'][0]['name']][1]) <= 4 * self.speedPx:
@@ -108,6 +113,19 @@ class AvionPacket:
         self.selectedAlti = self.altitude
         self.selectedHeading = self.heading
         self.selectedIAS = self.speedIAS
+
+    def updateEtatFreq(self, nouvelEtat=None) -> None:
+        """
+        Fonction qui met à jour l'état fréquence de l'avion. S'il n'y a pas de param spécifié, on passe juste au suivant
+        :param nouvelEtat: Le nouvel état fréquence de l'avion
+        :return:
+        """
+
+        if nouvelEtat:
+            self.etatFrequence = nouvelEtat
+        else:
+            i = liste_etat_freq.index(self.etatFrequence)
+            self.etatFrequence = liste_etat_freq[i + 1]
        
     def updateAlti(self):
         

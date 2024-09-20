@@ -387,85 +387,85 @@ class etiquette:
         self.speedGS = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
             text=str(avion.papa.speedGS)[:2],
-            object_id=pygame_gui.core.ObjectID('@etiquette', 'button'),
+            object_id=pygame_gui.core.ObjectID('@etiquette', 'rose'),
             container=self.container)
 
         self.indicatif = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
             text=avion.papa.indicatif,
-            object_id=pygame_gui.core.ObjectID('@etiquette', 'button'),
+            object_id=pygame_gui.core.ObjectID('@etiquette', 'rose'),
             anchors={'top': 'top', 'top_target': self.speedGS},
             container=self.container)
 
         self.type_dest = pygame_gui.elements.UILabel(
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
-            object_id=pygame_gui.core.ObjectID('@etiquette', 'button'),
+            object_id=pygame_gui.core.ObjectID('@etiquette', 'rose'),
             text=avion.papa.aircraft + " " + "LFVB",
-            anchors={'left': 'left', 'left_target': self.indicatif, 'top': 'top', 'top_target': self.speedGS},
+            anchors={'top': 'top', 'top_target': self.speedGS},
             container=self.container
         )
 
         self.AFL = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
             text=str(round(avion.papa.altitude/100)),
-            object_id=pygame_gui.core.ObjectID('@etiquette', 'button'),
+            object_id=pygame_gui.core.ObjectID('@etiquette', 'rose'),
             anchors={'top': 'top', 'top_target': self.indicatif},
             container=self.container)
 
         self.CFL = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
             text=str(round(avion.papa.altitude / 100))[:2],
-            object_id=pygame_gui.core.ObjectID('@etiquette', 'button'),
-            anchors={'top': 'top', 'top_target': self.indicatif, 'left': 'left', 'left_target': self.AFL},
+            object_id=pygame_gui.core.ObjectID('@etiquette', 'rose'),
+            anchors={'top': 'top', 'top_target': self.indicatif,},
             container=self.container)
 
         self.DCT = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
             text=avion.papa.nextPoint['name'],
-            object_id=pygame_gui.core.ObjectID('@etiquette', 'button'),
-            anchors={'top': 'top', 'top_target': self.indicatif, 'left': 'left', 'left_target': self.CFL},
+            object_id=pygame_gui.core.ObjectID('@etiquette', 'rose'),
+            anchors={'top': 'top', 'top_target': self.indicatif},
             container=self.container)
 
         self.speedIAS = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
             text="S",
-            object_id=pygame_gui.core.ObjectID('@etiquette', 'button'),
-            anchors={'top': 'top', 'top_target': self.indicatif, 'left': 'left', 'left_target': self.DCT},
+            object_id=pygame_gui.core.ObjectID('@etiquette', 'rose'),
+            anchors={'top': 'top', 'top_target': self.indicatif},
             container=self.container)
 
         self.rate = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
             text="R",
-            object_id=pygame_gui.core.ObjectID('@etiquette', 'button'),
-            anchors={'top': 'top', 'top_target': self.indicatif, 'left': 'left', 'left_target': self.speedIAS},
+            object_id=pygame_gui.core.ObjectID('@etiquette', 'rose'),
+            anchors={'top': 'top', 'top_target': self.indicatif},
             container=self.container)
 
         self.XPT = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
             text=avion.papa.route['points'][-1]['name'],
-            object_id=pygame_gui.core.ObjectID('@etiquette', 'button'),
+            object_id=pygame_gui.core.ObjectID('@etiquette', 'rose'),
             anchors={'top': 'top', 'top_target': self.AFL},
             container=self.container)
 
         self.XFL = pygame_gui.elements.UIButton(  # #TODO associer XFL ici
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
-            text="120",
-            object_id=pygame_gui.core.ObjectID('@etiquette', 'button'),
-            anchors={'top': 'top', 'top_target': self.AFL, 'left': 'left', 'left_target': self.XPT},
+            text=str(avion.papa.XFL),
+            object_id=pygame_gui.core.ObjectID('@etiquette', 'rose'),
+            anchors={'top': 'top', 'top_target': self.AFL},
             container=self.container)
 
         self.PFL = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
-            text="120",
-            object_id=pygame_gui.core.ObjectID('@etiquette', 'button'),
-            anchors={'top': 'top', 'top_target': self.AFL, 'left': 'left', 'left_target': self.XFL},
+            text=str(avion.papa.PFL),
+            object_id=pygame_gui.core.ObjectID('@etiquette', 'rose'),
+            anchors={'top': 'top', 'top_target': self.AFL},
             container=self.container)
 
         self.nextSector = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
             text="I2",
-            object_id=pygame_gui.core.ObjectID('@etiquette', 'button'),
-            anchors={'top': 'top', 'top_target': self.AFL, 'left': 'left', 'left_target': self.PFL},
+            object_id=pygame_gui.core.ObjectID('@etiquette', 'marron'),
+            anchors={'top': 'top', 'top_target': self.AFL},
             container=self.container)
 
         self.ligneDeux = [self.indicatif, self.type_dest]
@@ -501,62 +501,56 @@ class etiquette:
             evo = "  " + str(avion.papa.evolution)[:3]
 
         self.speedGS.set_text(str(avion.papa.speedGS)[:2] + evo)
+        self.indicatif.change_object_id(pygame_gui.core.ObjectID('@etiquette', 'bold'))
 
         # alti
         self.AFL.set_text(str(round(avion.papa.altitude/100)) + " " + avion.papa.altitudeEvoTxt)
 
-        self.CFL.set_text(str(round(avion.papa.selectedAlti/1000)))  # TODO changer en CFL
+        self.CFL.set_text(str(avion.papa.PFL))  # TODO appeler les changements textes CFL etc que quand on les change
 
         # container
         self.container.set_position((avion.etiquetteX + Xvalue, avion.etiquetteY + Yvalue))
-        self.container.rebuild()
         self.container.update_containing_rect_position()
+        self.container.recalculate_abs_edges_rect()
 
     def boutonAgauche(self):
 
         """
         Méthode qui met les boutons le plus à gauche possible de l'étiquette en fonction des boutons visibles
         """
+
         for ligne in [self.ligneDeux, self.ligneTrois, self.ligneQuatre]:  # on le fait pour chaque ligne
             for numBouton in range(len(ligne)):  # on fait avec un range pour pouvoir tronquer la liste
 
                 bouton = ligne[numBouton]  # on récupère le bouton
-                ancres = bouton.get_anchors()  # on récupère ses ancres
-
-                if bouton.visible:  # on regarde s'il est visible
-
-                    a = updateAncres(ligne[:numBouton])  # on calcule ses nouvelles ancres
-
-                    if a is not None:
-                        ancres.update(a)
-                    else:
-
-                        ancres.pop('left', None)
-                        ancres.pop('left_target', None)
+                if bouton.visible:
+                    distance = updateDistanceGauche(ligne[:numBouton])
                 else:
-                    ancres.pop('left', None)
-                    ancres.pop('left_target', None)
-                bouton.set_anchors(ancres)
+                    distance = 0
+                bouton.set_relative_position((distance, 0))
 
     def kill(self):
         self.container.kill()
 
 
-def updateAncres(liste):
+def updateDistanceGauche(liste):
     """
-    Calcule des ancres pour un élément, en fonction de la non-visibilité de ses voisins de ligne sur sa gauche,
-     pour qu'il soit le plus à gauche possible.
+    Calcule de la distance à gauche pour un élément, en fonction de la non-visibilité de ses voisins de ligne sur
+     sa gauche, pour qu'il soit le plus à gauche possible.
+
     :arg liste: Liste correspondant à la ligne à vérifier. Les éléments sont triés de la gauche vers la droite,
      et la liste ne comprend que les voisins à la gauche de l'élément en question
     :return les nouvelles ancres pour l'élément dans un dict:
     """
-
+    liste = list(liste)
     liste.reverse()  # on inverse la ligne pour partir du voisin direct
 
-    if not liste:  # si la liste n'est pas vide, il a donc des voisins à gauche
-        return {}  # on renvoie un dict vide s'il n'y a pas d'élément sur sa gauche
+    distance = 0
+
+    if not liste:  # si la liste est vide, il n'a donc pas de voisins à gauche
+        return 0  # on renvoie un 0 s'il n'y a pas d'élément sur sa gauche
 
     for element in liste:  # on parcourt tous les éléments à sa gauche
         if element.visible:
-            return {'left': 'left', 'left_target': element}  # on renvoie des ancres au 1er élément visible à sa gauche
-    return None  # on renvoie None si tous les éléments à sa gauche sont invisibles
+            distance += element.get_abs_rect()[2]  # on renvoie des ancres au 1er élément visible à sa gauche
+    return distance

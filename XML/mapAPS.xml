@@ -6,231 +6,48 @@
  
     <points>
         <point name="ARBON">
-            <x>625</x>
-            <y>593</y>
-        </point>
-        <point name="SOLEY">
-            <x>618</x>
-            <y>702</y>
-        </point>
-        <point name="ATN">
-            <x>490</x>
-            <y>9</y>
-            <balise>True</balise>
-        </point>
-        <point name="DJL">
-            <x>650</x>
-            <y>-300</y>
-            <balise>True</balise>
+            <x>596</x>
+            <y>434</y>
         </point>
         <point name="LSE">
-            <x>686</x>
-            <y>371</y>
-            <balise>True</balise>
+            <x>577</x>
+            <y>283</y>
         </point>
         <point name="BST">
-            <x>597</x>
-            <y>332</y>
-            <balise>True</balise>
-        </point>
-        <point name="CFA">
-            <x>44</x>
-            <y>366</y>
-            <balise>True</balise>
-        </point>
-        <point name="ROA">
-            <x>313</x>
-            <y>230</y>
-            <balise>True</balise>
-        </point>
-        <point name="MOU">
-            <x>222</x>
-            <y>11</y>
-            <balise>True</balise>
-        </point>
-        <point name="MEN">
-            <x>41</x>
-            <y>935</y>
-            <balise>True</balise>
-        </point>
-        <point name="MTL">
-            <x>599</x>
-            <y>949</y>
-            <balise>True</balise>
-        </point>
-        <point name="LTP">
-            <x>809</x>
-            <y>491</y>
-            <balise>True</balise>
-        </point>
-        <point name="WS">
-            <x>714</x>
-            <y>557</y>
-            <balise>True</balise>
-        </point>
-        <point name="EG">
-            <x>795</x>
-            <y>551</y>
-            <balise>True</balise>
+            <x>520</x>
+            <y>256</y>
         </point>
         <point name="PAS">
-            <x>984</x>
-            <y>159</y>
-            <balise>True</balise>
+            <x>777</x>
+            <y>134</y>
         </point>
-        <point name="RYF">
-            <x>463</x>
-            <y>306</y>
+        <point name="MAJOR">
+            <x>584</x>
+            <y>900</y>
         </point>
-        <point name="ONCLE">
-            <x>303</x>
-            <y>327</y>
+        <point name="MTL">
+            <x>535</x>
+            <y>673</y>
         </point>
-        <point name="OSEAN">
-            <x>452</x>
-            <y>695</y>
+        <point name="LTP">
+            <x>666</x>
+            <y>334</y>
         </point>
-        <point name="LESPI">
-            <x>298</x>
-            <y>203</y>
-        </point>
-        <point name="BALSI">
-            <x>981</x>
-            <y>490</y>
-        </point>
-        <point name="ESPRI">
-            <x>849</x>
-            <y>492</y>
-        </point>
-        <point name="RUNOM">
-            <x>768</x>
-            <y>213</y>
-        </point>
-        <point name="ENSUI">
-            <x>860</x>
-            <y>148</y>
-        </point>
-        <point name="MILPA">
-            <x>935</x>
-            <y>96</y>
-        </point>
-        <point name="BRIRO">
-            <x>417</x>
-            <y>611</y>
-        </point>
-        <point name="KELUK">
-            <x>814</x>
-            <y>18</y>
-        </point>
-        <point name="NELLER">
-            <x>606</x>
+        <point name="MOZAO">
+            <x>806</x>
             <y>250</y>
         </point>
-        <point name="OGIER">
-            <x>409</x>
-            <y>590</y>
+        <point name="LIMAN">
+            <x>691</x>
+            <y>196</y>
         </point>
-        <point name="SUDER">
-            <x>671</x>
-            <y>700</y>
+        <point name="MEN">
+            <x>162</x>
+            <y>675</y>
         </point>
-        <point name="SERAC">
-            <x>767</x>
-            <y>697</y>
-        </point>
-        <point name="TSARE">
-            <x>713</x>
-            <y>699</y>
-        </point>
-        <point name="TARIS">
-            <x>682</x>
-            <y>56</y>
-        </point>
-        <point name="ETULA">
-            <x>840</x>
-            <y>429</y>
-        </point>
-        <point name="ILITE">
-            <x>781</x>
-            <y>304</y>
-        </point>
-        <point name="ENEVE">
-            <x>852</x>
-            <y>253</y>
-        </point>
-        <point name="NORRE">
-            <x>610</x>
-            <y>184</y>
-        </point>
-        <point name="NESTI">
-            <x>754</x>
-            <y>66</y>
-        </point>
-        <point name="NASAL">
-            <x>623</x>
-            <y>48</y>
-        </point>
-        <point name="NOTAN">
-            <x>556</x>
-            <y>105</y>
-        </point>
-        <point name="AVRIL">
-            <x>696</x>
-            <y>449</y>
-        </point>
-        <point name="BELLY">
-            <x>619</x>
-            <y>427</y>
-        </point>
-        <point name="RETNO">
-            <x>884</x>
-            <y>998</y>
-        </point>
-        <point name="LFVC">
-            <x>773</x>
-            <y>551</y>
-        </point>
-
-        
-        <point name="VB402">
-            <x>554</x>
-            <y>285</y>
-            <procedure>True</procedure>
-        </point>
-        <point name="VB404">
-            <x>510</x>
-            <y>297</y>
-            <procedure>True</procedure>
-        </point>
-        <point name="IB07L">
-            <x>521</x>
-            <y>355</y>
-            <procedure>True</procedure>
-        </point>
-        <point name="FB07L">
-            <x>550</x>
-            <y>347</y>
-            <procedure>True</procedure>
-        </point>
-        <point name="VB400">
-            <x>536</x>
-            <y>434</y>
-            <procedure>True</procedure>
-        </point>
-        <point name="VB410">
-            <x>630</x>
-            <y>320</y>
-            <procedure>True</procedure>
-        </point>
-        <point name="RW07">
-            <x>589</x>
-            <y>335</y>
-            <procedure>True</procedure>
-        </point>
-        <point name="DEP07">
-            <x>627</x>
-            <y>321</y>
-            <procedure>True</procedure>
+        <point name="MINDI">
+            <x>354</x>
+            <y>493</y>
         </point>
     </points>
 
@@ -243,880 +60,120 @@
             <plafond>5500</plafond>
         </zone>
     </zones>
+
     <secteurs>
         <secteur color="76,81,103">
             <limite>
-                <x>361</x>
-                <y>470</y>
+                <x>253</x>
+                <y>440</y>
             </limite>
             <limite>
-                <x>507</x>
-                <y>467</y>
+                <x>678</x>
+                <y>122</y>
             </limite>
             <limite>
-                <x>604</x>
-                <y>702</y>
+                <x>698</x>
+                <y>139</y>
             </limite>
             <limite>
-                <x>457</x>
-                <y>706</y>
-            </limite>
-        </secteur>
-        <secteur color="71,76,96">
-            <limite>
-                <x>266</x>
-                <y>237</y>
+                <x>683</x>
+                <y>164</y>
             </limite>
             <limite>
-                <x>461</x>
-                <y>178</y>
+                <x>682</x>
+                <y>184</y>
             </limite>
             <limite>
-                <x>423</x>
-                <y>266</y>
-            </limite>
-            <limite>
-                <x>507</x>
-                <y>467</y>
-            </limite>
-            <limite>
-                <x>361</x>
-                <y>470</y>
-            </limite>
-        </secteur>
-        <secteur color="71,76,96">
-            <limite>
-                <x>461</x>
-                <y>178</y>
-            </limite>
-            <limite>
-                <x>534</x>
-                <y>156</y>
-            </limite>
-            <limite>
-                <x>583</x>
-                <y>43</y>
-            </limite>
-            <limite>
-                <x>782</x>
-                <y>70</y>
-            </limite>
-            <limite>
-                <x>848</x>
-                <y>136</y>
-            </limite>
-            <limite>
-                <x>805</x>
+                <x>700</x>
                 <y>216</y>
             </limite>
             <limite>
-                <x>548</x>
-                <y>224</y>
+                <x>763</x>
+                <y>200</y>
             </limite>
             <limite>
-                <x>436</x>
-                <y>297</y>
+                <x>871</x>
+                <y>324</y>
             </limite>
             <limite>
-                <x>423</x>
-                <y>266</y>
+                <x>953</x>
+                <y>461</y>
+            </limite>
+            <limite>
+                <x>960</x>
+                <y>492</y>
+            </limite>
+            <limite>
+                <x>983</x>
+                <y>496</y>
+            </limite>
+            <limite>
+                <x>974</x>
+                <y>508</y>
+            </limite>
+            <limite>
+                <x>975</x>
+                <y>526</y>
+            </limite>
+            <limite>
+                <x>1012</x>
+                <y>544</y>
+            </limite>
+            <limite>
+                <x>804</x>
+                <y>790</y>
+            </limite>
+            <limite>
+                <x>778</x>
+                <y>854</y>
+            </limite>
+            <limite>
+                <x>652</x>
+                <y>793</y>
+            </limite>
+            <limite>
+                <x>274</x>
+                <y>790</y>
             </limite>
         </secteur>
-        <secteur color="71,76,96">
-            <limite>
-                <x>436</x>
-                <y>297</y>
-            </limite>
-            <limite>
-                <x>548</x>
-                <y>224</y>
-            </limite>
-            <limite>
-                <x>805</x>
-                <y>216</y>
-            </limite>
-            <limite>
-                <x>773</x>
-                <y>279</y>
-            </limite>
-            <limite>
-                <x>798</x>
-                <y>456</y>
-            </limite>
-            <limite>
-                <x>507</x>
-                <y>467</y>
-            </limite>
-        </secteur>
-        <secteur color="71,76,96">
-            <limite>
-                <x>507</x>
-                <y>467</y>
-            </limite>
-            <limite>
-                <x>798</x>
-                <y>456</y>
-            </limite>
-            <limite>
-                <x>801</x>
-                <y>479</y>
-            </limite>
-            <limite>
-                <x>777</x>
-                <y>527</y>
-            </limite>
-            <limite>
-                <x>535</x>
-                <y>535</y>
-            </limite>
-        </secteur>
-        <secteur color="71,76,96">
-            <limite>
-                <x>535</x>
-                <y>535</y>
-            </limite>
-            <limite>
-                <x>777</x>
-                <y>527</y>
-            </limite>
-            <limite>
-                <x>801</x>
-                <y>479</y>
-            </limite>
-            <limite>
-                <x>847</x>
-                <y>477</y>
-            </limite>
-            <limite>
-                <x>874</x>
-                <y>664</y>
-            </limite>
-            <limite>
-                <x>800</x>
-                <y>697</y>
-            </limite>
-            <limite>
-                <x>604</x>
-                <y>702</y>
-            </limite>
-        </secteur>
-        <secteur color="71,76,96">
-            <limite>
-                <x>848</x>
-                <y>136</y>
-            </limite>
-            <limite>
-                <x>870</x>
-                <y>158</y>
-            </limite>
-            <limite>
-                <x>856</x>
-                <y>172</y>
-            </limite>
-            <limite>
-                <x>847</x>
-                <y>189</y>
-            </limite>
-            <limite>
-                <x>843</x>
-                <y>229</y>
-            </limite>
-            <limite>
-                <x>853</x>
-                <y>253</y>
-            </limite>
-            <limite>
-                <x>820</x>
-                <y>282</y>
-            </limite>
-            <limite>
-                <x>847</x>
-                <y>477</y>
-            </limite>
-            <limite>
-                <x>801</x>
-                <y>479</y>
-            </limite>
-            <limite>
-                <x>773</x>
-                <y>279</y>
-            </limite>
-        </secteur>
+
     </secteurs>
 
     <routes>
-        <route name="RYF07">
-            <Type>APP</Type>
-            <point id="1">
-                <name>RYF</name>
-                <altitude>5000</altitude>
-            </point>
-            <point id="2">
-                <name>IB07L</name>
-                <altitude>3700</altitude>
-                <IAS>210</IAS>
-            </point>
-            <point id="3">
-                <name>FB07L</name>
-                <altitude>3700</altitude>
-            </point>
-            <point id="4">
-                <name>RW07</name>
-                <altitude>2340</altitude>
-            </point>
-            <next id ="1">land</next>
-            <next id ="2">API07</next>
-        </route>
-
-        <route name="RYF_HLDG">
-            <Type>HLDG</Type>
-            <point id="1">
-                <name>RYF</name>
-                <rightTurn>False</rightTurn>
-                <radial>128</radial>
-                <IAS>220</IAS>
-            </point>
-            <next id ="1">RYF07</next>
-        </route>
-
-        <route name="MOU1A">
-            <Type>STAR</Type>
-            <point id="1">
-                <name>MOU</name>
-                <altitude>19000</altitude>
-            </point>
-            <point id="2">
-                <name>LESPI</name>
-                <altitude>12000</altitude>
-            </point>
-            <point id="3">
-                <name>ROA</name>
-            </point>
-            <point id="4">
-                <name>RYF</name>
-            </point>
-            <next id ="1">RYF_HLDG</next>
-            <next id ="2">RYF07</next>
-        </route>
-
-        <route name="CFA1A">
-            <Type>STAR</Type>
-            <point id="1">
-                <name>CFA</name>
-                <altitude>19000</altitude>
-            </point>
-            <point id="2">
-                <name>ONCLE</name>
-                <altitude>12000</altitude>
-            </point>
-            <point id="3">
-                <name>RYF</name>
-            </point>
-            <next id ="1">RYF_HLDG</next>
-            <next id ="2">RYF07</next>
-        </route>
-
-        <route name="RUNOM07">
-            <Type>APP</Type>
-            <point id="1">
-                <name>RUNOM</name>
-                <altitude>7000</altitude>
-            </point>
-            <point id="2">
-                <name>VB402</name>
-                <altitude>7000</altitude>
-            </point>
-            <point id="3">
-                <name>VB404</name>
-                <IAS>210</IAS>
-            </point>
-            <point id="4">
-                <name>IB07L</name>
-                <altitude>3700</altitude>
-            </point>
-            <point id="5">
-                <name>FB07L</name>
-                <altitude>3700</altitude>
-            </point>
-            <point id="6">
-                <name>RW07</name>
-                <altitude>2340</altitude>
-            </point>
-            <next id ="1">land</next>
-            <next id ="2">API07</next>
-        </route>
-
-        <route name="RUNOM_HLDG">
-            <Type>HLDG</Type>
-            <point id="1">
-                <name>RUNOM</name>
-                <rightTurn>True</rightTurn>
-                <radial>210</radial>
-                <IAS>220</IAS>
-            </point>
-            <next id ="1">RUNOM07</next>
-        </route>
-
-        <route name="MILPA1A">
-            <Type>STAR</Type>
-            <point id="1">
-                <altitude>19000</altitude>
-                <name>MILPA</name>
-            </point>
-            <point id="2">
-                <name>ENSUI</name>
-                <altitude>12000</altitude>
-            </point>
-            <point id="3">
-                <name>RUNOM</name>
-            </point>
-            <next id ="1">RUNOM_HLDG</next>
-            <next id ="2">RUNOM07</next>
-        </route>
-
-        <route name="BALSI1A">
-            <Type>STAR</Type>
-            <point id="1">
-                <name>BALSI</name>
-                <altitude>19000</altitude>
-            </point>
-            <point id="2">
-                <name>ESPRI</name>
-                <altitude>15000</altitude>
-            </point>
-            <point id="3">
-                <name>LTP</name>
-            </point>
-            <point id="4">
-                <name>RUNOM</name>
-            </point>
-            <next id ="1">RUNOM_HLDG</next>
-            <next id ="2">RUNOM07</next>
-        </route>
-
-        <route name="ARBON07">
-            <Type>APP</Type>
-            <point id="1">
-                <name>ARBON</name>
-                <altitude>8000</altitude>
-            </point>
-            <point id="2">
-                <name>VB400</name>
-                <altitude>8000</altitude>
-            </point>
-            <point id="3">
-                <name>IB07L</name>
-                <altitude>3700</altitude>
-            </point>
-            <point id="4">
-                <name>FB07L</name>
-                <altitude>3700</altitude>
-            </point>
-            <point id="5">
-                <name>RW07</name>
-                <altitude>2340</altitude>
-            </point>
-            <next id ="1">land</next>
-            <next id ="2">API07</next>
-        </route>
-
-        <route name="ARBON_HLDG">
-            <Type>HLDG</Type>
-            <point id="1">
-                <name>ARBON</name>
-                <rightTurn>True</rightTurn>
-                <radial>17</radial>
-                <IAS>220</IAS>
-            </point>
-            <next id ="1">ARBON07</next>
-        </route>
-
-        <route name="MEN1A">
-            <Type>STAR</Type>
-            <point id="1">
-                <name>MEN</name>
-                <altitude>19000</altitude>
-            </point>
-            <point id="2">
-                <name>OSEAN</name>
-                <altitude>12000</altitude>
-            </point>
-            <point id="3">
-                <name>ARBON</name>
-            </point>
-            <next id ="1">ARBON_HLDG</next>
-            <next id ="2">ARBON07</next>
-        </route>
-
-        <route name="MTL1A">
-            <Type>STAR</Type>
-            <point id="1">
-                <name>MTL</name>
-                <altitude>19000</altitude>
-            </point>
-            <point id="2">
-                <name>SOLEY</name>
-                <altitude>12000</altitude>
-            </point>
-            <point id="3">
-                <name>ARBON</name>
-            </point>
-            <next id ="1">ARBON_HLDG</next>
-            <next id ="2">ARBON07</next>
-        </route>
-
-        <route name="07Final">
-            <Type>APP</Type>
-            <point id="1">
-                <name>IB07L</name>
-                <altitude>3700</altitude>
-                <IAS>210</IAS>
-            </point>
-            <point id="2">
-                <name>FB07L</name>
-                <altitude>3700</altitude>
-            </point>
-            <point id="3">
-                <name>RW07</name>
-                <altitude>2340</altitude>
-            </point>
-            <next id ="1">land</next>
-            <next id ="2">API07</next>
-        </route>
-
-        <route name="API07">
-            <Type>APP</Type>
-            <point id="1">
-                <name>RW07</name>
-                <altitude>2000</altitude>
-            </point>
-            <point id="2">
-                <name>VB410</name>
-                <IAS>220</IAS>
-            </point>
-            <point id="3">
-                <name>RUNOM</name>
-                <altitude>5000</altitude>
-            </point>
-            <next id ="1">RUNOM_HLDG</next>
-            <next id ="2">RUNOM07</next>
-        </route>
-
-        <route name="ATN1E">
-            <Type>SID</Type>
-            <point id="1">
-                <name>BST</name>
-                <altitude>2000</altitude>
-            </point>
-            <point id="2">
-                <name>DEP07</name>
-            </point>
-            <point id="3">
-                <name>NELLER</name>
-                <altitude>5000</altitude>
-            </point>
-            <point id="4">
-                <name>NORRE</name>
-            </point>
-            <point id="5">
-                <name>NOTAN</name>
-            </point>
-            <point id="6">
-                <name>ATN</name>
-            </point>
-        </route>
-
-        <route name="DJL1E">
-            <Type>SID</Type>
-            <point id="1">
-                <name>BST</name>
-                <altitude>2000</altitude>
-            </point>
-            <point id="2">
-                <name>DEP07</name>
-            </point>
-            <point id="3">
-                <name>NELLER</name>
-                <altitude>5000</altitude>
-            </point>
-            <point id="4">
-                <name>NORRE</name>
-            </point>
-            <point id="5">
-                <name>NASAL</name>
-            </point>
-            <point id="6">
-                <name>DJL</name>
-            </point>
-        </route>
-
-        <route name="KELUK1E">
-            <Type>SID</Type>
-            <point id="1">
-                <name>BST</name>
-                <altitude>2000</altitude>
-            </point>
-            <point id="2">
-                <name>DEP07</name>
-            </point>
-            <point id="3">
-                <name>NELLER</name>
-                <altitude>5000</altitude>
-            </point>
-            <point id="4">
-                <name>NORRE</name>
-            </point>
-            <point id="5">
-                <name>NESTI</name>
-            </point>
-            <point id="6">
-                <name>KELUK</name>
-            </point>
-        </route>
-
-        <route name="MEN1E">
-            <Type>SID</Type>
-            <point id="1">
-                <name>BST</name>
-                <altitude>2000</altitude>
-            </point>
-            <point id="2">
-                <name>DEP07</name>
-            </point>
-            <point id="3">
-                <name>LSE</name>
-            </point>
-            <point id="4">
-                <name>BRIRO</name>
-                <altitude>70</altitude>
-            </point>
-            <point id="5">
-                <name>MEN</name>
-            </point>
-        </route>
-
-        <route name="MTL1E">
-            <Type>SID</Type>
-            <point id="1">
-                <name>BST</name>
-                <altitude>2000</altitude>
-            </point>
-            <point id="2">
-                <name>DEP07</name>
-            </point>
-            <point id="3">
-                <name>LSE</name>
-            </point>
-            <point id="4">
-                <name>AVRIL</name>
-                <altitude>90</altitude>
-            </point>
-            <point id="5">
-                <name>WS</name>
-            </point>
-            <point id="6">
-                <name>SUDER</name>
-            </point>
-            <point id="7">
+        <route name="UN1">
+            <Type>DESSIN</Type>
+            <point>
+                <name>MAJOR</name>
+            </point>
+            <point>
                 <name>MTL</name>
             </point>
-        </route>
-
-        <route name="RETNO1E">
-            <Type>SID</Type>
-            <point id="1">
-                <name>BST</name>
-                <altitude>2000</altitude>
-            </point>
-            <point id="2">
-                <name>DEP07</name>
-            </point>
-            <point id="3">
-                <name>LSE</name>
-            </point>
-            <point id="4">
-                <name>AVRIL</name>
-            </point>
-            <point id="5">
-                <name>WS</name>
-            </point>
-            <point id="6">
-                <name>SERAC</name>
-                <altitude>140</altitude>
-            </point>
-            <point id="7">
-                <name>RETNO</name>
-            </point>
-        </route>
-
-        <route name="WS_HLDG">
-            <Type>HLDG</Type>
-            <point id="1">
-                <name>WS</name>
-                <rightTurn>True</rightTurn>
-                <radial>90</radial>
-            </point>
-            <next id ="1">WS09</next>
-        </route>
-
-        <route name="MEN1C">
-            <Type>STAR</Type>
-            <point id="1">
-                <name>MEN</name>
-                <altitude>10000</altitude>
-            </point>
-            <point id="2">
-                <name>OSEAN</name>
-            </point>
-            <point id="3">
-                <name>ARBON</name>
-            </point>
-            <point id="4">
-                <name>WS</name>
-            </point>
-            <next id ="1">WS_HLDG</next>
-        </route>
-
-        <route name="MTL1C">
-            <Type>STAR</Type>
-            <point id="1">
-                <name>MTL</name>
-                <altitude>10000</altitude>
-            </point>
-            <point id="2">
-                <name>SOLEY</name>
-            </point>
-            <point id="3">
-                <name>ARBON</name>
-            </point>
-            <point id="4">
-                <name>WS</name>
-            </point>
-            <next id ="1">WS_HLDG</next>
-        </route>
-
-        <route name="BALSI1C">
-            <Type>STAR</Type>
-            <point id="1">
-                <name>BALSI</name>
-                <altitude>8000</altitude>
-            </point>
-            <point id="2">
-                <name>ESPRI</name>
-            </point>
-            <point id="3">
+            <point>
                 <name>LTP</name>
             </point>
-            <point id="4">
-                <name>WS</name>
-            </point>
-            <next id ="1">secteur en sortie</next>
-        </route>
-
-        <route name="MEN1M">
-            <Type>SID</Type>
-            <point id="1">
-                <name>LFVC</name>
-                <altitude>2000</altitude>
-            </point>
-            <point id="2">
-                <name>EG</name>
-                <altitude>4000</altitude>
-            </point>
-            <point id="3">
-                <name>LTP</name>
-            </point>
-            <point id="4">
-                <name>AVRIL</name>
-            </point>
-            <point id="5">
-                <name>BELLY</name>
-            </point>
-            <point id="6">
-                <name>BRIRO</name>
-            </point>
-            <point id="7">
-                <name>MEN</name>
+            <point>
+                <name>MOZAO</name>
             </point>
         </route>
 
-        <route name="DJL1M">
-            <Type>SID</Type>
-            <point id="1">
-                <name>LFVC</name>
-                <altitude>2000</altitude>
-            </point>
-            <point id="2">
-                <name>EG</name>
-                <altitude>4000</altitude>
-            </point>
-            <point id="3">
-                <name>LTP</name>
-            </point>
-            <point id="4">
-                <name>AVRIL</name>
-            </point>
-            <point id="5">
-                <name>BST</name>
-            </point>
-            <point id="6">
-                <name>NORRE</name>
-            </point>
-            <point id="7">
-                <name>NASAL</name>
-            </point>
-            <point id="8">
-                <name>ATN</name>
-            </point>
-        </route>
-
-        <route name="KELUK1M">
-            <Type>SID</Type>
-            <point id="1">
-                <name>LFVC</name>
-                <altitude>2000</altitude>
-            </point>
-            <point id="2">
-                <name>EG</name>
-                <altitude>4000</altitude>
-            </point>
-            <point id="3">
-                <name>LTP</name>
-            </point>
-            <point id="4">
-                <name>AVRIL</name>
-            </point>
-            <point id="5">
-                <name>BST</name>
-            </point>
-            <point id="6">
-                <name>NORRE</name>
-            </point>
-            <point id="7">
-                <name>NESTI</name>
-            </point>
-            <point id="8">
-                <name>KELUK</name>
-            </point>
-        </route>
-
-        <route name="MEN-DJL">
-            <Type>TRANSIT</Type>
-            <point id="1">
-                <name>MEN</name>
-            </point>
-            <point id="2">
-                <name>BRIRO</name>
-            </point>
-            <point id="3">
-                <name>BELLY</name>
-            </point>
-            <point id="4">
-                <name>LSE</name>
-            </point>
-            <point id="5">
-                <name>TARIS</name>
-            </point>
-            <point id="6">
-                <name>DJL</name>
-            </point>
-        </route>
-
-        <route name="MTL-DJL">
-            <Type>TRANSIT</Type>
-            <point id="1">
-                <name>MTL</name>
-            </point>
-            <point id="2">
-                <name>TSARE</name>
-            </point>
-            <point id="3">
-                <name>LTP</name>
-            </point>
-            <point id="4">
-                <name>RUNOM</name>
-            </point>
-            <point id="5">
-                <name>TARIS</name>
-            </point>
-            <point id="6">
-                <name>DJL</name>
-            </point>
-        </route>
-
-        <route name="MEN-PAS">
-            <Type>TRANSIT</Type>
-            <point id="1">
-                <name>MEN</name>
-            </point>
-            <point id="2">
-                <name>BRIRO</name>
-            </point>
-            <point id="3">
-                <name>BELLY</name>
-            </point>
-            <point id="4">
-                <name>LSE</name>
-            </point>
-            <point id="5">
-                <name>ENEVE</name>
-            </point>
-            <point id="6">
+        <route name="cac">
+            <Type>DESSIN</Type>
+            <point>
                 <name>PAS</name>
             </point>
-        </route>
-
-        <route name="PAS-MEN">
-            <Type>TRANSIT</Type>
-            <point id="1">
-                <name>PAS</name>
+            <point>
+                <name>LIMAN</name>
             </point>
-            <point id="2">
-                <name>ENEVE</name>
-            </point>
-            <point id="3">
+            <point>
                 <name>LSE</name>
             </point>
-            <point id="4">
-                <name>BELLY</name>
+            <point>
+                <name>MINDI</name>
             </point>
-            <point id="5">
-                <name>BRIRO</name>
-            </point>
-            <point id="6">
+            <point>
                 <name>MEN</name>
             </point>
         </route>
-
-        <route name="MTL-PAS">
-            <Type>TRANSIT</Type>
-            <point id="1">
-                <name>MTL</name>
-            </point>
-            <point id="2">
-                <name>TSARE</name>
-            </point>
-            <point id="3">
-                <name>LTP</name>
-            </point>
-            <point id="4">
-                <name>ETULA</name>
-            </point>
-            <point id="5">
-                <name>PAS</name>
-            </point>
-        </route>
-
     </routes>
-
-    <axes>
-        <axe name="BST_07L">
-            <point>RW07</point>
-            <radial>74</radial>
-            <next>07Final</next>
-            <chevron>IB07L</chevron> # position du chevron soit un point soit une distance en Nm
-            <displaySize>40</displaySize> # longueur de l'axe visualisé en Nm
-        </axe>
-    </axes>
 
 </map>
