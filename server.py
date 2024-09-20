@@ -319,6 +319,8 @@ while Running:
                 dictAvion[req[0]].Cmouvement()
             elif req[1] == 'Montrer':
                 dictAvion[req[0]].montrer = not dictAvion[req[0]].montrer
+            elif req[1] == 'EtatFreq':
+                dictAvion[req[0]].updateEtatFreq(req[2])
             elif req[1] == 'FL?':
                 dictAvion[req[0]].FLInterro = not dictAvion[req[0]].FLInterro
             elif req[1] == 'Pause':

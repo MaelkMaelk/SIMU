@@ -464,7 +464,7 @@ class etiquette:
         self.nextSector = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
             text="I2",
-            object_id=pygame_gui.core.ObjectID('@etiquette', 'marron'),
+            object_id=pygame_gui.core.ObjectID('@etiquette', 'rose'),
             anchors={'top': 'top', 'top_target': self.AFL},
             container=self.container)
 
@@ -501,7 +501,6 @@ class etiquette:
             evo = "  " + str(avion.papa.evolution)[:3]
 
         self.speedGS.set_text(str(avion.papa.speedGS)[:2] + evo)
-        self.indicatif.change_object_id(pygame_gui.core.ObjectID('@etiquette', 'bold'))
 
         # alti
         self.AFL.set_text(str(round(avion.papa.altitude/100)) + " " + avion.papa.altitudeEvoTxt)

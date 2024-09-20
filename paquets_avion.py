@@ -125,7 +125,8 @@ class AvionPacket:
             self.etatFrequence = nouvelEtat
         else:
             i = liste_etat_freq.index(self.etatFrequence)
-            self.etatFrequence = liste_etat_freq[i + 1]
+            if i != len(liste_etat_freq) - 1:  # on vérifie que ce n'est pas le dernier état fréquence
+                self.etatFrequence = liste_etat_freq[i + 1]
        
     def updateAlti(self):
         
@@ -137,7 +138,7 @@ class AvionPacket:
                     self.altitude = self.selectedAlti  # alors, on met le niveau cible
                 else:
                     self.altitude += self.evolution / 60 * radarRefresh  # sinon, on descend juste au taux sélecté
-                    self.altitudeEvoTxt = 'v'
+                    self.altitudeEvoTxt = '↓'
                     
             else:
                 # on arrive dans moins d'un refresh ?
@@ -145,7 +146,7 @@ class AvionPacket:
                     self.altitude = self.selectedAlti  # alors, on met le niveau cible
                 else:
                     self.altitude += self.evolution / 60 * radarRefresh  # sinon, on monte au taux sélecté
-                    self.altitudeEvoTxt = '^'
+                    self.altitudeEvoTxt = '↑'
                     
         else:  # si on n'évolue pas, on met ce texte
             self.altitudeEvoTxt = '-'

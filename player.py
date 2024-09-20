@@ -266,6 +266,8 @@ class Avion:
         elif event.ui_element == self.etiquette.indicatif:
             if event.mouse_button == 1 and pilote:
                 return 'menu'
+            elif event.mouse_button == 1:
+                return self.Id, 'EtatFreq', None
 
         elif event.ui_element == self.etiquette.XPT:
             if event.mouse_button == 1 and not pilote:
@@ -317,9 +319,58 @@ class Avion:
 
             self.etiquette.XFL.hide()  # TODO faire en sorte qu'ils ne se cache pas si les FL sont pas pareils
             self.etiquette.CFL.hide()
+            self.etiquette.PFL.hide()
 
     def update(self, papa):
+
+        if self.papa.etatFrequence != papa.etatFrequence:
+            self.updateEtatFrequence(papa)
+
         self.papa = papa
+
+    def updateEtatFrequence(self, papa):
+
+        """
+        Incrémente l'état fréquence de l'avion
+        :param papa:
+        :return:
+        """
+
+        if papa.etatFrequence == 'previousShoot':
+            gras = self.etiquette.indicatif.get_object_ids()[1]  # on regarde si le bouton est en gras ou non
+            self.etiquette.indicatif.change_object_id(pygame_gui.core.ObjectID(gras, 'blanc'))
+
+        elif self.papa.etatFrequence == 'inFreq':
+
+            for ligne in [[self.etiquette.speedGS], self.etiquette.ligneDeux,
+                          self.etiquette.ligneTrois, self.etiquette.ligneQuatre]:
+
+                for bouton in ligne:
+                    gras = bouton.get_object_ids()[1]  # on regarde si le bouton est en gras ou non
+                    bouton.change_object_id(pygame_gui.core.ObjectID(gras, 'blanc'))
+
+        elif papa.etatFrequence == 'nextCoord':
+
+            gras = self.etiquette.XPT.get_object_ids()[1]  # on regarde si le bouton est en gras ou non
+            self.etiquette.XPT.change_object_id(pygame_gui.core.ObjectID(gras, 'marron'))
+
+            gras = self.etiquette.nextSector.get_object_ids()[1]  # on regarde si le bouton est en gras ou non
+            self.etiquette.nextSector.change_object_id(pygame_gui.core.ObjectID(gras, 'marron'))
+
+        if papa.etatFrequence == 'nextShoot':
+            gras = self.etiquette.indicatif.get_object_ids()[1]  # on regarde si le bouton est en gras ou non
+            self.etiquette.indicatif.change_object_id(pygame_gui.core.ObjectID(gras, 'marron'))
+
+        elif papa.etatFrequence == 'nextFreq':
+
+            for ligne in [[self.etiquette.speedGS], self.etiquette.ligneDeux,
+                          self.etiquette.ligneTrois, self.etiquette.ligneQuatre]:
+
+                for bouton in ligne:
+                    gras = bouton.get_object_ids()[1]  # on regarde si le bouton est en gras ou non
+                    bouton.change_object_id(pygame_gui.core.ObjectID(gras, 'marron'))
+
+
 
     def kill(self):
         self.bouton.kill()

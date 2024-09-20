@@ -35,78 +35,62 @@
            "text_vert_alignment": "top",
            "text_vert_alignment_padding": "0",
             "shadow_width" : "0"
-       }
+       },
+      "font":
+         {
+             "name": "bold",
+             "size": "12",
+             "regular_path": "fonts/LTSuperior-Medium.otf",
+             "bold_path": "fonts/LTSuperior-ExtraBold.otf"
+             }
      },
-      "bold": {
-
-      "font":
-         {
-             "name": "bold",
-             "size": "12",
-             "bold": "1",
-             "regular_path": "fonts/LTSuperior-Medium.otf",
-             "bold_path": "fonts/LTSuperior-ExtraBold.otf"
-             }
-      },
-
-      "rose": {
+  "@etiquetteBold":
+      {
         "colours": {
-          "normal_text": "rgb(255,105,180)",
-          "hovered_text": "rgb(255,105,180)",
-          "selected_text": "rgb(255,105,180)"
+          "normal_bg": "#00000000",
+          "hovered_bg": "#00000000",
+          "selected_bg": "#00000000",
+          "disabled_bg": "#00000000"
         },
-      "font":
-         {
-             "name": "regular",
-             "size": "12",
-             "regular_path": "fonts/LTSuperior-Medium.otf"
-             }
+        "misc": {
+          "border_width": "0",
+          "text_horiz_alignment": "left",
+          "text_horiz_alignment_padding": "1",
+          "text_vert_alignment": "top",
+          "text_vert_alignment_padding": "0",
+          "shadow_width": "0"
+        },
+        "font": {
+          "name": "bold",
+          "size": "12",
+          "bold": "1",
+          "regular_path": "fonts/LTSuperior-Medium.otf",
+          "bold_path": "fonts/LTSuperior-ExtraBold.otf"
+        }
       },
-
-      "roseBold": {
-        "colours": {
-          "normal_text": "rgb(255,105,180)",
-          "hovered_text": "rgb(255,105,180)",
-          "selected_text": "rgb(255,105,180)"
+  "rose":
+  {
+          "colours": {
+            "normal_text": "rgb(255,105,180)",
+            "hovered_text": "rgb(255,105,180)",
+            "selected_text": "rgb(255,105,180)"
+          }
         },
-      "font":
-         {
-             "name": "bold",
-             "size": "12",
-             "bold": "1",
-             "regular_path": "fonts/LTSuperior-Medium.otf",
-             "bold_path": "fonts/LTSuperior-ExtraBold.otf"
-             }
-      },
-
-      "marron": {
-        "colours": {
-          "selected_text": "rgb(174,137,100)",
-          "hovered_text": "rgb(174,137,100)",
-          "normal_text": "rgb(174,137,100)"
+  "blanc":
+  {
+          "colours": {
+            "normal_text": "rgb(255,255,255)",
+            "hovered_text": "rgb(255,255,255)",
+            "selected_text": "rgb(255,255,255)"
+          }
         },
-      "font":
-         {
-             "name": "regular",
-             "size": "12",
-             "regular_path": "fonts/LTSuperior-Medium.otf"
-             }
-      },
-
-      "marronBold": {
-        "colours": {
-          "normal_text": "rgb(174,137,100)",
-          "selected_text": "rgb(174,137,100)",
-          "hovered_text": "rgb(174,137,100)"
-        },
-      "font":
-         {
-             "name": "bold",
-             "bold": "1",
-             "size": "12",
-             "regular_path": "fonts/LTSuperior-Medium.otf",
-             "bold_path": "fonts/LTSuperior-ExtraBold.otf"
-             }
-      }
+  "marron":
+  {
+          "colours": {
+            "selected_text": "rgb(174,137,100)",
+            "hovered_text": "rgb(174,137,100)",
+            "normal_text": "rgb(174,137,100)"
+          }
+        }
 
 }
