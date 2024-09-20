@@ -329,7 +329,7 @@ def main(server_ip):
         '''partie affichage'''
 
         # on remplit d'abord avec une couleur
-        win.fill((55, 65, 75))
+        win.fill((120, 120, 120))
 
         # on dessine les secteurs
         for secteur in carte['secteurs']:
