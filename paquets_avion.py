@@ -4,7 +4,7 @@ radarRefresh = 4  # temps en s pour le refresh radar
 heureEnRefresh = radarRefresh / 3600  # pour calculer la vitesse des avions (conversion par heure en par refresh)
 etiquetteLines = 4
 nmToFeet = 6076
-altiDefault = 24000  # alti en pied par défault, si on ne rentre pas d'alti pour spawn un avion
+altiDefault = 30000  # alti en pied par défault, si on ne rentre pas d'alti pour spawn un avion
 acceldefault = 3  # accélération/decelération de kt par refresh
 turnRateDefault = 10  # turnrate/refresh par défault
 liste_etat_freq = ['previousFreq', 'previousShoot', 'inFreq', 'nextCoord', 'nextShoot', 'nextFreq']
@@ -125,7 +125,7 @@ class AvionPacket:
 
         for point in route['points'][route['points'].index(self.nextPoint):]:
             if 'EFL' in point:
-                self.CFL = point['EFL'] * 100
+                self.CFL = point['EFL']
         if not self.CFL:
             self.CFL = round(self.altitude / 100)
 

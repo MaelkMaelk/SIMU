@@ -329,7 +329,7 @@ def main(server_ip):
         '''partie affichage'''
 
         # on remplit d'abord avec une couleur
-        win.fill((120, 120, 120))
+        win.fill((100, 100, 100))
 
         # on dessine les secteurs
         for secteur in carte['secteurs']:
@@ -341,7 +341,7 @@ def main(server_ip):
 
         # on dessine les routes
         for segment in carte['segments']['TRANSIT']:
-            pygame.draw.line(win, (105, 110, 105), (segment[0][0]*zoom + scroll[0], segment[0][1]*zoom + scroll[1]),
+            pygame.draw.line(win, (150, 150, 150), (segment[0][0]*zoom + scroll[0], segment[0][1]*zoom + scroll[1]),
                              (segment[1][0]*zoom + scroll[0], segment[1][1]*zoom + scroll[1]), 2)
 
         # on dessine les points

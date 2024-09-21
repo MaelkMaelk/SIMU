@@ -56,6 +56,10 @@
             <x>1209</x>
             <y>977</y>
         </point>
+        <point name="FREDI">
+            <x>1140</x>
+            <y>899</y>
+        </point>
         <point name="CFA">
             <x>1023</x>
             <y>767</y>
@@ -80,7 +84,7 @@
             <x>1385</x>
             <y>665</y>
         </point>
-        <point name="GVA">
+        <point name="LSGG">
             <x>1669</x>
             <y>610</y>
         </point>
@@ -99,6 +103,10 @@
         <point name="JUVEN">
             <x>2028</x>
             <y>997</y>
+        </point>
+        <point name="LIML">
+            <x>2000</x>
+            <y>980</y>
         </point>
         <point name="GRENA">
             <x>1645</x>
@@ -121,7 +129,7 @@
             <y>1467</y>
         </point>
         <point name="ABISA">
-            <x>1374</x>
+            <x>1375</x>
             <y>1644</y>
         </point>
         <point name="SPIDY">
@@ -142,7 +150,7 @@
         </point>
         <point name="LOBOS">
             <x>844</x>
-            <y>1244</y>
+            <y>1249</y>
         </point>
         <point name="GAI">
             <x>720</x>
@@ -161,7 +169,7 @@
     </zones>
 
     <secteurs>
-        <secteur color="90,90,90">
+        <secteur color="75,75,75">
             <limite>
                 <x>1109</x>
                 <y>915</y>
@@ -219,14 +227,13 @@
                 <y>1266</y>
             </limite>
         </secteur>
-
     </secteurs>
 
     <routes>
         <route>
             <Type>DEPART</Type>
             <point>
-                <name>GVA</name>
+                <name>LSGG</name>
                 <FL>120</FL>
             </point>
             <point>
@@ -253,7 +260,6 @@
             </point>
             <sortie min="245" max="285">OM</sortie>
             <sortie min="285" max="365">OS</sortie>
-
         </route>
 
         <route>
@@ -348,6 +354,38 @@
             </point>
             <point>
                 <name>BOSUA</name>
+            </point>
+            <point>
+                <name>GRENA</name>
+            </point>
+            <point>
+                <name>MTL</name>
+            </point>
+            <point>
+                <name>SPIDY</name>
+            </point>
+            <point>
+                <name>ETORI</name>
+            </point>
+            <point>
+                <name>ONGHI</name>
+            </point>
+            <point>
+                <name>GAI</name>
+            </point>
+            <sortie min="245" max="285">OM</sortie>
+            <sortie min="285" max="365">OS</sortie>
+        </route>
+
+        <route>
+            <Type>DEP</Type>
+            <point>
+                <name>LIML</name>
+                <FL>20</FL>
+            </point>
+            <point>
+                <name>BOSUA</name>
+                <EFL>250</EFL>
             </point>
             <point>
                 <name>GRENA</name>
@@ -469,15 +507,180 @@
             <point>
                 <name>MINDI</name>
             </point>
-
+            <point>
+                <name>FREDI</name>
+            </point>
             <point>
                 <name>CFA</name>
             </point>
             <point>
                 <name>VULCA</name>
             </point>
+            <point>
+                <name>NEV</name>
+            </point>
             <sortie min="245" max="285">N2</sortie>
             <sortie min="285" max="365">N3</sortie>
+        </route>
+
+        <route>
+            <Type>TRANSIT</Type>
+            <point>
+                <name>ABISA</name>
+            </point>
+            <point>
+                <name>MAJOR</name>
+            </point>
+            <point>
+                <name>MTL</name>
+            </point>
+            <point>
+                <name>MINDI</name>
+            </point>
+            <point>
+                <name>FREDI</name>
+            </point>
+            <point>
+                <name>CFA</name>
+            </point>
+            <point>
+                <name>BERNI</name>
+            </point>
+            <sortie min="245" max="285">N2</sortie>
+            <sortie min="285" max="365">N3</sortie>
+        </route>
+
+        <route>
+            <Type>TRANSIT</Type>
+            <point>
+                <name>JAMBI</name>
+            </point>
+            <point>
+                <name>MTL</name>
+            </point>
+            <point>
+                <name>MINDI</name>
+            </point>
+            <point>
+                <name>FREDI</name>
+            </point>
+            <point>
+                <name>CFA</name>
+            </point>
+            <point>
+                <name>BERNI</name>
+            </point>
+            <sortie min="245" max="285">N2</sortie>
+            <sortie min="285" max="365">N3</sortie>
+        </route>
+
+        <route>
+            <Type>TRANSIT</Type>
+            <point>
+                <name>JAMBI</name>
+            </point>
+            <point>
+                <name>MTL</name>
+            </point>
+            <point>
+                <name>MINDI</name>
+            </point>
+            <point>
+                <name>FREDI</name>
+            </point>
+            <point>
+                <name>CFA</name>
+            </point>
+            <point>
+                <name>VULCA</name>
+            </point>
+            <point>
+                <name>NEV</name>
+            </point>
+            <sortie min="245" max="285">N2</sortie>
+            <sortie min="285" max="365">N3</sortie>
+        </route>
+
+        <route name="Depart MTL">
+            <Type>DEP</Type>
+            <point>
+                <name>BST</name>
+                <FL>20</FL>
+            </point>
+            <point>
+                <name>LSE</name>
+            </point>
+            <point>
+                <name>AVRIL</name>
+            </point>
+            <point>
+                <name>WS</name>
+                <EFL>240</EFL>
+            </point>
+            <point>
+                <name>MTL</name>
+            </point>
+            <point>
+                <name>MAJOR</name>
+            </point>
+            <point>
+                <name>ABISA</name>
+            </point>
+            <sortie min="245" max="365">S2</sortie>
+        </route>
+
+        <route name="Depart RETNO">
+            <Type>DEP</Type>
+            <point>
+                <name>BST</name>
+                <FL>20</FL>
+            </point>
+            <point>
+                <name>LSE</name>
+            </point>
+            <point>
+                <name>AVRIL</name>
+            </point>
+            <point>
+                <name>WS</name>
+                <EFL>240</EFL>
+            </point>
+            <point>
+                <name>RETNO</name>
+            </point>
+            <point>
+                <name>SANTO</name>
+            </point>
+            <point>
+                <name>JAMBI</name>
+            </point>
+            <sortie min="245" max="365">I2</sortie>
+        </route>
+
+        <route name="Depart MEN">
+            <Type>DEP</Type>
+            <point>
+                <name>BST</name>
+                <FL>20</FL>
+            </point>
+            <point>
+                <name>LSE</name>
+            </point>
+            <point>
+                <name>MINDI</name>
+            </point>
+            <point>
+                <name>MEN</name>
+                <EFL>240</EFL>
+            </point>
+            <point>
+                <name>LOBOS</name>
+            </point>
+            <point>
+                <name>GAI</name>
+            </point>
+            <sortie min="245" max="285">OM</sortie>
+            <sortie min="285" max="365">OS</sortie>
         </route>
     </routes>
 

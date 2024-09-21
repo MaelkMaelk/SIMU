@@ -419,7 +419,7 @@ class etiquette:
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
             text=str(round(avion.papa.altitude / 100))[:2],
             object_id=pygame_gui.core.ObjectID('@etiquetteBold', 'rose'),
-            anchors={'top': 'top', 'top_target': self.indicatif,},
+            anchors={'top': 'top', 'top_target': self.indicatif},
             container=self.container)
 
         self.DCT = pygame_gui.elements.UIButton(

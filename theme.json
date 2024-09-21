@@ -41,7 +41,7 @@
              "name": "bold",
              "size": "12",
              "regular_path": "fonts/LTSuperior-Medium.otf",
-             "bold_path": "fonts/LTSuperior-ExtraBold.otf"
+             "bold_path": "fonts/LTSuperior-Black.otf"
              }
      },
   "@etiquetteBold":
@@ -65,15 +65,15 @@
           "size": "12",
           "bold": "1",
           "regular_path": "fonts/LTSuperior-Medium.otf",
-          "bold_path": "fonts/LTSuperior-ExtraBold.otf"
+          "bold_path": "fonts/LTSuperior-Black.otf"
         }
       },
   "rose":
   {
           "colours": {
-            "normal_text": "rgb(255,105,180)",
-            "hovered_text": "rgb(255,105,180)",
-            "selected_text": "rgb(255,105,180)"
+            "normal_text": "#FDB5C0",
+            "hovered_text": "#FDB5C0",
+            "selected_text": "#FDB5C0"
           }
         },
   "blanc":
@@ -87,9 +87,9 @@
   "marron":
   {
           "colours": {
-            "selected_text": "rgb(174,137,100)",
-            "hovered_text": "rgb(174,137,100)",
-            "normal_text": "rgb(174,137,100)"
+            "selected_text": "#9E8C5B",
+            "hovered_text": "#9E8C5B",
+            "normal_text": "#9E8C5B"
           }
         }
 

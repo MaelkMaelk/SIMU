@@ -114,25 +114,16 @@ class Avion:
 
         :param color: quelle couleur pour le vecteur ?
         :param window: quelle surface ? (mettre la surface qu'on utilise pour pygame)
-        :param vecteurSetting: int à combien de minutes on doit les dessiner
+        :param vecteurSetting: int à combien de minutes, on doit les dessiner
         :param zoom: niveau de zoom de la fenêtre
         :return: rien
         """
-        for i in range(1, vecteurSetting + 1):
 
-            pygame.draw.line(window, color, (self.affX + plotSize, self.affY + plotSize), (
-                self.affX + plotSize + self.papa.speedPx * 60 / radarRefresh * vecteurSetting * zoom * math.cos(
-                    self.papa.headingRad),
-                self.affY + plotSize + self.papa.speedPx * 60 / radarRefresh * vecteurSetting * zoom * math.sin(
-                    self.papa.headingRad)), 1)
-
-            pygame.draw.circle(window, color, (self.affX + plotSize +
-                                            self.papa.speedPx * 60 / radarRefresh * i * zoom * math.cos(
+        pygame.draw.line(window, color, (self.affX + plotSize, self.affY + plotSize), (
+            self.affX + plotSize + self.papa.speedPx * 60 / radarRefresh * vecteurSetting * zoom * math.cos(
                 self.papa.headingRad),
-                                            self.affY + plotSize +
-                                            self.papa.speedPx * 60 / radarRefresh * i * zoom * math.sin(
-                                                self.papa.headingRad)),
-                               2)
+            self.affY + plotSize + self.papa.speedPx * 60 / radarRefresh * vecteurSetting * zoom * math.sin(
+                self.papa.headingRad)), 2)
 
     def draw(self, win, zoom, scroll, vecteurs, vecteurSetting, points):
 
