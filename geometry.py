@@ -2,7 +2,7 @@ import math
 import numpy as np
 
 
-def calculateHeading(x, y, xPoint, yPoint):
+def calculateHeading(x: int, y: int, xPoint: int, yPoint: int):
     if y > yPoint:
         if x > xPoint:
             heading = (math.atan(abs(y - yPoint) / (abs(x - xPoint)))) * 180 / math.pi
@@ -20,11 +20,11 @@ def calculateHeading(x, y, xPoint, yPoint):
     return heading
 
 
-def calculateDistance(x1, y1, x2, y2):
+def calculateDistance(x1: int, y1: int, x2: int, y2: int):
     return math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
 
 
-def calculateShortestPoint(pointDroite1, pointDroite2, point):
+def calculateShortestPoint(pointDroite1: list[int], pointDroite2: list[int], point: list[int]):
     """
     Calcule le point sur une droite où la distance ets la plus courte à un point
     :param pointDroite1: 1er point pour définir la droite, vecteur2 (x, y)

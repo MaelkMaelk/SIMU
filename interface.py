@@ -2,7 +2,7 @@ import pygame
 import pygame_gui
 
 
-def selectButtonInList(liste, event):
+def selectButtonInList(liste: list, event):
     for bouton in liste:
         if bouton == event:
             bouton.select()
