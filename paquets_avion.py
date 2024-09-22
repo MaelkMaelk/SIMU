@@ -1,14 +1,5 @@
 from geometry import *
-
-radarRefresh = 4  # temps en s pour le refresh radar
-heureEnRefresh = radarRefresh / 3600  # pour calculer la vitesse des avions (conversion par heure en par refresh)
-etiquetteLines = 4
-nmToFeet = 6076
-altiDefault = 30000  # alti en pied par défault, si on ne rentre pas d'alti pour spawn un avion
-acceldefault = 3  # accélération/decelération de kt par refresh
-turnRateDefault = 10  # turnrate/refresh par défault
-liste_etat_freq = ['previousFreq', 'previousShoot', 'inFreq', 'nextCoord', 'nextShoot', 'nextFreq']
-secteurBoundaries = [245, 365]
+from valeurs_config import *
 
 
 class Game:
@@ -19,17 +10,16 @@ class Game:
 
 
 class Packet:
-    def __init__(self, Id, game=None, dictAvions=None, requests=None, map=None, perfos=None):
+    def __init__(self, Id, game=None, dictAvions=None, requests=None, carte=None, perfos=None):
         self.Id = Id
         self.game = game
         self.dictAvions = dictAvions
         self.requests = requests
-        self.map = map
+        self.map = carte
         self.perfos = perfos
 
 
 class AvionPacket:
-    global heureEnRefresh
 
     def __init__(self, gameMap, Id, indicatif, aircraft, perfos, route, arrival, FL=None, x=None, y=None, heading=None, PFL=None):
 
@@ -67,6 +57,7 @@ class AvionPacket:
         self.montrer = False
         # états possibles : previousFreq, previousShoot, inFreq, nextCoord, nextShoot, nextFreq
         self.etatFrequence = "previousFreq"
+        self.integreOrganique = False  # si on doit ou non afficher la case d'intégration organique
 
         # perfo
         self.turnRate = turnRateDefault
@@ -84,12 +75,6 @@ class AvionPacket:
         else:
             self.nextPoint = self.route['points'][0]
 
-        if route['sortie']:
-            self.sortie = route['sortie'][0]
-        else:
-            self.nextRoute = 'bye'
-            self.sortie = 'decollage'
-
         self.evolution = 0  # taux de variation/radar refresh
         self.altitudeEvoTxt = '-'
         if PFL is not None:
@@ -99,27 +84,28 @@ class AvionPacket:
         else:
             self.PFL = 300
 
+        # On détermine le prochain secteur et le XFL en fonction du PFL, et si c'est une arrivée
         self.nextSector = None
 
-        if self.arrival:
+        if self.arrival: # si c'est une arrivée,
             self.XFL = route['arrival']['XFL']
-        elif gameMap['floor'] < self.PFL < gameMap['ceiling']:
-            self.XFL = self.PFL
-        elif self.PFL > gameMap["ceiling"]:
-            self.XFL = 360
-        else:
-            self.XFL = 300
-
-        if self.arrival:
             self.nextSector = route['arrival']['secteur']
+
         else:
+            if gameMap['floor'] < self.PFL < gameMap['ceiling']:
+                self.XFL = self.PFL
+            elif self.PFL > gameMap["ceiling"]:
+                self.XFL = 360
+            else:
+                self.XFL = 300
+
             for sortie in self.route['sortie']:
                 print(sortie['min'] < self.PFL < sortie['max'])
                 if sortie['min'] < self.PFL < sortie['max']:
                     self.nextSector = sortie['name']
 
-        if not self.nextSector:
-            self.nextSector = 'RU'
+        if not self.nextSector:  # si on a pas réussi à mettre un secteur suivant, on met un défaut pour pas crash
+            self.nextSector = secteudDefaut
 
         self.CFL = None
 

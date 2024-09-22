@@ -6,9 +6,9 @@ from typing import Iterable
 def selectButtonInList(liste, event):
     for bouton in liste:
         if bouton == event:
-            bouton.disable()
+            bouton.select()
         else:
-            bouton.enable()
+            bouton.unselect()
 
 
 def scrollListGen(valueList, rect, container, sliderBool=True):
@@ -49,7 +49,7 @@ def scrollListGen(valueList, rect, container, sliderBool=True):
     return slider, liste
 
 
-class NouvelAvionWindow:
+class nouvelAvionWindow:
 
     def __init__(self, routes, avions):
 
@@ -137,12 +137,12 @@ class NouvelAvionWindow:
         # on vérifie d'abord les champs de text
         if event.ui_element in self.typeAvionBoutonListe:
 
-            event.ui_element.select()
+            selectButtonInList(self.typeAvionBoutonListe, event.ui_element)
             self.returnValues.update({'avion': event.ui_element.text})
 
         elif event.ui_element in self.routeBoutonListe:
 
-            event.ui_element.select()
+            selectButtonInList(self.routeBoutonListe, event.ui_element)
             self.returnValues.update({'route': event.ui_element.text})
 
         elif event.ui_element == self.arrivalBouton:
@@ -382,6 +382,8 @@ class etiquette:
 
     def __init__(self, avion):
 
+        clicks = frozenset([pygame.BUTTON_LEFT, pygame.BUTTON_RIGHT, pygame.BUTTON_MIDDLE])
+
         self.extended = True  # relate de si l'étiquette est étendue ou non
 
         self.container = pygame_gui.elements.UIAutoResizingContainer(
@@ -389,21 +391,24 @@ class etiquette:
 
         self.speedGS = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
-            text=str(avion.papa.speedGS)[:2],
+            text="[] " + str(avion.papa.speedGS)[:2],
             object_id=pygame_gui.core.ObjectID('@etiquetteBold', 'rose'),
-            container=self.container)
+            container=self.container,
+            generate_click_events_from=clicks)
 
         self.indicatif = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
             text=avion.papa.indicatif,
             object_id=pygame_gui.core.ObjectID('@etiquetteBold', 'rose'),
             anchors={'top': 'top', 'top_target': self.speedGS},
-            container=self.container)
+            container=self.container,
+            generate_click_events_from=clicks)
 
-        self.type_dest = pygame_gui.elements.UILabel(
+        self.type_dest = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
             object_id=pygame_gui.core.ObjectID('@etiquetteBold', 'rose'),
             text=avion.papa.aircraft + " " + "LFVB",
+            generate_click_events_from=clicks,
             anchors={'top': 'top', 'top_target': self.speedGS},
             container=self.container
         )
@@ -411,6 +416,7 @@ class etiquette:
         self.AFL = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
             text=str(round(avion.papa.altitude/100)),
+            generate_click_events_from=clicks,
             object_id=pygame_gui.core.ObjectID('@etiquetteBold', 'rose'),
             anchors={'top': 'top', 'top_target': self.indicatif},
             container=self.container)
@@ -418,6 +424,7 @@ class etiquette:
         self.CFL = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
             text=str(round(avion.papa.altitude / 100))[:2],
+            generate_click_events_from=clicks,
             object_id=pygame_gui.core.ObjectID('@etiquetteBold', 'rose'),
             anchors={'top': 'top', 'top_target': self.indicatif},
             container=self.container)
@@ -425,6 +432,7 @@ class etiquette:
         self.DCT = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
             text=avion.papa.nextPoint['name'],
+            generate_click_events_from=clicks,
             object_id=pygame_gui.core.ObjectID('@etiquetteBold', 'rose'),
             anchors={'top': 'top', 'top_target': self.indicatif},
             container=self.container)
@@ -432,6 +440,7 @@ class etiquette:
         self.speedIAS = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
             text="S",
+            generate_click_events_from=clicks,
             object_id=pygame_gui.core.ObjectID('@etiquetteBold', 'rose'),
             anchors={'top': 'top', 'top_target': self.indicatif},
             container=self.container)
@@ -439,6 +448,7 @@ class etiquette:
         self.rate = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
             text="R",
+            generate_click_events_from=clicks,
             object_id=pygame_gui.core.ObjectID('@etiquetteBold', 'rose'),
             anchors={'top': 'top', 'top_target': self.indicatif},
             container=self.container)
@@ -446,13 +456,15 @@ class etiquette:
         self.XPT = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
             text=avion.papa.route['points'][-1]['name'],
+            generate_click_events_from=clicks,
             object_id=pygame_gui.core.ObjectID('@etiquetteBold', 'rose'),
             anchors={'top': 'top', 'top_target': self.AFL},
             container=self.container)
 
-        self.XFL = pygame_gui.elements.UIButton(  # #TODO associer XFL ici
+        self.XFL = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
             text="x" + str(avion.papa.XFL)[:2],
+            generate_click_events_from=clicks,
             object_id=pygame_gui.core.ObjectID('@etiquetteBold', 'rose'),
             anchors={'top': 'top', 'top_target': self.AFL},
             container=self.container)
@@ -460,6 +472,7 @@ class etiquette:
         self.PFL = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
             text=str(avion.papa.PFL)[:2],
+            generate_click_events_from=clicks,
             object_id=pygame_gui.core.ObjectID('@etiquetteBold', 'rose'),
             anchors={'top': 'top', 'top_target': self.AFL},
             container=self.container)
@@ -467,12 +480,10 @@ class etiquette:
         self.nextSector = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
             text=avion.papa.nextSector,
+            generate_click_events_from=clicks,
             object_id=pygame_gui.core.ObjectID('@etiquetteBold', 'rose'),
             anchors={'top': 'top', 'top_target': self.AFL},
             container=self.container)
-
-        self.indicatif.generate_click_events_from: Iterable[int] = frozenset(
-            [pygame.BUTTON_LEFT, pygame.BUTTON_RIGHT, pygame.BUTTON_MIDDLE])
 
         self.ligneDeux = [self.indicatif, self.type_dest]
         self.ligneTrois = [self.AFL, self.CFL, self.DCT, self.speedIAS, self.rate]
@@ -481,7 +492,7 @@ class etiquette:
     def update(self, avion):
 
         """
-        On ajuste tous les paramètres de l'étiquette : sa position ainsi que les valeurs textes dans les boutons
+        On ajuste la position ainsi que les valeurs textes dans les boutons
         """
 
         # on ajuste la position du container en fonction de son point cardinal par rapport au plot
@@ -498,20 +509,32 @@ class etiquette:
             Xvalue = - self.container.get_rect()[2]
             Yvalue = - self.container.get_rect()[3]
 
-        self.boutonAgauche()  # TODO utiliser cette fonction que quand c'est nécessaire
-
         # speed et C/D rate
         if avion.papa.evolution == 0:  # on affiche la rate que si l'avion est en evo
             evo = ""
         else:
             evo = "    " + str(round(avion.papa.evolution / 100))
 
-        self.speedGS.set_text(str(avion.papa.speedGS)[:2] + evo)
+        if avion.papa.integreOrganique:
+            integre = ""
+        else:
+            integre = "[] "
+
+        self.speedGS.set_text(integre + str(avion.papa.speedGS)[:2] + evo)
+
+        if not avion.papa.headingMode:
+            self.DCT.set_text(avion.papa.nextPoint['name'])
+        elif self.extended:
+            self.DCT.set_text("h" + str(avion.papa.selectedHeading))
+        else:
+            self.DCT.set_text("h")
 
         # alti
         self.AFL.set_text(str(round(avion.papa.altitude/100)) + " " + avion.papa.altitudeEvoTxt)
 
         self.CFL.set_text(str(avion.papa.CFL)[:2])
+
+        self.boutonAgauche()  # TODO utiliser cette fonction que quand c'est nécessaire
 
         # container
         self.container.set_position((avion.etiquetteX + Xvalue, avion.etiquetteY + Yvalue))
@@ -559,3 +582,113 @@ def updateDistanceGauche(liste) -> int:
         if element.visible:
             distance += element.get_abs_rect()[2]  # on renvoie des ancres au 1er élément visible à sa gauche
     return distance
+
+
+class menuATC:
+
+    def __init__(self, avion, pos):
+
+        """
+        Menu de commandes pour l'avion.
+        :param avion: À quel avion le menu doit-il être associé ?
+        :param pos: vector2 (x, y) de la souris
+        """
+
+        self.avion = avion
+
+        width = 80
+        height = 120
+
+        x = pos[0] - width/2
+        y = pos[1] - 35
+
+        if avion.papa.etatFrequence == 'previousFreq':
+            text = 'Force Assume'
+        elif avion.papa.etatFrequence == 'previousShoot':
+            text = 'Assume'
+        elif avion.papa.etatFrequence == 'nextCoord':
+            text = '119.8'
+        elif avion.papa.etatFrequence == 'nextShoot':
+            text = 'Reclaim'
+        else:
+            text = ''
+
+        self.window = pygame_gui.elements.UIWindow(pygame.Rect((x, y), (width, height)),
+                                                   draggable=False,
+                                                   window_display_title=avion.papa.indicatif)
+
+        # On définit tout d'abord les boutons qui sont tous les temps présents
+        self.locWarn = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((0, 0), (width, -1)), text='WARN LOC',
+            container=self.window)
+
+        self.warn = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((0, 0), (width, -1)), text='WARN POS',
+            container=self.window, anchors={'top': 'top', 'top_target': self.locWarn})
+
+        self.montrer = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((0, 0), (width, -1)), text='SHOW',
+            container=self.window, anchors={'top': 'top', 'top_target': self.warn})
+
+        self.halo = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((0, 0), (width, -1)), text='HALO',
+            container=self.window, anchors={'top': 'top', 'top_target': self.montrer})
+
+        if not text == '':  # si le bouton doit apparaître alors, il aura du texte
+
+            self.freqAssume = pygame_gui.elements.UIButton(
+                relative_rect=pygame.Rect((0, 0), (width, -1)),
+                text=text,
+                container=self.window)
+
+            self.locWarn.set_anchors({'top': 'top', 'top_target': self.freqAssume})  # on décale donc le locWarn dessous
+            self.locWarn.rebuild()
+            self.mvt = None
+
+        else:  # s'il ny a pas de bouton de transfer, il y a un bouton mvt
+
+            self.mvt = pygame_gui.elements.UIButton(
+                relative_rect=pygame.Rect((0, 0), (width, -1)), text='MVT',
+                container=self.window, anchors={'top': 'top', 'top_target': self.halo})
+
+            self.freqAssume = None  # on assigne None pour pouvoir faire les comparaisons dans checkEvent
+
+    def checkEvent(self, event):
+
+        if event.ui_element == self.freqAssume:
+            self.kill()
+
+            if self.freqAssume.text == 'Force Assume':  # si on force assume, on passe direct en frequence
+                return self.avion.Id, 'EtatFreq', 'inFreq'
+
+            elif self.freqAssume.text == 'Reclaim':  # si on reclaim, on revient en freq
+                return self.avion.Id, 'EtatFreq', 'nextCoord'
+
+            elif not self.freqAssume.text == '':
+                return self.avion.Id, 'EtatFreq', None
+
+        elif event.ui_element == self.mvt:
+            self.kill()
+            return self.avion.Id, 'EtatFreq', None
+
+        elif event.ui_element == self.montrer:
+            self.kill()
+            return self.avion.Id, 'Montrer'
+
+        elif event.ui_element == self.warn:
+            self.kill()
+            return self.avion.Id, 'Warning'
+
+        elif event.ui_element == self.locWarn:
+            self.kill()
+            self.avion.locWarning = not self.avion.locWarning
+
+        elif event.ui_element == self.halo:
+            self.kill()
+            return self.avion.Id, 'Halo'
+
+    def kill(self):
+        self.window.kill()
+
+    def checkAlive(self):
+        return self.window.alive()

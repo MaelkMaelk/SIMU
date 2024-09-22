@@ -45,7 +45,7 @@ def calculateShortestPoint(pointDroite1, pointDroite2, point):
 
         left_side = np.array([[-coeffdroite1, 1], [-coeffdroitePerp, 1]])
         right_side = np.array([ordonnee1, ordonnee2])
-    else:
+    else:  # si la droite est verticale alors c'est super simple de trouver les coords du point
         return pointDroite1[0], point[1]
 
     # solve for x and y

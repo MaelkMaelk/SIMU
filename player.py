@@ -2,19 +2,9 @@ from typing import Iterable
 import pygame
 import math
 import pygame_gui
-
+from valeurs_config import *
 import geometry
 import interface
-
-plotSize = 6
-radarRefresh = 4
-timeConstant = radarRefresh / 3600
-listeEtrangers = ['G2', 'M2']
-etiquetteLines = 4
-nmToFeet = 6076
-axe = 74
-axePoint = 'BST'
-liste_etat_freq = ['previousFreq', 'previousShoot', 'inFreq', 'nextCoord', 'nextShoot', 'nextFreq']
 
 
 def positionAffichage(x, y, zoom, scrollX, scrollY):  # TODO rassembler x, y en (x,y) pareil pour le scroll
@@ -30,16 +20,6 @@ def positionAffichage(x, y, zoom, scrollX, scrollY):  # TODO rassembler x, y en 
     x = x * zoom + scrollX
     y = y * zoom + scrollY
     return x, y
-
-
-def positionBrute(position, zoom, scroll):  # TODO remplacer les endroits ou on utilise pas la fonction
-    """
-    Transforme une position graphique en une position sur la gameMap
-    :param position: vecteur2 (x, y)
-    :param zoom: scalaire de zoom
-    :param scroll: vecteur2 (scrollx, scrolly)
-    :return: x, y
-    """
 
 
 def etatFrequenceInit(avion) -> None:
@@ -64,9 +44,12 @@ class Avion:
     def __init__(self, Id, papa):
         self.Id = Id
         self.papa = papa
-        self.bouton = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((self.papa.x, self.papa.y), (plotSize * 2, plotSize * 2)), text='')
-        self.bouton.generate_click_events_from: Iterable[int] = frozenset(
-            [pygame.BUTTON_LEFT, pygame.BUTTON_RIGHT, pygame.BUTTON_MIDDLE])
+        clicks = frozenset([pygame.BUTTON_LEFT, pygame.BUTTON_RIGHT, pygame.BUTTON_MIDDLE])
+        self.bouton = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((self.papa.x, self.papa.y), (plotSize * 2, plotSize * 2)),
+            text='',
+            generate_click_events_from=clicks,
+            object_id=pygame_gui.core.ObjectID('@etiquette', 'defaults'))
 
         # Radar display
         self.visible = True
@@ -139,7 +122,7 @@ class Avion:
             self.drawRoute(points, win, zoom, scroll)
 
         self.positionEtiquette()  # on détermine la position de l'étiquette (nord est, SE, NO, SO)
-        self.checkEcheckEtiquetteOnUnhover()
+        self.checkEtiquetteOnUnhover()
         self.extendEtiquette()
         self.etiquette.update(self)  # on update via la fonction de l'étiquette
 
@@ -258,6 +241,24 @@ class Avion:
         :return:
         """
 
+        # on vérifie que le bouton est bien associé à l'etiquette
+        if event.ui_element.ui_container == self.etiquette.container:
+
+            if event.mouse_button == 2:  # si c'est un clic milieu, alors on highlight ou non le bouton
+                typeTheme = event.ui_element.get_object_ids()[1]  # relate de la couleur du bg et du gras ou non
+                couleur = event.ui_element.get_class_ids()[1]  # couleur du texte
+                if typeTheme[-4:] == 'Blue':
+                    if typeTheme == '@etiquetteBoldBlue': # on check le gras pour le garder ensuite
+                        event.ui_element.change_object_id(pygame_gui.core.ObjectID('@etiquetteBold', couleur))
+                    else:
+                        event.ui_element.change_object_id(pygame_gui.core.ObjectID('@etiquette', couleur))
+                else:
+                    if typeTheme == '@etiquetteBold':  # on check le gras pour le garder ensuite
+                        event.ui_element.change_object_id(pygame_gui.core.ObjectID('@etiquetteBoldBlue', couleur))
+                    else:
+                        event.ui_element.change_object_id(pygame_gui.core.ObjectID('@etiquetteBlue', couleur))
+                return None  # de même pas besoin de verifier le reste, l'event est traité
+
         if event.ui_element == self.bouton:
             if event.mouse_button == 2 and not pilote:  # clic milieu
                 return self.Id, 'Warning'
@@ -272,13 +273,19 @@ class Avion:
 
         elif event.ui_element == self.etiquette.indicatif:
             if event.mouse_button == 1 and pilote:
-                return 'menu'
+                return 'menuPIL'
 
             elif event.mouse_button == 1:
-                return self.Id, 'EtatFreq', None
+                return 'menuATC'
 
-            elif event.mouse_button == 3:
+                # return self.Id, 'EtatFreq', None
+
+            elif event.mouse_button == 3 and (self.papa.integreOrganique or pilote):  # clic droit
                 self.unBold()
+
+        elif event.ui_element == self.etiquette.speedGS and not self.papa.integreOrganique and not pilote:
+            self.unBold()
+            return self.Id, 'Integre'
 
         elif event.ui_element == self.etiquette.XPT:
             if event.mouse_button == 1 and not pilote:
@@ -295,7 +302,7 @@ class Avion:
             return True
         return False
 
-    def checkEcheckEtiquetteOnUnhover(self):
+    def checkEtiquetteOnUnhover(self):
 
         """
         Vérifie si on doit ou non désétendre l'étiquette
@@ -340,8 +347,12 @@ class Avion:
                       self.etiquette.ligneTrois, self.etiquette.ligneQuatre]:
 
             for bouton in ligne:
-                couleur = bouton.get_class_ids()[1]  # on regarde si le bouton est en gras ou non
-                bouton.change_object_id(pygame_gui.core.ObjectID('@etiquette', couleur))
+                couleur = bouton.get_class_ids()[1]  # on récupère la couleur du bouton
+                if bouton.get_object_ids()[1] == '@etiquetteBoldBlue':
+                    nouvelObjID = '@etiquetteBlue'
+                else:
+                    nouvelObjID = '@etiquette'
+                bouton.change_object_id(pygame_gui.core.ObjectID(nouvelObjID, couleur))
 
     def updateEtatFrequence(self, etat) -> None:
 
@@ -391,35 +402,24 @@ class Avion:
 
     def update(self, papa):
 
-        if self.papa.etatFrequence != papa.etatFrequence:
+        # on vérifie que l'état freq est bien celui d'après
+        if liste_etat_freq.index(self.papa.etatFrequence) < liste_etat_freq.index(papa.etatFrequence):
             self.updateEtatFrequence(papa.etatFrequence)
+        else:
+            etatFrequenceInit(self)  # si c'est un état freq précédent alors, on repart depuis le début
 
         self.papa = papa
 
 
-class MenuATC:
+def bold(bouton) -> None:
+    """
+    Graisse un bouton de l'étiquette
+    """
 
-    def __init__(self, Idtuple, x, y):
-        self.Idtuple = Idtuple
-        self.window = pygame_gui.elements.UIWindow(pygame.Rect((x, y), (100, 250)))
-
-        self.partBouton = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((0, 0), (100, 17)), text='PART',
-            container=self.window)
-
-        self.movBouton = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((0, 0), (100, 17)), text='MVT',
-            container=self.window, anchors={'top': 'top', 'top_target': self.partBouton})
-
-        self.FLBouton = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((0, 0), (100, 17)), text='FL?',
-            container=self.window, anchors={'top': 'top', 'top_target': self.movBouton})
-
-        self.montrerBouton = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((0, 0), (100, 17)), text='Montrer',
-            container=self.window, anchors={'top': 'top', 'top_target': self.FLBouton})
-
-    def kill(self):
-        self.window.kill()
-        return self.Idtuple
+    couleur = bouton.get_class_ids()[1]  # on récupère la couleur du bouton
+    if bouton.get_object_ids()[1] == '@etiquetteBlue':
+        nouvelObjID = '@etiquetteBoldBlue'
+    else:
+        nouvelObjID = '@etiquetteBold'
+    bouton.change_object_id(pygame_gui.core.ObjectID(nouvelObjID, couleur))
 

@@ -33,8 +33,7 @@ def main(server_ip):
     distance = 10
     # menus
     menuAvion = None
-    menuOptionsATC = MenuATC((0, 0), 0, 0)
-    menuOptionsATC.kill()
+    menuATC = None
 
     # on se connecte au serveur
     n = Network(server_ip)
@@ -117,8 +116,6 @@ def main(server_ip):
 
         for event in pygame.event.get():
 
-
-
             if event.type == pygame.QUIT:
                 run = False
                 pygame.quit()
@@ -129,7 +126,7 @@ def main(server_ip):
                         break  # dès qu'on a trouvé le responsable, on casse
 
             # on vérifie que l'alidade n'est pas actif
-            elif event.type == pygame_gui.UI_BUTTON_START_PRESS and not curseur_alidad:
+            elif event.type == pygame_gui.UI_BUTTON_PRESSED and not curseur_alidad:
 
                 # si un bouton est appuyé
                 triggered = True
@@ -149,18 +146,13 @@ def main(server_ip):
                         for changement, valeur in modifications.items():
                             localRequests.append((avionId, changement, valeur))
 
-                if event.ui_element == menuOptionsATC.partBouton and event.mouse_button == 1:
-                    avionId = menuOptionsATC.kill()
-                    localRequests.append((avionId, 'Part'))
-                elif event.ui_element == menuOptionsATC.movBouton and event.mouse_button == 1:
-                    avionId = menuOptionsATC.kill()
-                    localRequests.append((avionId, 'Mouvement'))
-                elif event.ui_element == menuOptionsATC.montrerBouton and event.mouse_button == 1:
-                    avionId = menuOptionsATC.kill()
-                    localRequests.append((avionId, 'Montrer'))
-                elif event.ui_element == menuOptionsATC.FLBouton and event.mouse_button == 1:
-                    avionId = menuOptionsATC.kill()
-                    localRequests.append((avionId, 'FL?'))
+                if menuATC is not None:
+
+                    # si on valide les modifs, alors la fonction checkEvent retourne les modifs
+                    action = menuATC.checkEvent(event)
+                    if action:
+                        if type(action) in [list, tuple]:  # si c'est un tuple alors cela correspond à une requête
+                            localRequests.append(action)
 
                 else:
                     for avion in dictAvionsAff.values():  # pour chaque avion
@@ -170,8 +162,11 @@ def main(server_ip):
                         if type(action) in [list, tuple]:  # si c'est un tuple alors cela correspond à une requête
                             localRequests.append(action)
 
-                        elif action == 'menu' and menuAvion is None:  # si c'est menu alors, on vérifie qu'on peut menu
+                        elif action == 'menuPIL' and menuAvion is None:  # si c'est menu alors, on vérifie qu'on peut menu
                             menuAvion = interface.menuAvion(avion, carte)
+
+                        elif action == 'menuATC' and menuATC is None:
+                            menuATC = interface.menuATC(avion, pygame.mouse.get_pos())
 
                     # Menu de selection nouvel avion
                     # si notre menu est ouvert
@@ -291,7 +286,7 @@ def main(server_ip):
 
                 # commandes pilote
             if keys[pygame.K_n] and nouvelAvionWin is None and pilote:
-                nouvelAvionWin = interface.NouvelAvionWindow(carte['routes'], perfos)
+                nouvelAvionWin = interface.nouvelAvionWindow(carte['routes'], perfos)
                 pressing = True
                 delaiPressage = pygame.time.get_ticks()
             if keys[pygame.K_DOWN]:
@@ -321,6 +316,10 @@ def main(server_ip):
         if menuAvion is not None:
             if not menuAvion.checkAlive():
                 menuAvion = None
+
+        if menuATC is not None:
+            if not menuATC.checkAlive():
+                menuATC = None
 
         if nouvelAvionWin is not None:
             if not nouvelAvionWin.checkAlive():

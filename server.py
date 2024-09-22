@@ -126,7 +126,7 @@ for route in root.find('routes'):  # construction des routes
         arrival = {'XFL': int(route.find('arrival').text), 'secteur': route.find('arrival').attrib['secteur']}
     for sortie in route.findall('sortie'):
         listeSortie.append({'name': sortie.text, 'min': int(sortie.attrib['min']), 'max': int(sortie.attrib['max'])})
-    gameMap['routes'].update({nomRoute: {'nom': nomRoute,
+    gameMap['routes'].update({nomRoute: {'name': nomRoute,
                                          'type': routeType,
                                          'points': listeRoutePoints,
                                          'sortie': listeSortie,
@@ -197,6 +197,8 @@ def generateAvionXML(parent, heureEcriture, indicatifEcriture, aircraftEcriture,
     node.text = str(routeEcriture)
     node = ET.SubElement(avionXML, 'altitude')
     node.text = str(altitudeEcriture)
+    node = ET.SubElement(avionXML, 'arrival')
+    node.text = str(arrival)
 
     if xEcriture is not None:
         node = ET.SubElement(avionXML, 'x')
@@ -224,7 +226,7 @@ def threaded_client(conn, caca):
     localPlayerId = playerId
     playerId += 1
     packetId = 0
-    packet = Packet(packetId, game=game, dictAvions=dictAvion, map=gameMap, perfos=aircraftType)
+    packet = Packet(packetId, game=game, dictAvions=dictAvion, carte=gameMap, perfos=aircraftType)
     conn.send(pickle.dumps(packet))
     reply = ""
     while True:
@@ -295,7 +297,15 @@ while Running:
                     if len(minutes) == 1:
                         minutes = '0' + minutes
 
-                    generateAvionXML(avionsXML, heures + minutes, req[2].indicatif, req[2].aircraft, req[2].route['points'], req[2].altitude, xEcriture=req[2].x, yEcriture=req[2].y, PFLEcriture=req[2].PFL)
+                    generateAvionXML(avionsXML,
+                                     heures + minutes,
+                                     req[2].indicatif,
+                                     req[2].aircraft,
+                                     req[2].route['name'],
+                                     req[2].altitude,
+                                     xEcriture=req[2].x,
+                                     yEcriture=req[2].y,
+                                     PFLEcriture=req[2].PFL)
 
             elif req[1] == 'Remove':
                 dictAvion.pop(req[0])
@@ -308,6 +318,8 @@ while Running:
                 dictAvion[req[0]].selectedIAS = req[2]
             elif req[1] == 'Warning':
                 dictAvion[req[0]].warning = not dictAvion[req[0]].warning
+            elif req[1] == 'Integre':
+                dictAvion[req[0]].integreOrganique = True
             elif req[1] == 'Part':
                 dictAvion[req[0]].part = not dictAvion[req[0]].part
             elif req[1] == 'Direct':
@@ -322,7 +334,7 @@ while Running:
             elif req[1] == 'PFL':
                 dictAvion[req[0]].PFL = req[2]
             elif req[1] == 'Mouvement':
-                dictAvion[req[0]].Cmouvement()
+                dictAvion[req[0]].Cmouvement()  # TODO faire un truc pour le mvt
             elif req[1] == 'Montrer':
                 dictAvion[req[0]].montrer = not dictAvion[req[0]].montrer
             elif req[1] == 'EtatFreq':
@@ -338,21 +350,29 @@ while Running:
                     accelerationTemporelle -= 0.5
             elif req[1] == 'Save' and mode_ecriture:
                 xmlstr = minidom.parseString(ET.tostring(SimuTree)).toprettyxml(indent="   ")
-                with open("simu.xml", "w") as f:
+                with open("XML/simu.xml", "w") as f:
                     f.write(xmlstr)
 
     toBeRemovedFromSpawn = []
     for spawn in avionSpawnListe:
         if spawn[0] <= game.heure:
             for route in gameMap['routes']:
-                if route[0] == spawn[1]['route']:
-                    spawnRoute = route
+                if route == spawn[1]['route']:
+                    spawnRoute = gameMap['routes'][route]
                     break
             if 'altitude' in spawn[1]:
                 spawnFL = round(spawn[1]['altitude']/100)
             else:
                 spawnFL = None
-            dictAvion.update({planeId: AvionPacket(gameMap, planeId, spawn[1]['indicatif'], spawn[1]['aircraft'], aircraftType[spawn[1]['aircraft']], spawnRoute, FL=spawnFL)})
+            dictAvion.update({planeId: AvionPacket(
+                gameMap,
+                planeId,
+                spawn[1]['indicatif'],
+                spawn[1]['aircraft'],
+                aircraftType[spawn[1]['aircraft']],
+                spawnRoute,
+                spawn[1]['arrival'],
+                FL=spawnFL)})
             toBeRemovedFromSpawn.append(spawn)
             planeId += 1
 

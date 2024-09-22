@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map>
     <mapType>APS</mapType>
-    <scale>0.09376</scale>
+    <scale>0.18725</scale> # conversion de pixel en nm
 
     <floor>245</floor>  # plancher de notre secteur
     <ceiling>365</ceiling> # plafond
