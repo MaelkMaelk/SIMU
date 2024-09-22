@@ -71,6 +71,7 @@ class Avion:
         # init de l'étiquette
         self.etiquette = interface.etiquette(self)
         etatFrequenceInit(self)
+        self.checkHighlight(papa)
 
         # interaction avec les events
         self.returnValues = {}
@@ -196,7 +197,7 @@ class Avion:
                 break  # on casse la boucle for, pas la peine de faire des calculs pour plus loin, la prédi est finie
 
             else:  # si le trajet s'arrête après la branche, on dessine la branche en entier
-                pygame.draw.line(win, (0, 255, 0),  # TODO changer avec la fct positionAffichage
+                pygame.draw.line(win, (0, 255, 0),
                                  (pointUn[0] * zoom + scroll[0], pointUn[1] * zoom + scroll[1]),
                                  (pointDeux[0] * zoom + scroll[0], pointDeux[1] * zoom + scroll[1]))
 
@@ -226,7 +227,7 @@ class Avion:
         for point in route:
             pointDeux = [points[point['name']][0], points[point['name']][1]]
 
-            pygame.draw.line(win, (25, 25, 170),  # TODO changer avec la fct positionAffichage
+            pygame.draw.line(win, (25, 25, 170),
                              (pointUn[0] * zoom + scroll[0], pointUn[1] * zoom + scroll[1]),
                              (pointDeux[0] * zoom + scroll[0], pointDeux[1] * zoom + scroll[1]), 2)
 
@@ -243,21 +244,18 @@ class Avion:
 
         # on vérifie que le bouton est bien associé à l'etiquette
         if event.ui_element.ui_container == self.etiquette.container:
-
             if event.mouse_button == 2:  # si c'est un clic milieu, alors on highlight ou non le bouton
-                typeTheme = event.ui_element.get_object_ids()[1]  # relate de la couleur du bg et du gras ou non
-                couleur = event.ui_element.get_class_ids()[1]  # couleur du texte
-                if typeTheme[-4:] == 'Blue':
-                    if typeTheme == '@etiquetteBoldBlue': # on check le gras pour le garder ensuite
-                        event.ui_element.change_object_id(pygame_gui.core.ObjectID('@etiquetteBold', couleur))
-                    else:
-                        event.ui_element.change_object_id(pygame_gui.core.ObjectID('@etiquette', couleur))
-                else:
-                    if typeTheme == '@etiquetteBold':  # on check le gras pour le garder ensuite
-                        event.ui_element.change_object_id(pygame_gui.core.ObjectID('@etiquetteBoldBlue', couleur))
-                    else:
-                        event.ui_element.change_object_id(pygame_gui.core.ObjectID('@etiquetteBlue', couleur))
-                return None  # de même pas besoin de verifier le reste, l'event est traité
+                # on trouve l'index du bouton
+                liste = [[self.etiquette.speedGS], self.etiquette.ligneDeux,
+                              self.etiquette.ligneTrois, self.etiquette.ligneQuatre]
+                indexLigne = 0
+                index = 0
+                for indexLigne in range(4):
+                    ligne = liste[indexLigne]
+                    if event.ui_element in ligne:
+                        index = ligne.index(event.ui_element)
+                        break
+                return self.Id, 'HighlightBouton', (indexLigne, index)
 
         if event.ui_element == self.bouton:
             if event.mouse_button == 2 and not pilote:  # clic milieu
@@ -339,6 +337,42 @@ class Avion:
             self.etiquette.CFL.hide()
             self.etiquette.PFL.hide()
 
+    def checkHighlight(self, papa):
+
+        liste = [[self.etiquette.speedGS], self.etiquette.ligneDeux,
+                 self.etiquette.ligneTrois, self.etiquette.ligneQuatre]
+
+        # dans cette boucle, on surligne les nouveaux et on prépare la boucle suivante
+        for boutonTuple in papa.boutonsHighlight:
+
+            # on enlève les boutons qu'on surligne pour pouvoir ensuite
+            # enlever le surlignage sur les boutons qui ne sont plus à surligner (prep de la prochaine boucle)
+            if boutonTuple in self.papa.boutonsHighlight:
+                self.papa.boutonsHighlight.remove(boutonTuple)
+
+            bouton = liste[boutonTuple[0]][boutonTuple[1]]
+
+            typeTheme = bouton.get_object_ids()[1]  # relate de la couleur du bg et du gras ou non
+            couleur = bouton.get_class_ids()[1]  # couleur du texte
+            print('activage  ',typeTheme)
+
+            if typeTheme in ['@etiquetteBold', '@etiquetteBoldBlue']:  # on check le gras pour le garder ensuite
+                bouton.change_object_id(pygame_gui.core.ObjectID('@etiquetteBoldBlue', couleur))
+            else:
+                bouton.change_object_id(pygame_gui.core.ObjectID('@etiquetteBlue', couleur))
+
+        # dans cette boucle, on enlève le surlignage
+        for boutonTuple in self.papa.boutonsHighlight:
+
+            bouton = liste[boutonTuple[0]][boutonTuple[1]]
+            typeTheme = bouton.get_object_ids()[1]  # relate de la couleur du bg et du gras ou non
+            couleur = bouton.get_class_ids()[1]  # couleur du texte
+            print(typeTheme)
+            if typeTheme in ['@etiquetteBold', '@etiquetteBoldBlue']:  # on check le gras pour le garder ensuite
+                bouton.change_object_id(pygame_gui.core.ObjectID('@etiquetteBold', couleur))
+            else:
+                bouton.change_object_id(pygame_gui.core.ObjectID('@etiquette', couleur))
+
     def unBold(self) -> None:
         """
         Dégraisse l'étiquette de l'avion
@@ -348,7 +382,7 @@ class Avion:
 
             for bouton in ligne:
                 couleur = bouton.get_class_ids()[1]  # on récupère la couleur du bouton
-                if bouton.get_object_ids()[1] == '@etiquetteBoldBlue':
+                if bouton.get_object_ids()[1] in ['@etiquetteBoldBlue', '@etiquetteBlue']:
                     nouvelObjID = '@etiquetteBlue'
                 else:
                     nouvelObjID = '@etiquette'
@@ -405,8 +439,12 @@ class Avion:
         # on vérifie que l'état freq est bien celui d'après
         if liste_etat_freq.index(self.papa.etatFrequence) < liste_etat_freq.index(papa.etatFrequence):
             self.updateEtatFrequence(papa.etatFrequence)
-        else:
+        elif liste_etat_freq.index(self.papa.etatFrequence) > liste_etat_freq.index(papa.etatFrequence):
             etatFrequenceInit(self)  # si c'est un état freq précédent alors, on repart depuis le début
+
+        # on vérifie que le surlignage des boutons est le même que sur le dernier paquet
+        if not self.papa.boutonsHighlight == papa.boutonsHighlight:
+            self.checkHighlight(papa)  # s'il a changé, on met à jour le surlignage des boutons
 
         self.papa = papa
 

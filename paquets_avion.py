@@ -58,6 +58,7 @@ class AvionPacket:
         # états possibles : previousFreq, previousShoot, inFreq, nextCoord, nextShoot, nextFreq
         self.etatFrequence = "previousFreq"
         self.integreOrganique = False  # si on doit ou non afficher la case d'intégration organique
+        self.boutonsHighlight = []
 
         # perfo
         self.turnRate = turnRateDefault

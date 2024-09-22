@@ -331,6 +331,11 @@ while Running:
             elif req[1] == 'Route':
                 dictAvion[req[0]].nextRoute = req[2]
                 dictAvion[req[0]].changeRoute(gameMap)
+            elif req[1] == 'HighlightBouton':
+                if req[2] in dictAvion[req[0]].boutonsHighlight:  # si le bouton est déjà highlight alors:
+                    dictAvion[req[0]].boutonsHighlight.remove(req[2])
+                else:
+                    dictAvion[req[0]].boutonsHighlight.append(req[2])
             elif req[1] == 'PFL':
                 dictAvion[req[0]].PFL = req[2]
             elif req[1] == 'Mouvement':

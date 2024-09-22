@@ -121,7 +121,6 @@
         "font": {
           "name": "bold",
           "size": "12",
-          "bold": "1",
           "regular_path": "fonts/LTSuperior-Medium.otf",
           "bold_path": "fonts/LTSuperior-Black.otf"
         }

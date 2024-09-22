@@ -516,11 +516,14 @@ class etiquette:
             evo = "    " + str(round(avion.papa.evolution / 100))
 
         if avion.papa.integreOrganique:
-            integre = ""
+            if self.extended:
+                tickBox = "{v} "
+            else:
+                tickBox = ""
         else:
-            integre = "[] "
+            tickBox = "{} "
 
-        self.speedGS.set_text(integre + str(avion.papa.speedGS)[:2] + evo)
+        self.speedGS.set_text(tickBox + str(avion.papa.speedGS)[:2] + evo)
 
         if not avion.papa.headingMode:
             self.DCT.set_text(avion.papa.nextPoint['name'])
