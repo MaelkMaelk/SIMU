@@ -7,7 +7,7 @@ import geometry
 import interface
 
 
-def positionAffichage(x, y, zoom, scrollX, scrollY):  # TODO rassembler x, y en (x,y) pareil pour le scroll
+def positionAffichage(x: int, y: int, zoom: float, scrollX: int, scrollY: int):  # TODO rassembler x, y en (x,y) pareil pour le scroll
     """
     :param x: position en x
     :param y: position en y
@@ -41,7 +41,7 @@ class Avion:
     global timeConstant
     global plotSize
 
-    def __init__(self, Id, papa):
+    def __init__(self, Id: int, papa):
         self.Id = Id
         self.papa = papa
         clicks = frozenset([pygame.BUTTON_LEFT, pygame.BUTTON_RIGHT, pygame.BUTTON_MIDDLE])

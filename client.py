@@ -24,7 +24,7 @@ clock = pygame.time.Clock()
 font = pygame.font.SysFont('arial', 18)
 
 
-def main(server_ip):
+def main(server_ip : str):
     global temps
     global height
     global width
