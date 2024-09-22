@@ -1,0 +1,4 @@
+numpy
+pygame-ce
+pygame_gui
+python-i18n

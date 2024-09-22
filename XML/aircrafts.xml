@@ -3,95 +3,82 @@
 <aircrafts>
 
     <aircraft name="B738">
-        <speed>460</speed>
-        <maxSpeed>500</maxSpeed>
+        <speed>330</speed>
         <ceiling>410</ceiling>
-        <ROC>2500</ROC>
+        <ROC>2000</ROC>
         <ROD>3000</ROD>
     </aircraft>
-    <aircraft name="B744">
-        <speed>484</speed>
-        <maxSpeed>540</maxSpeed>
+    <aircraft name="AT72">
+        <speed>220</speed>
         <ceiling>450</ceiling>
         <ROC>1500</ROC>
-        <ROD>3000</ROD>
-    </aircraft>
-    <aircraft name="B772">
-        <speed>480</speed>
-        <maxSpeed>540</maxSpeed>
-        <ceiling>430</ceiling>
-        <ROC>1500</ROC>
-        <ROD>3000</ROD>
-    </aircraft>
-    <aircraft name="A343">
-        <speed>490</speed>
-        <maxSpeed>540</maxSpeed>
-        <ceiling>410</ceiling>
-        <ROC>1000</ROC>
         <ROD>2000</ROD>
     </aircraft>
-    <aircraft name="B763">
-        <speed>460</speed>
-        <maxSpeed>540</maxSpeed>
-        <ceiling>450</ceiling>
-        <ROC>2000</ROC>
-        <ROD>3000</ROD>
-    </aircraft>
-    <aircraft name="A320">
-        <speed>460</speed>
-        <maxSpeed>490</maxSpeed>
-        <ceiling>450</ceiling>
-        <ROC>2500</ROC>
-        <ROD>3000</ROD>
-    </aircraft>
-    <aircraft name="E135">
-        <speed>450</speed>
-        <maxSpeed>500</maxSpeed>
-        <ceiling>370</ceiling>
-        <ROC>2000</ROC>
-        <ROD>3000</ROD>
-    </aircraft>
-    <aircraft name="TBM7">
-        <speed>300</speed>
-        <maxSpeed>350</maxSpeed>
-        <ceiling>450</ceiling>
-        <ROC>1500</ROC>
+    <aircraft name="BE9L">
+        <speed>200</speed>
+        <ceiling>430</ceiling>
+        <ROC>1000</ROC>
         <ROD>1500</ROD>
     </aircraft>
-    <aircraft name="A3ST">
-        <speed>400</speed>
-        <maxSpeed>540</maxSpeed>
+    <aircraft name="A320">
+        <speed>330</speed>
         <ceiling>410</ceiling>
-        <ROC>1500</ROC>
-        <ROD>2000</ROD>
+        <ROC>2000</ROC>
+        <ROD>2500</ROD>
     </aircraft>
-    <aircraft name="MD11">
-        <speed>460</speed>
-        <maxSpeed>540</maxSpeed>
+    <aircraft name="BE20">
+        <speed>200</speed>
+        <ceiling>450</ceiling>
+        <ROC>1000</ROC>
+        <ROD>1500</ROD>
+    </aircraft>
+    <aircraft name="TB10">
+        <speed>330</speed>
+        <ceiling>450</ceiling>
+        <ROC>500</ROC>
+        <ROD>1000</ROD>
+    </aircraft>
+    <aircraft name="DA42">
+        <speed>160</speed>
+        <ceiling>370</ceiling>
+        <ROC>1000</ROC>
+        <ROD>1500</ROD>
+    </aircraft>
+    <aircraft name="TBM7">
+        <speed>240</speed>
+        <ceiling>450</ceiling>
+        <ROC>1300</ROC>
+        <ROD>1700</ROD>
+    </aircraft>
+    <aircraft name="CRJ1">
+        <speed>250</speed>
         <ceiling>450</ceiling>
         <ROC>2000</ROC>
-        <ROD>3000</ROD>
-    </aircraft>
-    <aircraft name="A319">
-        <speed>460</speed>
-        <maxSpeed>490</maxSpeed>
-        <ceiling>450</ceiling>
-        <ROC>2500</ROC>
         <ROD>3000</ROD>
     </aircraft>
     <aircraft name="FA50">
-        <speed>480</speed>
-        <maxSpeed>490</maxSpeed>
+        <speed>330</speed>
+        <ceiling>550</ceiling>
+        <ROC>2000</ROC>
+        <ROD>2500</ROD>
+    </aircraft>
+    <aircraft name="DH8D">
+        <speed>210</speed>
+        <ceiling>550</ceiling>
+        <ROC>2000</ROC>
+        <ROD>2500</ROD>
+    </aircraft>
+    <aircraft name="E145">
+        <speed>330</speed>
+        <ceiling>550</ceiling>
+        <ROC>1500</ROC>
+        <ROD>2000</ROD>
+    </aircraft>
+    <aircraft name="E195">
+        <speed>330</speed>
         <ceiling>550</ceiling>
         <ROC>2500</ROC>
         <ROD>3000</ROD>
-    </aircraft>
-    <aircraft name="B753">
-        <speed>470</speed>
-        <maxSpeed>490</maxSpeed>
-        <ceiling>450</ceiling>
-        <ROC>2000</ROC>
-        <ROD>2500</ROD>
     </aircraft>
 
 </aircrafts>

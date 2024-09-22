@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+<simu>
+   <heure>1002</heure>
+   <avions>
+      <avion heure="1000">
+         <indicatif>FCACA</indicatif>
+         <aircraft>DA42</aircraft>
+         <route>GAI-JUVEN</route>
+         <altitude>30000</altitude>
+         <arrival>False</arrival>
+         <x>720</x>
+         <y>1339</y>
+         <PFL>300</PFL>
+      </avion>
+   </avions>
+</simu>
