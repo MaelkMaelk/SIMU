@@ -244,7 +244,7 @@ class Avion:
 
         # on vérifie que le bouton est bien associé à l'etiquette
         if event.ui_element.ui_container == self.etiquette.container:
-            if event.mouse_button == 2:  # si c'est un clic milieu, alors on highlight ou non le bouton
+            if event.mouse_button == 2 and not pilote:  # si c'est un clic milieu, alors on highlight ou non le bouton
                 # on trouve l'index du bouton
                 liste = [[self.etiquette.speedGS], self.etiquette.ligneDeux,
                               self.etiquette.ligneTrois, self.etiquette.ligneQuatre]
@@ -326,16 +326,29 @@ class Avion:
         elif self.etiquette.extended and not self.etiquetteExtended:  # si on doit rentrer et elle est étendue
             self.etiquette.extended = False
 
-            self.etiquette.type_dest.hide()
-            self.etiquette.DCT.hide()
+            if self.etiquette.type_dest.get_object_ids()[1][-4:] != 'Blue':
+                self.etiquette.type_dest.hide()
 
-            self.etiquette.speedIAS.hide()  # TODO faire en sorte qu'ils ne se cache pas en -h ou -r
-            self.etiquette.rate.hide()
-            self.etiquette.nextSector.hide()
+            if self.etiquette.DCT.get_object_ids()[1][-4:] != 'Blue':
+                self.etiquette.DCT.hide()
 
-            self.etiquette.XFL.hide()  # TODO faire en sorte qu'ils ne se cache pas si les FL sont pas pareils
-            self.etiquette.CFL.hide()
-            self.etiquette.PFL.hide()
+            if self.etiquette.speedIAS.get_object_ids()[1][-4:] != 'Blue':
+                self.etiquette.speedIAS.hide()  # TODO faire en sorte qu'ils ne se cache pas en -h ou -r
+
+            if self.etiquette.rate.get_object_ids()[1][-4:] != 'Blue':
+                self.etiquette.rate.hide()
+
+            if self.etiquette.nextSector.get_object_ids()[1][-4:] != 'Blue':
+                self.etiquette.nextSector.hide()
+
+            if self.papa.XFL == round(self.papa.altitude / 100) and self.etiquette.XFL.get_object_ids()[1][-4:] != 'Blue':
+                self.etiquette.XFL.hide()
+
+            if self.papa.CFL == round(self.papa.altitude / 100) and self.etiquette.CFL.get_object_ids()[1][-4:] != 'Blue':
+                self.etiquette.CFL.hide()
+
+            if self.etiquette.PFL.get_object_ids()[1][-4:] != 'Blue':
+                self.etiquette.PFL.hide()
 
     def checkHighlight(self, papa):
 
@@ -351,10 +364,8 @@ class Avion:
                 self.papa.boutonsHighlight.remove(boutonTuple)
 
             bouton = liste[boutonTuple[0]][boutonTuple[1]]
-
             typeTheme = bouton.get_object_ids()[1]  # relate de la couleur du bg et du gras ou non
             couleur = bouton.get_class_ids()[1]  # couleur du texte
-            print('activage  ',typeTheme)
 
             if typeTheme in ['@etiquetteBold', '@etiquetteBoldBlue']:  # on check le gras pour le garder ensuite
                 bouton.change_object_id(pygame_gui.core.ObjectID('@etiquetteBoldBlue', couleur))
@@ -367,7 +378,7 @@ class Avion:
             bouton = liste[boutonTuple[0]][boutonTuple[1]]
             typeTheme = bouton.get_object_ids()[1]  # relate de la couleur du bg et du gras ou non
             couleur = bouton.get_class_ids()[1]  # couleur du texte
-            print(typeTheme)
+
             if typeTheme in ['@etiquetteBold', '@etiquetteBoldBlue']:  # on check le gras pour le garder ensuite
                 bouton.change_object_id(pygame_gui.core.ObjectID('@etiquetteBold', couleur))
             else:
