@@ -311,7 +311,7 @@ class Avion:
         elif pygame.time.get_ticks() - self.unHoverTime > 400:
             self.etiquetteExtended = False
 
-    def extendEtiquette(self):
+    def extendEtiquette(self, force=False):
         """
         Étend ou range l'étiquette
         """
@@ -323,7 +323,8 @@ class Avion:
                 for bouton in ligne:
                     bouton.show()
 
-        elif self.etiquette.extended and not self.etiquetteExtended:  # si on doit rentrer et elle est étendue
+        elif (self.etiquette.extended and not self.etiquetteExtended) or force:
+            # si on doit rentrer et elle est étendue
             self.etiquette.extended = False
 
             if self.etiquette.type_dest.get_object_ids()[1][-4:] != 'Blue':
@@ -372,6 +373,11 @@ class Avion:
             else:
                 bouton.change_object_id(pygame_gui.core.ObjectID('@etiquetteBlue', couleur))
 
+            # on montre le bouton, il faut donc calculer sa distance à gauche
+            distance = interface.updateDistanceGauche(liste[boutonTuple[0]][:boutonTuple[1]])
+            bouton.set_relative_position((distance, 0))
+            bouton.show()
+
         # dans cette boucle, on enlève le surlignage
         for boutonTuple in self.papa.boutonsHighlight:
 
@@ -383,6 +389,8 @@ class Avion:
                 bouton.change_object_id(pygame_gui.core.ObjectID('@etiquetteBold', couleur))
             else:
                 bouton.change_object_id(pygame_gui.core.ObjectID('@etiquette', couleur))
+
+            self.extendEtiquette(force=True)
 
     def unBold(self) -> None:
         """

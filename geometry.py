@@ -29,7 +29,7 @@ def calculateShortestPoint(pointDroite1, pointDroite2, point):
     Calcule le point sur une droite où la distance ets la plus courte à un point
     :param pointDroite1: 1er point pour définir la droite, vecteur2 (x, y)
     :param pointDroite2: 2em point pour définir la droite, vecteur2 (x, y)
-    :param point: point avec lequel on fait le calcul
+    :param point: point avec lequel on fait le calcul, vecteur2 (x, y)
     :return: retourne le point d'intersection du segment et de la droite (x, y)
     """
 
