@@ -737,9 +737,9 @@ class menuValeurs:
             self.liste = [point['name'] for point in self.avion.papa.route['points']]
             self.listeAff = self.liste[self.liste.index(avion.papa.nextPoint['name']):]
 
-        elif valeur == 'XPT': # la diff de liste est qu'on ne prend pas en compte les points de notre secteur ici
+        elif valeur == 'XPT':  # la diff de liste est qu'on ne prend pas en compte les points de notre secteur ici
             self.liste = [point['name'] for point in self.avion.papa.route['points']]
-            self.listeAff = self.liste[self.liste.index(avion.papa.XPT):]
+            self.listeAff = self.liste[self.liste.index(avion.papa.XPT) - 1:]
 
         elif valeur in ['XFL', 'PFL', 'CFL']:
             self.liste = [*range(0, 600, 10)]
@@ -832,8 +832,29 @@ class menuValeurs:
             bouton = self.listeBoutons[index]
             bouton.set_text(str(self.listeAff[index]))
 
+    def checkHovered(self, event) -> None:
+        """
+        Regarde si un bouton direct est survolé pour déssiner la directe associée
+        :param event:
+        :return:
+        """
+        if self.valeur in ['DCT', 'XPT'] and self.checkAlive():
+            if event.ui_element in self.listeBoutons:
+                self.avion.pointDessinDirect = event.ui_element.text
+
+    def checkUnHovered(self, event) -> None:
+        """
+        Regarde
+        :param event:
+        :return:
+        """
+        if self.valeur in ['DCT', 'XPT']:
+            if event.ui_element in self.listeBoutons:
+                self.avion.pointDessinDirect = None
+
     def kill(self):
         self.window.kill()
+        self.avion.pointDessinDirect = None
 
     def checkAlive(self):
         return self.window.alive()

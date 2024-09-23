@@ -58,6 +58,7 @@ class Avion:
         self.locWarning = False
         self.etiquetteExtended = False
         self.unHoverTime = pygame.time.get_ticks()
+        self.pointDessinDirect = None
 
         # etiquette
         self.etiquetteX = papa.x + 60
@@ -122,12 +123,13 @@ class Avion:
         if self.drawRouteBool:
             self.drawRoute(points, win, zoom, scroll)
 
+        if self.pointDessinDirect:
+            self.drawDirect(points, self.pointDessinDirect, win, zoom, scroll)
+
         self.positionEtiquette()  # on détermine la position de l'étiquette (nord est, SE, NO, SO)
         self.checkEtiquetteOnUnhover()
         self.extendEtiquette()
         self.etiquette.update(self)  # on update via la fonction de l'étiquette
-
-
 
         # Dessin
         if self.visible:
@@ -153,6 +155,20 @@ class Avion:
                 radius += 0.7
             pygame.draw.line(win, (255, 255, 255), (self.affX + plotSize, self.affY + plotSize),
                              (self.etiquetteX, self.etiquetteY))
+
+    def drawDirect(self, points, point, win, zoom: float, scroll: list[float, float]):
+        """
+
+        :param points: liste des points de la carte pour récup les coors
+        :param point: le point avec lequel on veut une directe
+        :param win: fenêtre pygame
+        :param zoom: zoom
+        :param scroll: scroll (x, y)
+        :return:
+        """
+
+        coord = [points[point][0] * zoom + scroll[0], points[point][1] * zoom + scroll[1]]
+        pygame.draw.line(win, (0, 206, 209), (self.affX + plotSize, self.affY + plotSize), coord)
 
     def drawEstimatedRoute(self, points, temps, win, zoom, scroll):
         """

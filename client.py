@@ -122,9 +122,15 @@ def main(server_ip: str):
                 pygame.quit()
 
             if event.type == pygame_gui.UI_BUTTON_ON_HOVERED:
+                if menuValeurs:
+                    menuValeurs.checkHovered(event)
                 for avion in dictAvionsAff.values():
                     if avion.checkEtiquetteOnHover():  # renvoies True quand le bouton correspond à cette etiquette
                         break  # dès qu'on a trouvé le responsable, on casse
+
+            elif event.type == pygame_gui.UI_BUTTON_ON_UNHOVERED:
+                if menuValeurs:
+                    menuValeurs.checkUnHovered(event)
 
             # on vérifie que l'alidade n'est pas actif
             elif event.type == pygame_gui.UI_BUTTON_PRESSED and not curseur_alidad:
