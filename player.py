@@ -7,7 +7,7 @@ import geometry
 import interface
 
 
-def positionAffichage(x: int, y: int, zoom: float, scrollX: int, scrollY: int):  # TODO rassembler x, y en (x,y) pareil pour le scroll
+def positionAffichage(x: int, y: int, zoom: float, scrollX: int, scrollY: int):
     """
     :param x: position en x
     :param y: position en y
@@ -244,7 +244,7 @@ class Avion:
 
         # on vérifie que le bouton est bien associé à l'etiquette
         if event.ui_element.ui_container == self.etiquette.container:
-            if event.mouse_button == 2 and not pilote:  # si c'est un clic milieu, alors on highlight ou non le bouton
+            if event.mouse_button == 2 and not pilote:  # si c'est un clic milieu, alors on surligne ou non le bouton
                 # on trouve l'index du bouton
                 liste = [[self.etiquette.speedGS], self.etiquette.ligneDeux,
                               self.etiquette.ligneTrois, self.etiquette.ligneQuatre]
@@ -270,24 +270,49 @@ class Avion:
                 self.locWarning = not self.locWarning  # toggle les warnings locs
 
         elif event.ui_element == self.etiquette.indicatif:
+
+            if event.mouse_button == 3 and pilote:
+                return self.Id, 'EtatFreq', None
+
             if event.mouse_button == 1 and pilote:
                 return 'menuPIL'
 
             elif event.mouse_button == 1:
                 return 'menuATC'
 
-                # return self.Id, 'EtatFreq', None
+            elif event.mouse_button == 3 and self.papa.integreOrganique and (
+                    self.etiquette.indicatif.get_object_ids()[1] in ['@etiquetteBold', '@etiquetteBoldBlue']
+                    or pilote):  # clic droit
 
-            elif event.mouse_button == 3 and (self.papa.integreOrganique or pilote):  # clic droit
                 self.unBold()
 
         elif event.ui_element == self.etiquette.speedGS and not self.papa.integreOrganique and not pilote:
             self.unBold()
             return self.Id, 'Integre'
 
-        elif event.ui_element == self.etiquette.XPT:
-            if event.mouse_button == 1 and not pilote:
-                self.drawRouteBool = not self.drawRouteBool
+        elif event.ui_element == self.etiquette.XPT and event.mouse_button == 3 and not pilote:
+            self.drawRouteBool = not self.drawRouteBool
+
+        elif event.ui_element == self.etiquette.XPT and event.mouse_button == 1 and not pilote:
+            return 'XPT'
+
+        elif event.ui_element == self.etiquette.DCT and event.mouse_button == 1 and not pilote:
+            return 'DCT'
+
+        elif event.ui_element == self.etiquette.XFL and event.mouse_button == 1 and not pilote:
+            return 'XFL'
+
+        elif event.ui_element == self.etiquette.PFL and event.mouse_button == 1 and not pilote:
+            return 'PFL'
+
+        elif event.ui_element == self.etiquette.CFL and event.mouse_button == 1 and not pilote:
+            return 'CFL'
+
+        elif event.ui_element == self.etiquette.speedIAS and event.mouse_button == 1 and not pilote:
+            return 'IAS'
+
+        elif event.ui_element == self.etiquette.rate and event.mouse_button == 1 and not pilote:
+            return 'Rate'
 
     def checkEtiquetteOnHover(self):
         """
@@ -314,6 +339,8 @@ class Avion:
     def extendEtiquette(self, force=False):
         """
         Étend ou range l'étiquette
+        :param force: si on veut forcer le rangement de l'etiquette. Utile quand on doit cacher certains boutons
+         après un changement (de surlignage par exemple)
         """
 
         if self.etiquetteExtended and not self.etiquette.extended:  # si on doit etendre et elle n'est pas étendue
@@ -342,7 +369,7 @@ class Avion:
             if self.etiquette.nextSector.get_object_ids()[1][-4:] != 'Blue':
                 self.etiquette.nextSector.hide()
 
-            if self.papa.XFL == round(self.papa.altitude / 100) and self.etiquette.XFL.get_object_ids()[1][-4:] != 'Blue':
+            if self.papa.XFL == self.papa.CFL and self.etiquette.XFL.get_object_ids()[1][-4:] != 'Blue':
                 self.etiquette.XFL.hide()
 
             if self.papa.CFL == round(self.papa.altitude / 100) and self.etiquette.CFL.get_object_ids()[1][-4:] != 'Blue':
@@ -458,7 +485,9 @@ class Avion:
         # on vérifie que l'état freq est bien celui d'après
         if liste_etat_freq.index(self.papa.etatFrequence) < liste_etat_freq.index(papa.etatFrequence):
             self.updateEtatFrequence(papa.etatFrequence)
+
         elif liste_etat_freq.index(self.papa.etatFrequence) > liste_etat_freq.index(papa.etatFrequence):
+            self.papa.etatFrequence = papa.etatFrequence
             etatFrequenceInit(self)  # si c'est un état freq précédent alors, on repart depuis le début
 
         # on vérifie que le surlignage des boutons est le même que sur le dernier paquet

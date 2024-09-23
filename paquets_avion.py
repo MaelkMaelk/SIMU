@@ -85,10 +85,13 @@ class AvionPacket:
         else:
             self.PFL = 300
 
+        self.DCT = self.nextPoint['name']
+
         # On détermine le prochain secteur et le XFL en fonction du PFL, et si c'est une arrivée
         self.nextSector = None
+        self.XPT = route['XPT']
 
-        if self.arrival: # si c'est une arrivée,
+        if self.arrival:  # si c'est une arrivée,
             self.XFL = route['arrival']['XFL']
             self.nextSector = route['arrival']['secteur']
 
@@ -105,8 +108,8 @@ class AvionPacket:
                 if sortie['min'] < self.PFL < sortie['max']:
                     self.nextSector = sortie['name']
 
-        if not self.nextSector:  # si on a pas réussi à mettre un secteur suivant, on met un défaut pour pas crash
-            self.nextSector = secteudDefaut
+        if not self.nextSector:  # si on n'a pas réussi à mettre un secteur suivant, on met un défaut pour pas crash
+            self.nextSector = secteurDefault
 
         self.CFL = None
 
@@ -129,14 +132,26 @@ class AvionPacket:
         self.selectedHeading = self.heading
         self.selectedIAS = self.speedIAS
 
-    def changeSortie(self):
-
+    def changeXFL(self) -> None:
+        """
+        Change le XFL en fonction du PFL. À utliser quand le PFL change
+        :return:
+        """
+        print(self.PFL)
         if self.PFL > 365 and not self.arrival:
             self.nextSector = "RU"
             self.XFL = 360
+        elif not self.arrival:
+            self.XFL = self.PFL
+
+    def changeSortieSecteur(self) -> None:
+        """
+        Change le secteur de sortie. À utiliser quand le XFL change
+        :return:
+        """
 
         for sortie in self.route['sortie']:
-            if sortie['min'] < self.PFL < sortie['max']:
+            if sortie['min'] < self.XFL < sortie['max']:
                 self.nextSector = sortie['name']
                 break
 
@@ -194,7 +209,12 @@ class AvionPacket:
                     return True  # le return True permet au serveur de supprimer l'avion
                 else:
                     # on passe au point suivant dans la liste
+                    ancien = self.nextPoint  # pour la comparaison après
                     self.nextPoint = self.route['points'][self.route['points'].index(self.nextPoint) + 1]
+                    if ancien['name'] == self.DCT:  # si le point clairé est celui qu'on passe
+                        self.DCT = self.nextPoint['name']  # alors on passe au point suivant aussi
+
+
 
             self.selectedHeading = calculateHeading(self.x, self.y, gameMap['points'][self.nextPoint['name']][0],
                                                     gameMap['points'][self.nextPoint['name']][1])

@@ -431,6 +431,7 @@
             </point>
             <point>
                 <name>BOSUA</name>
+                <XPT>True</XPT>
             </point>
             <point>
                 <name>JUVEN</name>

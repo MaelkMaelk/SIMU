@@ -10,12 +10,13 @@ def selectButtonInList(liste: list, event):
             bouton.unselect()
 
 
-def scrollListGen(valueList, rect, container, sliderBool=True):
-    """Fonction qui construit une liste de boutons, avec une scrollbar width 17 tout le temps à gauche
+def scrollListGen(valueList, rect, container, sliderBool=True, sliderDroite=False):
+    """Fonction qui construit une liste de boutons, avec une scrollbar width 17
     :arg valueList: liste des valeurs en txt ou autre peu importe
     :arg rect: taille des boutons
-    :parameter sliderBool: Bool, si on veut un slider ou non. True par defaut
     :arg container: conteneur Pygame_gui dans lequel on met les boutons
+    :parameter sliderBool: Bool, si on veut un slider ou non. True par defaut
+    :parameter sliderDroite: Bool, si on veut le slider à droite ou non
     :return (slider, listeBoutons)"""
 
     valueList = list(valueList)
@@ -24,7 +25,10 @@ def scrollListGen(valueList, rect, container, sliderBool=True):
         slider = pygame_gui.elements.UIVerticalScrollBar(
             relative_rect=pygame.Rect((0, 0), (17, container.get_abs_rect()[3])), container=container,
             visible_percentage=0.2)
-        boutonAnchor = {'left': 'left', 'left_target': slider}
+        if not sliderDroite:
+            boutonAnchor = {'left': 'left', 'left_target': slider}
+        else:
+            boutonAnchor = {}
     else:
         slider = None
         boutonAnchor = {}
@@ -44,6 +48,10 @@ def scrollListGen(valueList, rect, container, sliderBool=True):
             text=str(value),
             container=container,
             anchors=boutonAnchor))
+
+    if sliderDroite:
+        decalage = liste[0].get_abs_rect()[2]
+        slider.set_relative_position((decalage, 0))
 
     return slider, liste
 
@@ -430,7 +438,7 @@ class etiquette:
 
         self.DCT = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
-            text=avion.papa.nextPoint['name'],
+            text=avion.papa.DCT,
             generate_click_events_from=clicks,
             object_id=pygame_gui.core.ObjectID('@etiquetteBold', 'rose'),
             anchors={'top': 'top', 'top_target': self.indicatif},
@@ -525,16 +533,22 @@ class etiquette:
         self.speedGS.set_text(tickBox + str(avion.papa.speedGS)[:2] + evo)
 
         if not avion.papa.headingMode:
-            self.DCT.set_text(avion.papa.nextPoint['name'])
+            self.DCT.set_text(avion.papa.DCT)
         elif self.extended:
             self.DCT.set_text("h" + str(avion.papa.selectedHeading))
         else:
             self.DCT.set_text("h")
 
+        self.XPT.set_text(avion.papa.XPT)
+
         # alti
         self.AFL.set_text(str(round(avion.papa.altitude/100)) + " " + avion.papa.altitudeEvoTxt)
 
         self.CFL.set_text(str(avion.papa.CFL)[:2])
+
+        self.PFL.set_text("p" + str(avion.papa.PFL)[:2])
+
+        self.XFL.set_text("x" + str(avion.papa.XFL)[:2])
 
         self.boutonAgauche()  # TODO utiliser cette fonction que quand c'est nécessaire
 
@@ -605,13 +619,13 @@ class menuATC:
         y = pos[1] - 35
 
         if avion.papa.etatFrequence == 'previousFreq':
-            text = 'Force Assume'
+            text = 'FORCE ASSU'
         elif avion.papa.etatFrequence == 'previousShoot':
-            text = 'Assume'
+            text = 'ASSUME'
         elif avion.papa.etatFrequence == 'nextCoord':
             text = '119.8'
         elif avion.papa.etatFrequence == 'nextShoot':
-            text = 'Reclaim'
+            text = 'RECLAIM'
         else:
             text = ''
 
@@ -660,10 +674,10 @@ class menuATC:
         if event.ui_element == self.freqAssume:
             self.kill()
 
-            if self.freqAssume.text == 'Force Assume':  # si on force assume, on passe direct en frequence
+            if self.freqAssume.text == 'FORCE ASSU':  # si on force assume, on passe direct en frequence
                 return self.avion.Id, 'EtatFreq', 'inFreq'
 
-            elif self.freqAssume.text == 'Reclaim':  # si on reclaim, on revient en freq
+            elif self.freqAssume.text == 'RECLAIM':  # si on reclaim, on revient en freq
                 return self.avion.Id, 'EtatFreq', 'nextCoord'
 
             elif not self.freqAssume.text == '':
@@ -688,6 +702,135 @@ class menuATC:
         elif event.ui_element == self.halo:
             self.kill()
             return self.avion.Id, 'Halo'
+
+    def kill(self):
+        self.window.kill()
+
+    def checkAlive(self):
+        return self.window.alive()
+
+
+class menuValeurs:
+
+    def __init__(self, avion, pos: list[float, float], valeur: str):
+
+        """
+        Menu utilisé par le controleur pour changer les valeurs des différents champs
+        :param avion:
+        :param pos:
+        :param valeur:
+        """
+
+        self.avion = avion
+        self.valeur = valeur
+
+        width = 60
+        height = 240
+
+        x = pos[0] - width / 2
+        y = pos[1] - 35
+
+        self.liste = []
+        self.listeAff = []
+
+        if valeur == 'DCT':
+            self.liste = [point['name'] for point in self.avion.papa.route['points']]
+            self.listeAff = self.liste[self.liste.index(avion.papa.nextPoint['name']):]
+
+        elif valeur == 'XPT': # la diff de liste est qu'on ne prend pas en compte les points de notre secteur ici
+            self.liste = [point['name'] for point in self.avion.papa.route['points']]
+            self.listeAff = self.liste[self.liste.index(avion.papa.XPT):]
+
+        elif valeur in ['XFL', 'PFL', 'CFL']:
+            self.liste = [*range(0, 600, 10)]
+            self.liste.reverse()
+            indexDuFL = self.liste.index(avion.papa.PFL)
+            self.liste[indexDuFL] = "R" + str(avion.papa.PFL)
+            self.listeAff = self.liste[indexDuFL - 4: indexDuFL + 5]
+
+        self.window = pygame_gui.elements.UIWindow(pygame.Rect((x, y), (width, height)),
+                                                   window_display_title=valeur)
+
+        self.up = pygame_gui.elements.UIButton(
+            pygame.Rect((0, 0), (width, -1)),
+            container=self.window,
+            text="↑"
+        )
+
+        self.listeContainer = pygame_gui.elements.UIScrollingContainer(
+            container=self.window,
+            relative_rect=pygame.Rect((0, 0), (width, height)),
+            allow_scroll_x=False,
+            allow_scroll_y=False,
+            anchors={'top': 'top', 'top_target': self.up}
+        )
+
+        self.down = pygame_gui.elements.UIButton(
+            pygame.Rect((0, 0), (width, -1)),
+            container=self.window,
+            text="↓",
+            anchors={'top': 'top', 'top_target': self.listeContainer}
+        )
+
+        tempo = scrollListGen(
+            self.listeAff,
+            pygame.Rect((0, 0), (width, -1)),
+            self.listeContainer,
+            sliderBool=False)
+
+        if valeur in ['XFL', 'PFL', 'CFL']:  # on ramène la fenêtre au bon endroit pour la souris (sur le PFL)
+            y = y - (self.up.get_abs_rect()[3]*4.5 + self.window.title_bar_height)
+            self.window.set_position((x, y))
+        self.listeBoutons = tempo[1]
+        self.listeContainer.set_dimensions((width, len(self.listeAff) * self.up.get_abs_rect()[3]))
+        self.window.set_dimensions(
+            (width,
+             self.listeContainer.get_abs_rect()[3] + 2 * self.up.get_abs_rect()[3] + self.window.title_bar_height * 2.2))
+
+    def checkEvent(self, event):
+        """
+        Vérifies si un event est relié à ce menu et prend les actions en conséquence
+        :param event: l'event à vérifier
+        :return:
+        """
+
+        if event.ui_element == self.up:
+            indexDebut = self.liste.index(self.listeAff[0])  # on regarde où commence la liste dans l'autre
+            if indexDebut - 1 >= 0:  # cela vérifie qu'on n'est pas en butée de liste
+                self.listeAff = self.liste[indexDebut - 1: indexDebut - 1 + len(self.listeAff)]
+                self.scrollUpdate()
+
+        elif event.ui_element == self.down:
+            indexDebut = self.liste.index(self.listeAff[0])  # on regarde où commence la liste dans l'autre
+            if indexDebut + len(self.listeAff) <= len(self.liste) - 1:  # cela vérifie qu'on n'est pas en butée de liste
+                self.listeAff = self.liste[indexDebut + 1: indexDebut + 1 + len(self.listeAff)]
+                self.scrollUpdate()
+
+        elif event.ui_element in self.listeBoutons:
+            self.kill()
+
+            if event.ui_element.text[0] == 'R':  # si on a une value qui correspond au PFL, alors il faut enlever le R
+
+                try:  # on essaye de convertir en int
+                    valeur = int(event.ui_element.text[1:])
+                except:  # si c'est autre chose, par ex, une directe alors, on assigne tt simplement la valeur
+                    valeur = event.ui_element.text
+            else:
+                try:
+                    valeur = int(event.ui_element.text)
+                except:
+                    valeur = event.ui_element.text
+
+            return self.avion.Id, self.valeur, valeur
+
+    def scrollUpdate(self) -> None:
+        """
+        Mets à jour la valeur et l'état des différents boutons lorsqu'il y a un scroll
+        :return:
+        """
+        for index in range(len(self.listeBoutons)):
+            bouton = self.listeBoutons[index]
+            bouton.set_text(str(self.listeAff[index]))
 
     def kill(self):
         self.window.kill()

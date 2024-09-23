@@ -24,7 +24,7 @@ clock = pygame.time.Clock()
 font = pygame.font.SysFont('arial', 18)
 
 
-def main(server_ip : str):
+def main(server_ip: str):
     global temps
     global height
     global width
@@ -34,6 +34,7 @@ def main(server_ip : str):
     # menus
     menuAvion = None
     menuATC = None
+    menuValeurs = None
 
     # on se connecte au serveur
     n = Network(server_ip)
@@ -41,7 +42,7 @@ def main(server_ip : str):
 
     i = 0
     packetId = 0
-    while packet == None and i < 200:
+    while packet is None and i < 200:
         n = Network(server_ip)
         packet = n.getP()
         i +=1
@@ -154,6 +155,14 @@ def main(server_ip : str):
                         if type(action) in [list, tuple]:  # si c'est un tuple alors cela correspond à une requête
                             localRequests.append(action)
 
+                if menuValeurs is not None:
+
+                    # si on valide les modifs, alors la fonction checkEvent retourne les modifs
+                    action = menuValeurs.checkEvent(event)
+                    if action:
+                        if type(action) in [list, tuple]:  # si c'est un tuple alors cela correspond à une requête
+                            localRequests.append(action)
+
                 else:
                     for avion in dictAvionsAff.values():  # pour chaque avion
 
@@ -167,6 +176,10 @@ def main(server_ip : str):
 
                         elif action == 'menuATC' and menuATC is None:
                             menuATC = interface.menuATC(avion, pygame.mouse.get_pos())
+
+                        elif menuValeurs is None and action is not None:
+                            # si on a renvoyé autre chose alors c'est une valeur pour ouvrir un menu
+                            menuValeurs = interface.menuValeurs(avion, pygame.mouse.get_pos(), action)
 
                     # Menu de selection nouvel avion
                     # si notre menu est ouvert
@@ -321,6 +334,10 @@ def main(server_ip : str):
             if not menuATC.checkAlive():
                 menuATC = None
 
+        if menuValeurs is not None:
+            if not menuValeurs.checkAlive():
+                menuValeurs = None
+
         if nouvelAvionWin is not None:
             if not nouvelAvionWin.checkAlive():
                 nouvelAvionWin = None
@@ -328,7 +345,7 @@ def main(server_ip : str):
         '''partie affichage'''
 
         # on remplit d'abord avec une couleur
-        win.fill((100, 100, 100))
+        win.fill((90, 90, 90))
 
         # on dessine les secteurs
         for secteur in carte['secteurs']:
@@ -341,7 +358,7 @@ def main(server_ip : str):
         # on dessine les routes
         for segment in carte['segments']['TRANSIT']:
             pygame.draw.line(win, (150, 150, 150), (segment[0][0]*zoom + scroll[0], segment[0][1]*zoom + scroll[1]),
-                             (segment[1][0]*zoom + scroll[0], segment[1][1]*zoom + scroll[1]), 2)
+                             (segment[1][0]*zoom + scroll[0], segment[1][1]*zoom + scroll[1]), 1)
 
         # on dessine les points
         for nom, point in carte['points'].items():

@@ -101,6 +101,7 @@ for route in root.find('routes'):  # construction des routes
     listeSortie = []
     listeRoutePoints = []
     arrival = False
+    XPT = route.findall('point')[-1].find('name').text
 
     x1 = gameMap['points'][route.find('point').find('name').text][0]
     y1 = gameMap['points'][route.find('point').find('name').text][1]
@@ -108,12 +109,21 @@ for route in root.find('routes'):  # construction des routes
     for point in route.findall('point'):
         pointDict = {}
         pointDict.update({'name': point.find('name').text})
+
         for XMLpoint in point:
             try:
                 XMLpointValue = int(XMLpoint.text)
             except:
                 XMLpointValue = XMLpoint.text
+
+                if XMLpoint.tag == 'XPT':
+                    XMLpointValue = bool(XMLpoint.text)
+
+                    if XMLpointValue:
+                        XPT = point.find('name').text
+
             pointDict.update({XMLpoint.tag: XMLpointValue})
+
         listeRoutePoints.append(pointDict)
 
         y2 = gameMap['points'][point.find('name').text][1]
@@ -130,7 +140,8 @@ for route in root.find('routes'):  # construction des routes
                                          'type': routeType,
                                          'points': listeRoutePoints,
                                          'sortie': listeSortie,
-                                         'arrival': arrival}})
+                                         'arrival': arrival,
+                                         'XPT': XPT}})
 
 gameMap.update({'mapScale': mapScale})
 
@@ -311,11 +322,24 @@ while Running:
                 dictAvion.pop(req[0])
             elif req[1] == 'Altitude':
                 dictAvion[req[0]].selectedAlti = req[2]
+            elif req[1] == 'PFL':
+                dictAvion[req[0]].PFL = req[2]
+                dictAvion[req[0]].changeXFL()
+                dictAvion[req[0]].changeSortieSecteur()
+            elif req[1] == 'CFL':
+                dictAvion[req[0]].CFL = req[2]
+            elif req[1] == 'XFL':
+                dictAvion[req[0]].XFL = req[2]
+                dictAvion[req[0]].changeSortieSecteur()
+            elif req[1] == 'XPT':
+                dictAvion[req[0]].XPT = req[2]
             elif req[1] == 'Heading':
                 dictAvion[req[0]].headingMode = True
                 dictAvion[req[0]].selectedHeading = req[2]
             elif req[1] == 'IAS':
                 dictAvion[req[0]].selectedIAS = req[2]
+            elif req[1] == 'DCT':
+                dictAvion[req[0]].DCT = req[2]
             elif req[1] == 'Warning':
                 dictAvion[req[0]].warning = not dictAvion[req[0]].warning
             elif req[1] == 'Integre':
@@ -336,10 +360,6 @@ while Running:
                     dictAvion[req[0]].boutonsHighlight.remove(req[2])
                 else:
                     dictAvion[req[0]].boutonsHighlight.append(req[2])
-            elif req[1] == 'PFL':
-                dictAvion[req[0]].PFL = req[2]
-            elif req[1] == 'Mouvement':
-                dictAvion[req[0]].Cmouvement()  # TODO faire un truc pour le mvt
             elif req[1] == 'Montrer':
                 dictAvion[req[0]].montrer = not dictAvion[req[0]].montrer
             elif req[1] == 'EtatFreq':
