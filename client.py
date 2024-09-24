@@ -45,7 +45,7 @@ def main(server_ip: str):
 
     i = 0
     packetId = 0
-    while packet is None and i < 200:
+    while packet is None and i < 500:
         n = Network(server_ip)
         packet = n.getP()
         i +=1
@@ -70,7 +70,9 @@ def main(server_ip: str):
     zoom = zoomDef
     scroll = scrollDef
     drag = [0, 0]
-    dragging = False
+    dragging_delay = 200  # il y a un délai avant de pouvoir drag (pour pouvoir ouvrir les menus notamment)
+    mouseDownTime = 0
+    empecherDragging = False
 
     # vecteurs et type
     vecteurs = False
@@ -140,8 +142,12 @@ def main(server_ip: str):
                 if menuValeurs:
                     menuValeurs.checkUnHovered(event)
 
+            elif event.type == pygame_gui.UI_BUTTON_START_PRESS:
+                empecherDragging = True
+
             # on vérifie que l'alidade n'est pas actif
             elif event.type == pygame_gui.UI_BUTTON_PRESSED and not curseur_alidad:
+                empecherDragging = False
 
                 # si un bouton est appuyé
                 triggered = True
@@ -223,10 +229,10 @@ def main(server_ip: str):
                                 PFL=PFL)
 
                             localRequests.append((len(dictAvions), "Add", newPlane))
+
             elif event.type == pygame_gui.UI_TEXT_ENTRY_CHANGED:
                 nouvelAvionWin.checkFields(event)
 
-            # dragging
             if menuAvion or nouvelAvionWin:
                 pass
 
@@ -244,15 +250,13 @@ def main(server_ip: str):
                 scroll[0] += (after_x_pos - before_x_pos) * zoom
                 scroll[1] += (after_y_pos - before_y_pos) * zoom
 
-            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and drag == [0, 0] and not curseur_alidad:
-                drag = [pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1]]
-                dragging = True
-            elif event.type == pygame.MOUSEBUTTONUP and event.button == 1 and not curseur_alidad:
-                dragging = False
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
 
-            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and curseur_alidad:
-                alidad = True
-                alidadPos = pygame.mouse.get_pos()
+                mouseDownTime = pygame.time.get_ticks()  # on se sert de ce timing pour les menus et le dragging
+                if curseur_alidad:
+                    alidad = True
+                    alidadPos = pygame.mouse.get_pos()
+
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 3 and curseur_alidad:
                 alidad = False
                 curseur_alidad = False
@@ -263,18 +267,16 @@ def main(server_ip: str):
         if menuAvion is not None:
             menuAvion.checkSliders()
 
-        if triggered:
-            dragging = False
-            drag = [0, 0]
-
         keys = pygame.key.get_pressed()
 
-        if dragging:
+        if (pygame.mouse.get_pressed()[0] and not empecherDragging and
+                dragging_delay + mouseDownTime <= pygame.time.get_ticks()):
+
             scroll[0] += pygame.mouse.get_pos()[0] - drag[0]
             scroll[1] += pygame.mouse.get_pos()[1] - drag[1]
             drag = [pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1]]
         else:
-            drag = [0, 0]
+            drag = [pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1]]
 
         if not pressing and nouvelAvionWin is None:
 
