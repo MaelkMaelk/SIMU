@@ -62,13 +62,16 @@ class AvionPacket:
         self.integreOrganique = False  # si on doit ou non afficher la case d'intégration organique
         self.boutonsHighlight = []
         self.modeA = str(random.randint(1000, 9999))
+
         if medevac:
-            self.medevac = 'Medevac'
+            self.medevac = 'MEDEVAC'
         else:
             self.medevac = ''
+
         self.callsignFreq = 'Austrian'  # TODO ajouter les callsigns
-        self.destination = 'LOWW'  # TODO ajouter les destinations et provenances
-        self.provenance = 'LEMD'
+
+        self.provenance = random.choice(gameMap['aeroports'][route['provenance']])
+        self.destination = random.choice(gameMap['aeroports'][route['destination']])
 
         # perfo
         self.turnRate = turnRateDefault
@@ -100,6 +103,7 @@ class AvionPacket:
         # On détermine le prochain secteur et le XFL en fonction du PFL, et si c'est une arrivée
         self.nextSector = None
         self.XPT = route['XPT']
+        self.EPT = route['EPT']
 
         if self.arrival:  # si c'est une arrivée,
             self.XFL = route['arrival']['XFL']

@@ -84,6 +84,21 @@ for secteur in root.find('secteurs'):
 
     gameMap['secteurs'].append({'couleur': [int(x) for x in secteur.attrib['color'].split(',')], 'contour': contour})
 
+listeAeroports = {}
+
+for direction in root.find('Aeroports'):
+    liste_de_cette_direction = []
+
+    for aeroport in direction:
+        liste_de_cette_direction.append(aeroport.text)
+
+    if not liste_de_cette_direction:
+        print("[Problème] Il n'y a pas d'aéroports pour la direction", direction.tag)
+
+    listeAeroports.update({direction.tag: liste_de_cette_direction})
+
+gameMap.update({'aeroports': listeAeroports})
+
 # parsing des routes pour conaître tous les types de routes, pour l'affichage des segments
 
 for route in root.find('routes'):
@@ -101,7 +116,8 @@ for route in root.find('routes'):  # construction des routes
     listeSortie = []
     listeRoutePoints = []
     arrival = False
-    XPT = route.findall('point')[-1].find('name').text
+    XPT = route.findall('point')[-1].find('name').text  # on met le dernier point par défaut s'il n'est pas précisé
+    EPT = route.findall('point')[1].find('name').text  # on met le 1er point par défaut s'il n'est pas précisé
 
     x1 = gameMap['points'][route.find('point').find('name').text][0]
     y1 = gameMap['points'][route.find('point').find('name').text][1]
@@ -122,6 +138,12 @@ for route in root.find('routes'):  # construction des routes
                     if XMLpointValue:
                         XPT = point.find('name').text
 
+                if XMLpoint.tag == 'EPT':
+                    XMLpointValue = bool(XMLpoint.text)
+
+                    if XMLpointValue:
+                        EPT = point.find('name').text
+
             pointDict.update({XMLpoint.tag: XMLpointValue})
 
         listeRoutePoints.append(pointDict)
@@ -132,12 +154,20 @@ for route in root.find('routes'):  # construction des routes
             gameMap['segments'][routeType].append(((x1, y1), (x2, y2)))
         x1 = x2
         y1 = y2
-    provenance = []
-    destination = []
-    """for direction in route.find('provenance'):
-        provenance.append(direction.text)
-    for direction in route.find('destination'):
-        destination.append(direction.text)"""
+    provenance = 'N'
+    destination = 'S'
+
+    if route.find('provenance') is not None:
+        provenance = route.find('provenance').text
+    else:
+        print('[Problème] pas de direction de provenance pour la route', nomRoute)
+        provenance = 'N'
+
+    if route.find('destination') is not None:
+        destination = route.find('destination').text
+    else:
+        print('[Problème] pas de direction de destination pour la route', nomRoute)
+        destination = 'S'
 
     if route.find('arrival') is not None:
         arrival = {'XFL': int(route.find('arrival').text), 'secteur': route.find('arrival').attrib['secteur']}
@@ -149,6 +179,7 @@ for route in root.find('routes'):  # construction des routes
                                          'sortie': listeSortie,
                                          'arrival': arrival,
                                          'XPT': XPT,
+                                         'EPT': EPT,
                                          'provenance': provenance,
                                          'destination': destination}})
 

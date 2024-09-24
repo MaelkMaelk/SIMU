@@ -1,4 +1,3 @@
-from typing import Iterable
 import pygame
 import math
 import pygame_gui
@@ -7,7 +6,7 @@ import geometry
 import interface
 
 
-def positionAffichage(x: int, y: int, zoom: float, scrollX: int, scrollY: int):
+def positionAffichage(x: int, y: int, zoom: float, scrollX: float, scrollY: float):
     """
     :param x: position en x
     :param y: position en y

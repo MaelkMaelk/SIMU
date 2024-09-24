@@ -942,10 +942,10 @@ class flightDataWindow:
 
         text = (avion.papa.provenance + '   ' + avion.papa.destination + '  R' + str(avion.papa.PFL)
                 + ' ' + str(round(avion.papa.altitude/100)) + ' ' + str(avion.papa.PFL)
-                + '    ' + avion.papa.nextPoint['name'] + '      ' + avion.papa.XPT + '  X' + str(avion.papa.XFL))
+                + '    ' + avion.papa.EPT + '      ' + avion.papa.XPT + '  X' + str(avion.papa.XFL))
         self.ligneTrois.set_text(text)
 
-        text = (str(avion.papa.CFL) + '   ' + str(avion.papa.DCT) + '        S' + '      R                   |'
+        text = ('C' + str(avion.papa.CFL) + '   ' + str(avion.papa.DCT) + '        S' + '      R                   |'
                 + ETE + '          ' + ETX)
         self.ligneQuatre.set_text(text)
 
