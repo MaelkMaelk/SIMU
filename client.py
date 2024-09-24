@@ -1,3 +1,5 @@
+import pygame
+import horloge
 from network import Network
 import server_browser
 from player import *
@@ -35,6 +37,7 @@ def main(server_ip: str):
     menuAvion = None
     menuATC = None
     menuValeurs = None
+    flightDataWindow = None
 
     # on se connecte au serveur
     n = Network(server_ip)
@@ -122,10 +125,15 @@ def main(server_ip: str):
                 pygame.quit()
 
             if event.type == pygame_gui.UI_BUTTON_ON_HOVERED:
-                if menuValeurs:
+
+                if menuValeurs:  # on regarde ici pour dessiner les directs
                     menuValeurs.checkHovered(event)
+
                 for avion in dictAvionsAff.values():
                     if avion.checkEtiquetteOnHover():  # renvoies True quand le bouton correspond à cette etiquette
+                        if flightDataWindow:  # si la FDW est déployée
+                            flightDataWindow.linkAvion(avion, carte['points'], game.heure)  # on associe l'avion à la FDW
+
                         break  # dès qu'on a trouvé le responsable, on casse
 
             elif event.type == pygame_gui.UI_BUTTON_ON_UNHOVERED:
@@ -284,6 +292,10 @@ def main(server_ip: str):
                 pygame.mouse.set_cursor(pygame.cursors.broken_x)
                 pressing = True
                 delaiPressage = pygame.time.get_ticks()
+            if keys[pygame.K_f] and flightDataWindow is None:  # Flight Data Window
+                flightDataWindow = interface.flightDataWindow()
+                pressing = True
+                delaiPressage = pygame.time.get_ticks()
 
                 # commandes vecteurs
             if keys[pygame.K_3]:
@@ -344,6 +356,10 @@ def main(server_ip: str):
             if not menuValeurs.checkAlive():
                 menuValeurs = None
 
+        if flightDataWindow is not None:
+            if not flightDataWindow.checkAlive():
+                flightDataWindow = None
+
         if nouvelAvionWin is not None:
             if not nouvelAvionWin.checkAlive():
                 nouvelAvionWin = None
@@ -389,14 +405,9 @@ def main(server_ip: str):
             win.blit(img, (20, 50))
 
         # dessin Heure
-        heures = str(round(game.heure//3600 % 24))
-        if len(heures) == 1:
-            heures = '0' + heures
-        minutes = str(round(game.heure % 3600//60))
-        if len(minutes) == 1:
-            minutes = '0' + minutes
+        heureDisplay = horloge.affichageHeure(game.heure)
 
-        img = font.render(heures + ':' + minutes, True, (255, 105, 180))
+        img = font.render(heureDisplay, True, (255, 105, 180))
         win.blit(img, (20, 20))
 
         # dessin alidad

@@ -132,6 +132,13 @@ for route in root.find('routes'):  # construction des routes
             gameMap['segments'][routeType].append(((x1, y1), (x2, y2)))
         x1 = x2
         y1 = y2
+    provenance = []
+    destination = []
+    """for direction in route.find('provenance'):
+        provenance.append(direction.text)
+    for direction in route.find('destination'):
+        destination.append(direction.text)"""
+
     if route.find('arrival') is not None:
         arrival = {'XFL': int(route.find('arrival').text), 'secteur': route.find('arrival').attrib['secteur']}
     for sortie in route.findall('sortie'):
@@ -141,7 +148,9 @@ for route in root.find('routes'):  # construction des routes
                                          'points': listeRoutePoints,
                                          'sortie': listeSortie,
                                          'arrival': arrival,
-                                         'XPT': XPT}})
+                                         'XPT': XPT,
+                                         'provenance': provenance,
+                                         'destination': destination}})
 
 gameMap.update({'mapScale': mapScale})
 

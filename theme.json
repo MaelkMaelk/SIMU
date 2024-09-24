@@ -28,13 +28,43 @@
              "bold_path": "fonts/LTSuperior-Black.otf"
              }
    },
+  "@flightDataWindow":
+      {
+        "misc": {
+          "border_width": "2",
+          "text_horiz_alignment": "left",
+          "text_horiz_alignment_padding": "4",
+          "text_vert_alignment": "left",
+          "text_vert_alignment_padding": "2",
+          "shadow_width": "0"
+        },
+        "font": {
+          "name": "bold",
+          "size": "15",
+          "regular_path": "fonts/LTSuperior-Medium.otf",
+          "bold_path": "fonts/LTSuperior-Black.otf"
+        },
+        "colours":
+         {
+           "normal_border": "#A6A6A6",
+           "hovered_border": "#A6A6A6",
+           "disabled_border": "#A6A6A6",
+           "selected_border": "#A6A6A6",
+           "active_border": "#A6A6A6",
+           "dark_bg": "#3E3E3E",
+           "normal_bg": "#3E3E3E",
+           "hovered_bg": "#3E3E3E",
+           "disabled_bg": "#3E3E3E",
+           "active_bg": "#3E3E3E"
+         }
+      },
       "@etiquette":
      {
        "colours":
          {
            "normal_bg":"#00000000",
            "hovered_bg":"#00000000",
-           "selected_bg":"#7096FF",
+           "selected_bg":"#00000000",
            "disabled_bg":"#00000000"
          },
        "misc":

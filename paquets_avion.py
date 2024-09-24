@@ -1,5 +1,6 @@
 from geometry import *
 from valeurs_config import *
+import random
 
 
 class Game:
@@ -21,7 +22,8 @@ class Packet:
 
 class AvionPacket:
 
-    def __init__(self, gameMap, Id, indicatif, aircraft, perfos, route, arrival, FL=None, x=None, y=None, heading=None, PFL=None):
+    def __init__(self, gameMap, Id, indicatif, aircraft, perfos, route, arrival, FL=None, x=None, y=None, heading=None,
+                 PFL=None, medevac=False):
 
         self.Id = Id
         self.indicatif = indicatif
@@ -59,6 +61,14 @@ class AvionPacket:
         self.etatFrequence = "previousFreq"
         self.integreOrganique = False  # si on doit ou non afficher la case d'intégration organique
         self.boutonsHighlight = []
+        self.modeA = str(random.randint(1000, 9999))
+        if medevac:
+            self.medevac = 'Medevac'
+        else:
+            self.medevac = ''
+        self.callsignFreq = 'Austrian'  # TODO ajouter les callsigns
+        self.destination = 'LOWW'  # TODO ajouter les destinations et provenances
+        self.provenance = 'LEMD'
 
         # perfo
         self.turnRate = turnRateDefault
@@ -110,6 +120,8 @@ class AvionPacket:
 
         if not self.nextSector:  # si on n'a pas réussi à mettre un secteur suivant, on met un défaut pour pas crash
             self.nextSector = secteurDefault
+
+        self.nextFrequency = '127.675'  # TODO faire les fréquences automatiques
 
         self.CFL = None
 
@@ -249,3 +261,34 @@ class AvionPacket:
         self.x += self.speedPx * math.cos(self.headingRad)
         self.y += self.speedPx * math.sin(self.headingRad)
 
+    def calculeEstimate(self, points: dict, pointVoulu: str) -> None:
+        """
+        Calcule le temps à un point sur notre route. Pour avoir l'estimée, il faudra rajouter l'heure courante
+        :param points: dict des points de la carte
+        :param pointVoulu: le nom du point pour lequel on veut l'estimée
+        :return:
+        """
+        distance = 0
+        x1 = self.x
+        y1 = self.y
+
+        for point in self.route['points']:
+            if point['name'] == self.DCT:
+                break
+
+        debut = self.route['points'].index(point)
+
+        for point in self.route['points'][debut:]:  # on compte à partir du prochain point connu par le système
+
+            x2 = points[point['name']][0]
+            y2 = points[point['name']][1]
+
+            distance += calculateDistance(x1, y1, x2, y2)
+
+            if point['name'] == pointVoulu:
+                break
+
+            x1 = x2
+            y1 = y2
+
+        return distance / (self.speedPx / heureEnRefresh) * 3600

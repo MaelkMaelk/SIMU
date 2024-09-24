@@ -685,4 +685,21 @@
         </route>
     </routes>
 
+    <Aeroports>
+        <NE></NE>
+
+        <N></N>
+
+        <NO></NO>
+
+        <S></S>
+
+        <SO></SO>
+
+        <SE></SE>
+
+        <E></E>
+
+    </Aeroports>
+
 </map>
