@@ -45,7 +45,7 @@ def main(server_ip: str):
 
     i = 0
     packetId = 0
-    while packet is None and i < 500:
+    while packet is None and i < 200:
         n = Network(server_ip)
         packet = n.getP()
         i +=1
@@ -70,7 +70,7 @@ def main(server_ip: str):
     zoom = zoomDef
     scroll = scrollDef
     drag = [0, 0]
-    dragging_delay = 200  # il y a un délai avant de pouvoir drag (pour pouvoir ouvrir les menus notamment)
+    dragging_delay = 500  # il y a un délai avant de pouvoir drag (pour pouvoir ouvrir les menus notamment)
     mouseDownTime = 0
     empecherDragging = False
 
@@ -267,16 +267,23 @@ def main(server_ip: str):
         if menuAvion is not None:
             menuAvion.checkSliders()
 
-        keys = pygame.key.get_pressed()
+        """Dragging"""
 
         if (pygame.mouse.get_pressed()[0] and not empecherDragging and
                 dragging_delay + mouseDownTime <= pygame.time.get_ticks()):
+            pygame.mouse.set_cursor(pygame.cursors.ball)
 
             scroll[0] += pygame.mouse.get_pos()[0] - drag[0]
             scroll[1] += pygame.mouse.get_pos()[1] - drag[1]
             drag = [pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1]]
         else:
             drag = [pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1]]
+            if not curseur_alidad:
+                pygame.mouse.set_cursor(pygame.cursors.arrow)
+
+        """Keys"""
+
+        keys = pygame.key.get_pressed()
 
         if not pressing and nouvelAvionWin is None:
 
