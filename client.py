@@ -70,7 +70,7 @@ def main(server_ip: str):
     zoom = zoomDef
     scroll = scrollDef
     drag = [0, 0]
-    dragging_delay = 500  # il y a un délai avant de pouvoir drag (pour pouvoir ouvrir les menus notamment)
+    dragging_delay = 350  # il y a un délai avant de pouvoir drag (pour pouvoir ouvrir les menus notamment)
     mouseDownTime = 0
     empecherDragging = False
 

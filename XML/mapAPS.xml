@@ -226,6 +226,7 @@
     <routes>
         <route>
             <Type>DEPART</Type>
+            <destination>SO</destination>
             <point>
                 <name>LSGG</name>
                 <FL>120</FL>
@@ -260,6 +261,8 @@
 
         <route>
             <Type>TRANSIT</Type>
+            <destination>SO</destination>
+            <provenance>NE</provenance>
             <point>
                 <name>MELKA</name>
             </point>
@@ -295,6 +298,8 @@
 
         <route>
             <Type>TRANSIT</Type>
+            <destination>SE</destination>
+            <provenance>N</provenance>
             <point>
                 <name>BURGO</name>
             </point>
@@ -323,6 +328,8 @@
 
         <route>
             <Type>TRANSIT</Type>
+            <destination>SE</destination>
+            <provenance>N</provenance>
             <point>
                 <name>BURGO</name>
             </point>
@@ -351,6 +358,8 @@
 
         <route>
             <Type>TRANSIT</Type>
+            <provenance>E</provenance>
+            <destination>SO</destination>
             <point>
                 <name>JUVEN</name>
             </point>
@@ -382,7 +391,8 @@
         </route>
 
         <route>
-            <Type>DEP</Type>
+            <Type>DEPART</Type>
+            <destination>SO</destination>
             <point>
                 <name>LIML</name>
                 <FL>20</FL>
@@ -451,6 +461,8 @@
 
         <route>
             <Type>TRANSIT</Type>
+            <provenance>SO</provenance>
+            <destination>NE</destination>
             <point>
                 <name>GAI</name>
             </point>
@@ -483,6 +495,8 @@
 
         <route>
             <Type>TRANSIT</Type>
+            <provenance>S</provenance>
+            <destination>NE</destination>
             <point>
                 <name>ABISA</name>
             </point>
@@ -509,6 +523,8 @@
 
         <route>
             <Type>TRANSIT</Type>
+            <provenance>S</provenance>
+            <destination>NO</destination>
             <point>
                 <name>ABISA</name>
             </point>
@@ -541,6 +557,8 @@
 
         <route>
             <Type>TRANSIT</Type>
+            <provenance>S</provenance>
+            <destination>NO</destination>
             <point>
                 <name>ABISA</name>
             </point>
@@ -570,6 +588,8 @@
 
         <route>
             <Type>TRANSIT</Type>
+            <provenance>SE</provenance>
+            <destination>NO</destination>
             <point>
                 <name>JAMBI</name>
             </point>
@@ -599,6 +619,8 @@
 
         <route>
             <Type>TRANSIT</Type>
+            <provenance>SE</provenance>
+            <destination>NO</destination>
             <point>
                 <name>JAMBI</name>
             </point>
@@ -630,7 +652,8 @@
         </route>
 
         <route name="Depart MTL">
-            <Type>DEP</Type>
+            <Type>DEPART</Type>
+            <destination>S</destination>
             <point>
                 <name>BST</name>
                 <FL>20</FL>
@@ -659,7 +682,8 @@
         </route>
 
         <route name="Depart RETNO">
-            <Type>DEP</Type>
+            <Type>DEPART</Type>
+            <destination>SE</destination>
             <point>
                 <name>BST</name>
                 <FL>20</FL>
@@ -688,7 +712,8 @@
         </route>
 
         <route name="Depart MEN">
-            <Type>DEP</Type>
+            <Type>DEPART</Type>
+            <destination>SO</destination>
             <point>
                 <name>BST</name>
                 <FL>20</FL>
