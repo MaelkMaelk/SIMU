@@ -415,7 +415,7 @@ class etiquette:
         self.type_dest = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
             object_id=pygame_gui.core.ObjectID('@etiquetteBold', 'rose'),
-            text=avion.papa.aircraft + " " + "LFVB",
+            text=avion.papa.aircraft + " " + avion.papa.destination,
             generate_click_events_from=clicks,
             anchors={'top': 'top', 'top_target': self.speedGS},
             container=self.container
@@ -504,18 +504,6 @@ class etiquette:
         """
 
         # on ajuste la position du container en fonction de son point cardinal par rapport au plot
-        if avion.etiquettePos % 4 == 0:
-            Xvalue = 0
-            Yvalue = - self.container.get_rect()[3]
-        elif avion.etiquettePos % 4 == 1:
-            Xvalue = 0
-            Yvalue = 0
-        elif avion.etiquettePos % 4 == 2:
-            Xvalue = - self.container.get_rect()[2]
-            Yvalue = 0
-        else:
-            Xvalue = - self.container.get_rect()[2]
-            Yvalue = - self.container.get_rect()[3]
 
         # speed et C/D rate
         if avion.papa.evolution == 0:  # on affiche la rate que si l'avion est en evo
@@ -554,7 +542,7 @@ class etiquette:
         self.boutonAgauche()  # TODO utiliser cette fonction que quand c'est nécessaire
 
         # container
-        self.container.set_position((avion.etiquetteX + Xvalue, avion.etiquetteY + Yvalue))
+        self.container.set_position((avion.etiquetteX + 0, avion.etiquetteY + 0))
         self.container.update_containing_rect_position()
         self.container.recalculate_abs_edges_rect()
 

@@ -56,8 +56,10 @@ class Avion:
         self.drawRouteBool = False
         self.locWarning = False
         self.etiquetteExtended = False
-        self.unHoverTime = pygame.time.get_ticks()
+        self.lastHoveredTime = 0
         self.pointDessinDirect = None
+        self.drag = False  # if true l'etiquette se fait drag
+        self.dragOffset = (0, 0)  # le décalage de l'etiquette par rapport au curseur
 
         # etiquette
         self.etiquetteX = papa.x + 60
@@ -125,8 +127,12 @@ class Avion:
         if self.pointDessinDirect:
             self.drawDirect(points, self.pointDessinDirect, win, zoom, scroll)
 
-        self.positionEtiquette()  # on détermine la position de l'étiquette (nord est, SE, NO, SO)
-        self.checkEtiquetteOnUnhover()
+        if self.drag:  # TODO délai avant de drag, pour ne pas cliquer sur les boutons une fois qu'on a commencé à drag
+            self.etiquetteDrag()  # on détermine la position de l'étiquette (nord est, SE, NO, SO)
+        else:
+            self.positionEtiquette()  # TODO enlever ça et le mettre en innit
+        if self.etiquetteExtended:
+            self.checkStillHovered()
         self.extendEtiquette()
         self.etiquette.update(self)  # on update via la fonction de l'étiquette
 
@@ -259,6 +265,7 @@ class Avion:
 
         # on vérifie que le bouton est bien associé à l'etiquette
         if event.ui_element.ui_container == self.etiquette.container:
+            self.drag = False  # le bouton vient de finir d'être pressé, on peut donc arreter de drag
             if event.mouse_button == 2 and not pilote:  # si c'est un clic milieu, alors on surligne ou non le bouton
                 # on trouve l'index du bouton
                 liste = [[self.etiquette.speedGS], self.etiquette.ligneDeux,
@@ -340,15 +347,18 @@ class Avion:
             return True
         return False
 
-    def checkEtiquetteOnUnhover(self):
+    def checkStillHovered(self):
 
         """
         Vérifie si on doit ou non désétendre l'étiquette
         """
 
-        if self.etiquette.container.are_contents_hovered():
-            self.unHoverTime = pygame.time.get_ticks()
-        elif pygame.time.get_ticks() - self.unHoverTime > 400:
+        mouse = pygame.mouse.get_pos()
+        rect = self.etiquette.container.get_abs_rect()
+
+        if rect[0] <= mouse[0] <= rect[0] + rect[2] and rect[1] <= mouse[1] <= rect[1] + rect[3]:
+            self.lastHoveredTime = pygame.time.get_ticks()
+        elif pygame.time.get_ticks() - self.lastHoveredTime > 400:
             self.etiquetteExtended = False
 
     def extendEtiquette(self, force=False):
@@ -511,6 +521,13 @@ class Avion:
 
         self.papa = papa
 
+    def etiquetteDrag(self) -> None:
+
+        mouse = pygame.mouse.get_pos()
+
+        self.etiquetteX = mouse[0] - self.dragOffset[0]
+        self.etiquetteY = mouse[1] - self.dragOffset[1]
+
 
 def bold(bouton) -> None:
     """
@@ -524,3 +541,16 @@ def bold(bouton) -> None:
         nouvelObjID = '@etiquetteBold'
     bouton.change_object_id(pygame_gui.core.ObjectID(nouvelObjID, couleur))
 
+
+def calculateEtiquetteOffset(container) -> tuple[float, float]:
+    """
+    Calcule l'offset d'un container par rapport à la position de la souris
+    :param container: Le conatiner de l'etiquette avec lequel on veut l'offset
+    :return:
+    """
+
+    posEtiquette = container.get_abs_rect()
+    mouse = pygame.mouse.get_pos()
+    dragOffset = (mouse[0] - posEtiquette[0], mouse[1] - posEtiquette[1])
+
+    return dragOffset

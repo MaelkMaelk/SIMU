@@ -145,6 +145,11 @@ def main(server_ip: str):
             elif event.type == pygame_gui.UI_BUTTON_START_PRESS:
                 empecherDragging = True
 
+                for avion in dictAvionsAff.values():
+                    if avion.etiquetteExtended:  # si c'est cette etiquette qu'on survole
+                        avion.drag = True
+                        avion.dragOffset = calculateEtiquetteOffset(avion.etiquette.container)
+
             # on vérifie que l'alidade n'est pas actif
             elif event.type == pygame_gui.UI_BUTTON_PRESSED and not curseur_alidad:
                 empecherDragging = False
