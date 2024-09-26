@@ -393,6 +393,7 @@ class etiquette:
         clicks = frozenset([pygame.BUTTON_LEFT, pygame.BUTTON_RIGHT, pygame.BUTTON_MIDDLE])
 
         self.extended = True  # relate de si l'étiquette est étendue ou non
+        self.centre = (0, 0)
 
         self.container = pygame_gui.elements.UIAutoResizingContainer(
             pygame.Rect((0, 0), (0, 0)), pygame.Rect((0, 0), (0, 0)), resize_top=False, resize_left=False)
@@ -503,8 +504,6 @@ class etiquette:
         On ajuste la position ainsi que les valeurs textes dans les boutons
         """
 
-        # on ajuste la position du container en fonction de son point cardinal par rapport au plot
-
         # speed et C/D rate
         if avion.papa.evolution == 0:  # on affiche la rate que si l'avion est en evo
             evo = ""
@@ -542,9 +541,11 @@ class etiquette:
         self.boutonAgauche()  # TODO utiliser cette fonction que quand c'est nécessaire
 
         # container
-        self.container.set_position((avion.etiquetteX + 0, avion.etiquetteY + 0))
+        self.container.set_position((avion.etiquetteX, avion.etiquetteY))
         self.container.update_containing_rect_position()
         self.container.recalculate_abs_edges_rect()
+        rect = self.container.get_abs_rect()
+        self.centre = (avion.etiquetteX + rect[2] / 2, avion.etiquetteY + rect[3] / 2)
 
     def boutonAgauche(self):
 
@@ -728,7 +729,7 @@ class menuValeurs:
 
         elif valeur == 'XPT':  # la diff de liste est qu'on ne prend pas en compte les points de notre secteur ici
             self.liste = [point['name'] for point in self.avion.papa.route['points']]
-            self.listeAff = self.liste[self.liste.index(avion.papa.XPT) - 1:]
+            self.listeAff = self.liste[self.liste.index(avion.papa.XPT):]
 
         elif valeur in ['XFL', 'PFL', 'CFL']:
             self.liste = [*range(0, 600, 10)]

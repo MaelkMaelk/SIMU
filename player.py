@@ -40,7 +40,7 @@ class Avion:
     global timeConstant
     global plotSize
 
-    def __init__(self, Id: int, papa):
+    def __init__(self, Id: int, papa, zoom: float, scroll: list[float, float]):
         self.Id = Id
         self.papa = papa
         clicks = frozenset([pygame.BUTTON_LEFT, pygame.BUTTON_RIGHT, pygame.BUTTON_MIDDLE])
@@ -60,15 +60,17 @@ class Avion:
         self.pointDessinDirect = None
         self.drag = False  # if true l'etiquette se fait drag
         self.dragOffset = (0, 0)  # le décalage de l'etiquette par rapport au curseur
+        self.startPressTime = 0
+
+        # zoom et scroll
+        self.affX = self.papa.x * zoom - plotSize + scroll[0]
+        self.affY = self.papa.y * zoom - plotSize + scroll[1]
 
         # etiquette
-        self.etiquetteX = papa.x + 60
-        self.etiquetteY = papa.y - 60
-        self.etiquettePos = 0
-
-        # Zoom & scroll
-        self.affX = 0
-        self.affY = 0
+        self.etiquetteX = self.affX + offsettEtiquetteDefault
+        self.etiquetteY = self.affY + offsettEtiquetteDefault
+        self.etiquetteOffsetX = offsettEtiquetteDefault
+        self.etiquetteOffsetY = offsettEtiquetteDefault
 
         # init de l'étiquette
         self.etiquette = interface.etiquette(self)
@@ -78,22 +80,11 @@ class Avion:
         # interaction avec les events
         self.returnValues = {}
 
-    def positionEtiquette(self):
-        """On place l'étiquette dans une des positions possibles (nord est, NO, SE, SO)"""
+    def positionEtiquette(self) -> None:
+        """Met à jour la position de l'étiquette"""
 
-        value = 45  # distance de l'etiquette par rapport au plot
-        if self.etiquettePos % 4 == 0:
-            self.etiquetteX = self.affX + plotSize + value
-            self.etiquetteY = self.affY + plotSize - value
-        elif self.etiquettePos % 4 == 1:
-            self.etiquetteX = self.affX + plotSize + value
-            self.etiquetteY = self.affY + plotSize + value
-        elif self.etiquettePos % 4 == 2:
-            self.etiquetteX = self.affX + plotSize - value
-            self.etiquetteY = self.affY + plotSize + value
-        else:
-            self.etiquetteX = self.affX + plotSize - value
-            self.etiquetteY = self.affY + plotSize - value
+        self.etiquetteX = self.affX + self.etiquetteOffsetX
+        self.etiquetteY = self.affY + self.etiquetteOffsetY
 
     def drawVector(self, color, window, vecteurSetting, zoom):
         """
@@ -127,10 +118,15 @@ class Avion:
         if self.pointDessinDirect:
             self.drawDirect(points, self.pointDessinDirect, win, zoom, scroll)
 
-        if self.drag:  # TODO délai avant de drag, pour ne pas cliquer sur les boutons une fois qu'on a commencé à drag
+        if self.startPressTime != 0 and self.startPressTime + dragDelay <= pygame.time.get_ticks():
+            self.drag = True
+        elif not pygame.mouse.get_pressed()[0]:  # si le bouton n'est plus pressé entre temps alors on drag pas
+            self.startPressTime = 0
+
+        if self.drag and pygame.mouse.get_pressed()[0]:
             self.etiquetteDrag()  # on détermine la position de l'étiquette (nord est, SE, NO, SO)
-        else:
-            self.positionEtiquette()  # TODO enlever ça et le mettre en innit
+
+        self.positionEtiquette()
         if self.etiquetteExtended:
             self.checkStillHovered()
         self.extendEtiquette()
@@ -237,7 +233,6 @@ class Avion:
 
         route = self.papa.route['points']  # on n'a besoin que des noms des points
         nextPoint = self.papa.nextPoint
-        ratio = 0
 
         point1 = points[route[route.index(nextPoint) - 1]['name']][:2]
         point2 = points[nextPoint['name']][:2]
@@ -265,7 +260,10 @@ class Avion:
 
         # on vérifie que le bouton est bien associé à l'etiquette
         if event.ui_element.ui_container == self.etiquette.container:
-            self.drag = False  # le bouton vient de finir d'être pressé, on peut donc arreter de drag
+            self.startPressTime = 0
+            if self.drag:
+                self.drag = False
+                return None  # comme on était en train de drag, on ne fait aucune action liée au bouton
             if event.mouse_button == 2 and not pilote:  # si c'est un clic milieu, alors on surligne ou non le bouton
                 # on trouve l'index du bouton
                 liste = [[self.etiquette.speedGS], self.etiquette.ligneDeux,
@@ -282,9 +280,6 @@ class Avion:
         if event.ui_element == self.bouton:
             if event.mouse_button == 2 and not pilote:  # clic milieu
                 return self.Id, 'Warning'
-
-            elif event.mouse_button == 1:  # clic gauche
-                self.etiquettePos += 1
 
             elif event.mouse_button == 3:
                 if pilote:  # si on est en pilote alors ça supp l'avion
@@ -525,8 +520,8 @@ class Avion:
 
         mouse = pygame.mouse.get_pos()
 
-        self.etiquetteX = mouse[0] - self.dragOffset[0]
-        self.etiquetteY = mouse[1] - self.dragOffset[1]
+        self.etiquetteOffsetX = mouse[0] - self.dragOffset[0] - self.affX
+        self.etiquetteOffsetY = mouse[1] - self.dragOffset[1] - self.affY
 
 
 def bold(bouton) -> None:

@@ -103,7 +103,7 @@ def main(server_ip: str):
                 dictAvionsAff[avionId].update(avion)
             else:  # sinon
                 # on l'ajoute avec methode update de la classe dict
-                dictAvionsAff.update({avionId: Avion(avionId, avion)})
+                dictAvionsAff.update({avionId: Avion(avionId, avion, zoom, scroll)})
 
         if len(dictAvionsAff) > len(packet.dictAvions):  # si on a plus d'avions locaux qu'on en reçoit
             toBeRemovedOther = []
@@ -117,8 +117,6 @@ def main(server_ip: str):
                 dictAvionsAff.pop(avionId)
         game = packet.game
         dictAvions = packet.dictAvions
-
-        triggered = False  # si un bouton est pressé, on s'en sert pour ne pas drag alors qu'on voulait appuyer bouton
 
         for event in pygame.event.get():
 
@@ -147,15 +145,12 @@ def main(server_ip: str):
 
                 for avion in dictAvionsAff.values():
                     if avion.etiquetteExtended:  # si c'est cette etiquette qu'on survole
-                        avion.drag = True
+                        avion.startPressTime = pygame.time.get_ticks()
                         avion.dragOffset = calculateEtiquetteOffset(avion.etiquette.container)
 
             # on vérifie que l'alidade n'est pas actif
             elif event.type == pygame_gui.UI_BUTTON_PRESSED and not curseur_alidad:
                 empecherDragging = False
-
-                # si un bouton est appuyé
-                triggered = True
 
                 # on regarde si notre menu pour le pilote est actif
                 if menuAvion is not None:

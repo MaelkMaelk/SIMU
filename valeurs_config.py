@@ -9,3 +9,5 @@ liste_etat_freq = ['previousFreq', 'previousShoot', 'inFreq', 'nextCoord', 'next
 secteurBoundaries = [245, 365]
 plotSize = 6  # taille des plots avions
 listeEtrangers = ['G2', 'M2']  # liste des secteurs ajdacents non interopérables
+dragDelay = 250  # on utilise cette valeur seuil pour déterminer si on doit cliquer sur un bouton ou drag l'etiquette
+offsettEtiquetteDefault = 30
