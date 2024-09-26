@@ -131,6 +131,7 @@ class Avion:
             self.checkStillHovered()
         self.extendEtiquette()
         self.etiquette.update(self)  # on update via la fonction de l'étiquette
+        width = 1
 
         # Dessin
         if self.visible:
@@ -138,12 +139,14 @@ class Avion:
                 color = (255, 120, 60)
             elif self.locWarning:
                 color = (100, 200, 100)
-            elif self.papa.part:
+            elif self.etiquetteExtended:
                 color = (30, 144, 255)
+                width = 3
             else:
                 color = (255, 255, 255)
 
-            pygame.draw.circle(win, (255, 255, 255), (self.affX + plotSize, self.affY + plotSize), plotSize, 1)
+            pygame.draw.circle(win, color, (self.affX + plotSize, self.affY + plotSize), plotSize, 1)
+            pygame.draw.circle(win, color, (self.affX + plotSize, self.affY + plotSize), plotSize / 1.5, 1)
 
             if vecteurs or self.papa.warning or self.locWarning:  # si on doit dessiner les vecteurs
                 self.drawVector(color, win, vecteurSetting, zoom)  # on appelle la fonction
@@ -153,9 +156,48 @@ class Avion:
                 affPlot = [plot[0] * zoom + scroll[0],
                            plot[1] * zoom + scroll[1]]
                 pygame.draw.circle(win, (255, 255, 255), affPlot, int(round(radius)), 1)
-                radius += 0.7
-            pygame.draw.line(win, (255, 255, 255), (self.affX + plotSize, self.affY + plotSize),
-                             (self.etiquetteX, self.etiquetteY))
+                radius += 0.3
+
+            point = self.findEtiquetteAnchorPoint()
+            if point is not None:
+                pygame.draw.line(win, color, (self.affX + plotSize, self.affY + plotSize),
+                                 (point[0], point[1]), width)
+
+    def findEtiquetteAnchorPoint(self) -> tuple[float, float]:
+        """
+        Trouve le point sur le périmètre de l'étiquette pour la relier avec la tête de chaine'
+        :return: Le point en question s'il est trouvé
+        """
+        rect = self.etiquette.container.get_abs_rect()
+
+        pointHaut = geometry.calculateIntersection((rect[0], rect[1]),
+                                                   (rect[0] + rect[2], rect[1]),
+                                                   (self.etiquette.centre[0], self.etiquette.centre[1]),
+                                                   (self.affX + plotSize, self.affY + plotSize))
+
+        pointGauche = geometry.calculateIntersection((rect[0], rect[1]),
+                                                     (rect[0], rect[1] + rect[3]),
+                                                   (self.etiquette.centre[0], self.etiquette.centre[1]),
+                                                   (self.affX + plotSize, self.affY + plotSize))
+
+        pointDroite = geometry.calculateIntersection((rect[0] + rect[2], rect[1]),
+                                                     (rect[0] + rect[2], rect[1] + rect[3]),
+                                                   (self.etiquette.centre[0], self.etiquette.centre[1]),
+                                                   (self.affX + plotSize, self.affY + plotSize))
+
+        pointBas = geometry.calculateIntersection((rect[0], rect[1] + rect[3]),
+                                                  (rect[0] + rect[2], rect[1] + rect[3]),
+                                                   (self.etiquette.centre[0], self.etiquette.centre[1]),
+                                                   (self.affX + plotSize, self.affY + plotSize))
+
+        if rect[0] <= pointHaut[0] <= rect[0] + rect[2] and self.affY <= self.etiquetteY:
+            return pointHaut
+        elif rect[0] <= pointBas[0] <= rect[0] + rect[2] and self.affY >= self.etiquetteY:
+            return pointBas
+        elif rect[1] <= pointGauche[1] <= rect[1] + rect[3] and self.affX <= self.etiquetteX:
+            return pointGauche
+        elif rect[1] <= pointDroite[1] <= rect[1] + rect[3] and self.affX >= self.etiquetteX:
+            return pointDroite
 
     def drawDirect(self, points, point, win, zoom: float, scroll: list[float, float]):
         """

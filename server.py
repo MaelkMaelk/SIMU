@@ -384,8 +384,6 @@ while Running:
                 dictAvion[req[0]].warning = not dictAvion[req[0]].warning
             elif req[1] == 'Integre':
                 dictAvion[req[0]].integreOrganique = True
-            elif req[1] == 'Part':
-                dictAvion[req[0]].part = not dictAvion[req[0]].part
             elif req[1] == 'Direct':
                 dictAvion[req[0]].headingMode = False
                 for point in dictAvion[req[0]].route['points']:

@@ -54,7 +54,6 @@ class AvionPacket:
 
         # RADAR display
         self.warning = False
-        self.part = False
         self.STCA = False
         self.montrer = False
         # états possibles : previousFreq, previousShoot, inFreq, nextCoord, nextShoot, nextFreq
@@ -248,8 +247,8 @@ class AvionPacket:
         self.headingRad = (self.heading - 90) / 180 * math.pi
 
         # comete
-        if len(self.comete) >= 6:  # si la comète est de taille max, on enlève le premier point, le + vieux
-            self.comete = self.comete[1:6]
+        if len(self.comete) >= 9:  # si la comète est de taille max, on enlève le premier point, le + vieux
+            self.comete = self.comete[1:9]
         self.comete.append((self.x, self.y))
 
         self.updateAlti()  # on change le niveau de l'avion si on est en evolution

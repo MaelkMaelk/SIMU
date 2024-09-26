@@ -497,6 +497,7 @@ class etiquette:
         self.ligneDeux = [self.indicatif, self.type_dest]
         self.ligneTrois = [self.AFL, self.CFL, self.DCT, self.speedIAS, self.rate]
         self.ligneQuatre = [self.XPT, self.XFL, self.PFL, self.nextSector]
+        self.rect = self.container.get_abs_rect()
 
     def update(self, avion):
 
@@ -544,8 +545,7 @@ class etiquette:
         self.container.set_position((avion.etiquetteX, avion.etiquetteY))
         self.container.update_containing_rect_position()
         self.container.recalculate_abs_edges_rect()
-        rect = self.container.get_abs_rect()
-        self.centre = (avion.etiquetteX + rect[2] / 2, avion.etiquetteY + rect[3] / 2)
+        self.centre = (avion.etiquetteX + self.rect[2] / 2, avion.etiquetteY + self.rect[3] / 2)
 
     def boutonAgauche(self):
 
