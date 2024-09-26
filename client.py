@@ -14,8 +14,8 @@ print(address)
 
 # fenêtre Pygame, mettre en 1920, 1080 pour plein écran
 pygame.init()
-width = 1920
-height = 1080
+width = 1000
+height = 1000
 
 win = pygame.display.set_mode((width, height))
 manager = pygame_gui.UIManager((width, height), 'theme.json')

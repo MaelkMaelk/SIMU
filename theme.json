@@ -28,6 +28,29 @@
              "bold_path": "fonts/LTSuperior-Black.otf"
              }
    },
+  "@menu":
+      {
+        "misc": {
+          "border_width": "1",
+          "enable_close_button": "0",
+          "shadow_width": "0"
+        },
+        "font": {
+          "name": "bold",
+          "size": "12",
+          "regular_path": "fonts/LTSuperior-SemiBold.otf",
+          "bold_path": "fonts/LTSuperior-Black.otf"
+        },
+        "colours":
+         {
+           "dark_bg": "#7F94AD",
+           "normal_border": "#3E3E3E",
+           "hovered_border": "#3E3E3E",
+           "disabled_border": "#3E3E3E",
+           "selected_border": "#3E3E3E",
+           "active_border": "#3E3E3E"
+         }
+      },
   "@flightDataWindow":
       {
         "misc": {

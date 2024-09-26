@@ -1,6 +1,7 @@
 import pygame
 import pygame_gui
 import horloge
+from valeurs_config import *
 
 
 def selectButtonInList(liste: list, event):
@@ -601,6 +602,7 @@ class menuATC:
         """
 
         self.avion = avion
+        self.lastHovered = 0  # temps : la dernière fois que le menu était survolé
 
         width = 80
         height = 120
@@ -621,7 +623,8 @@ class menuATC:
 
         self.window = pygame_gui.elements.UIWindow(pygame.Rect((x, y), (width, height)),
                                                    draggable=False,
-                                                   window_display_title=avion.papa.indicatif)
+                                                   window_display_title=avion.papa.indicatif,
+                                                   object_id=pygame_gui.core.ObjectID('@menu', 'blanc'))
 
         # On définit tout d'abord les boutons qui sont tous les temps présents
         self.locWarn = pygame_gui.elements.UIButton(
@@ -693,10 +696,25 @@ class menuATC:
             self.kill()
             return self.avion.Id, 'Halo'
 
+    def checkHovered(self) -> None:
+        """
+        Commence le compteur si n'est plus survolé
+        :return:
+        """
+        rect = self.window.get_abs_rect()
+        mouse = pygame.mouse.get_pos()
+
+        if rect[0] <= mouse[0] <= rect[0] + rect[2] and rect[1] <= mouse[1] <= rect[1] + rect[3]:
+            self.lastHovered = pygame.time.get_ticks()
+
+        elif pygame.time.get_ticks() - self.lastHovered > temps_disparition_menus:
+            self.kill()
+
     def kill(self):
         self.window.kill()
 
     def checkAlive(self):
+        self.checkHovered()
         return self.window.alive()
 
 
@@ -713,6 +731,7 @@ class menuValeurs:
 
         self.avion = avion
         self.valeur = valeur
+        self.lastHovered = 0  # valeur pour fermer le menu après un temps de non survol
 
         width = 60
         height = 240
@@ -739,7 +758,8 @@ class menuValeurs:
             self.listeAff = self.liste[indexDuFL - 4: indexDuFL + 5]
 
         self.window = pygame_gui.elements.UIWindow(pygame.Rect((x, y), (width, height)),
-                                                   window_display_title=valeur)
+                                                   window_display_title=valeur,
+                                                   object_id=pygame_gui.core.ObjectID('@menu', 'blanc'))
 
         self.up = pygame_gui.elements.UIButton(
             pygame.Rect((0, 0), (width, -1)),
@@ -842,11 +862,26 @@ class menuValeurs:
             if event.ui_element in self.listeBoutons:
                 self.avion.pointDessinDirect = None
 
+    def checkMenuHovered(self) -> None:
+        """
+        Commence le compteur si n'est plus survolé
+        :return:
+        """
+        rect = self.window.get_abs_rect()
+        mouse = pygame.mouse.get_pos()
+
+        if rect[0] <= mouse[0] <= rect[0] + rect[2] and rect[1] <= mouse[1] <= rect[1] + rect[3]:
+            self.lastHovered = pygame.time.get_ticks()
+
+        elif pygame.time.get_ticks() - self.lastHovered > temps_disparition_menus:
+            self.kill()
+
     def kill(self):
         self.window.kill()
         self.avion.pointDessinDirect = None
 
     def checkAlive(self):
+        self.checkMenuHovered()
         return self.window.alive()
 
 
