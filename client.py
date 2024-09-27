@@ -238,17 +238,21 @@ def main(server_ip: str):
 
             # zoom géré ici
             elif event.type == pygame.MOUSEWHEEL:
+                cacaAuPipi = True
+                if menuValeurs is not None:
+                    cacaAuPipi = menuValeurs.checkScrolled(event)
 
-                before_x_pos = (width/2 - scroll[0]) / zoom
-                before_y_pos = (height/2 - scroll[1]) / zoom
+                if cacaAuPipi:  # on ne zoom que si on ne se sert pas de la molette dans le menu au-dessus
+                    before_x_pos = (width/2 - scroll[0]) / zoom
+                    before_y_pos = (height/2 - scroll[1]) / zoom
 
-                zoom = zoom+event.y/14
+                    zoom = zoom+event.y/14
 
-                after_x_pos = (width/2 - scroll[0]) / zoom
-                after_y_pos = (height/2 - scroll[1]) / zoom
+                    after_x_pos = (width/2 - scroll[0]) / zoom
+                    after_y_pos = (height/2 - scroll[1]) / zoom
 
-                scroll[0] += (after_x_pos - before_x_pos) * zoom
-                scroll[1] += (after_y_pos - before_y_pos) * zoom
+                    scroll[0] += (after_x_pos - before_x_pos) * zoom
+                    scroll[1] += (after_y_pos - before_y_pos) * zoom
 
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
 

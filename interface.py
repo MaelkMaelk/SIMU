@@ -626,7 +626,7 @@ class menuATC:
         elif avion.papa.etatFrequence == 'previousShoot':
             text = 'ASSUME'
         elif avion.papa.etatFrequence == 'nextCoord':
-            text = '119.8'
+            text = avion.papa.nextFrequency
         elif avion.papa.etatFrequence == 'nextShoot':
             text = 'RECLAIM'
         else:
@@ -636,6 +636,8 @@ class menuATC:
                                                    draggable=False,
                                                    window_display_title=avion.papa.indicatif,
                                                    object_id=pygame_gui.core.ObjectID('@menu', 'blanc'))
+        self.window.set_minimum_dimensions((width, width))
+        self.window.set_dimensions((width, height))
 
         # On définit tout d'abord les boutons qui sont tous les temps présents
         self.locWarn = pygame_gui.elements.UIButton(
@@ -937,15 +939,20 @@ class menuValeurs:
         """
         Vérifie si le menu est en train d'être scrollé
         :return:
-        """ # TODO vérifire la collision menu souris
+        """
 
-        if event.ui_element == self.topContainer:
+        mouse = pygame.mouse.get_pos()
+        rect = self.window.get_abs_rect()
+
+        if not rect[0] <= mouse[0] <= rect[0] + rect[2] and rect[1] <= mouse[1] <= rect[1] + rect[3]:
+            return True
+        if event.y >= 0:  # on regarde dans quel sens on scroll
+
             indexDebut = self.liste.index(self.listeAff[0])  # on regarde où commence la liste dans l'autre
             if indexDebut - 1 >= 0:  # cela vérifie qu'on n'est pas en butée de liste
                 self.listeAff = self.liste[indexDebut - 1: indexDebut - 1 + len(self.listeAff)]
                 self.scrollUpdate()
-
-        elif event.ui_element == self.caca:
+        else:
             indexDebut = self.liste.index(self.listeAff[0])  # on regarde où commence la liste dans l'autre
             if indexDebut + len(self.listeAff) <= len(self.liste) - 1:  # cela vérifie qu'on n'est pas en butée de liste
                 self.listeAff = self.liste[indexDebut + 1: indexDebut + 1 + len(self.listeAff)]

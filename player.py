@@ -561,6 +561,7 @@ class Avion:
 
         if (self.papa.clearedRate != papa.clearedRate or self.papa.clearedIAS != papa.clearedIAS
                 or self.papa.clearedMach != papa.clearedMach):
+            # ici, on étend l'étiquette si certains paramètres qui forcent l'apparition de boutons ont changé
             self.papa = papa
             self.extendEtiquette(True)
 
