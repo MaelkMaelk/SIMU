@@ -63,7 +63,7 @@ class AvionPacket:
         self.modeA = str(random.randint(1000, 9999))
 
         if medevac:
-            self.medevac = 'MEDEVAC'
+            self.medevac = 'MEDEVAC'  # TODO ajouter le noW
         else:
             self.medevac = ''
 
@@ -101,7 +101,8 @@ class AvionPacket:
 
         # On détermine le prochain secteur et le XFL en fonction du PFL, et si c'est une arrivée
         self.nextSector = None
-        self.XPT = route['XPT']
+        self.defaultXPT = route['XPT']  # le XPT par default
+        self.XPT = self.defaultXPT
         self.EPT = route['EPT']
 
         if self.arrival:  # si c'est une arrivée,
@@ -146,6 +147,11 @@ class AvionPacket:
         self.selectedAlti = self.CFL * 100
         self.selectedHeading = self.heading
         self.selectedIAS = self.speedIAS
+        self.mach = self.speedIAS
+        self.clearedIAS = None
+        self.clearedMach = None
+        self.clearedHeading = None
+        self.clearedRate = None
 
     def changeXFL(self) -> None:
         """

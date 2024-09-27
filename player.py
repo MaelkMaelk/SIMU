@@ -118,13 +118,12 @@ class Avion:
         if self.pointDessinDirect:
             self.drawDirect(points, self.pointDessinDirect, win, zoom, scroll)
 
-        if self.startPressTime != 0 and self.startPressTime + dragDelay <= pygame.time.get_ticks():
+        if (self.startPressTime != 0 and self.startPressTime + dragDelay <= pygame.time.get_ticks()
+                and pygame.mouse.get_pressed()[0]):
+            self.etiquetteDrag()
             self.drag = True
         elif not pygame.mouse.get_pressed()[0]:  # si le bouton n'est plus pressé entre temps alors on drag pas
             self.startPressTime = 0
-
-        if self.drag and pygame.mouse.get_pressed()[0]:
-            self.etiquetteDrag()  # on détermine la position de l'étiquette (nord est, SE, NO, SO)
 
         self.positionEtiquette()
         if self.etiquetteExtended:
@@ -177,18 +176,18 @@ class Avion:
 
         pointGauche = geometry.calculateIntersection((rect[0], rect[1]),
                                                      (rect[0], rect[1] + rect[3]),
-                                                   (self.etiquette.centre[0], self.etiquette.centre[1]),
-                                                   (self.affX + plotSize, self.affY + plotSize))
+                                                    (self.etiquette.centre[0], self.etiquette.centre[1]),
+                                                    (self.affX + plotSize, self.affY + plotSize))
 
         pointDroite = geometry.calculateIntersection((rect[0] + rect[2], rect[1]),
                                                      (rect[0] + rect[2], rect[1] + rect[3]),
-                                                   (self.etiquette.centre[0], self.etiquette.centre[1]),
-                                                   (self.affX + plotSize, self.affY + plotSize))
+                                                    (self.etiquette.centre[0], self.etiquette.centre[1]),
+                                                    (self.affX + plotSize, self.affY + plotSize))
 
         pointBas = geometry.calculateIntersection((rect[0], rect[1] + rect[3]),
                                                   (rect[0] + rect[2], rect[1] + rect[3]),
-                                                   (self.etiquette.centre[0], self.etiquette.centre[1]),
-                                                   (self.affX + plotSize, self.affY + plotSize))
+                                                (self.etiquette.centre[0], self.etiquette.centre[1]),
+                                                (self.affX + plotSize, self.affY + plotSize))
 
         if rect[0] <= pointHaut[0] <= rect[0] + rect[2] and self.affY <= self.etiquetteY:
             return pointHaut
@@ -367,11 +366,11 @@ class Avion:
         elif event.ui_element == self.etiquette.CFL and event.mouse_button == 1 and not pilote:
             return 'CFL'
 
-        elif event.ui_element == self.etiquette.speedIAS and event.mouse_button == 1 and not pilote:
-            return 'IAS'
+        elif event.ui_element == self.etiquette.clearedSpeed and event.mouse_button == 1 and not pilote:
+            return 'C_IAS'
 
         elif event.ui_element == self.etiquette.rate and event.mouse_button == 1 and not pilote:
-            return 'Rate'
+            return 'C_Rate'
 
     def checkEtiquetteOnHover(self):
         """
@@ -422,11 +421,15 @@ class Avion:
             if self.etiquette.DCT.get_object_ids()[1][-4:] != 'Blue':
                 self.etiquette.DCT.hide()
 
-            if self.etiquette.speedIAS.get_object_ids()[1][-4:] != 'Blue':
-                self.etiquette.speedIAS.hide()  # TODO faire en sorte qu'ils ne se cache pas en -h ou -r
+            if self.etiquette.clearedSpeed.get_object_ids()[1][-4:] != 'Blue' and not self.papa.clearedIAS and not self.papa.clearedMach:
+                self.etiquette.clearedSpeed.hide()
+            else:
+                self.etiquette.clearedSpeed.show()
 
-            if self.etiquette.rate.get_object_ids()[1][-4:] != 'Blue':
+            if self.etiquette.rate.get_object_ids()[1][-4:] != 'Blue' and not self.papa.clearedRate:
                 self.etiquette.rate.hide()
+            else:
+                self.etiquette.rate.show()
 
             if self.etiquette.nextSector.get_object_ids()[1][-4:] != 'Blue':
                 self.etiquette.nextSector.hide()
@@ -553,8 +556,13 @@ class Avion:
             etatFrequenceInit(self)  # si c'est un état freq précédent alors, on repart depuis le début
 
         # on vérifie que le surlignage des boutons est le même que sur le dernier paquet
-        if not self.papa.boutonsHighlight == papa.boutonsHighlight:
+        if self.papa.boutonsHighlight != papa.boutonsHighlight:
             self.checkHighlight(papa)  # s'il a changé, on met à jour le surlignage des boutons
+
+        if (self.papa.clearedRate != papa.clearedRate or self.papa.clearedIAS != papa.clearedIAS
+                or self.papa.clearedMach != papa.clearedMach):
+            self.papa = papa
+            self.extendEtiquette(True)
 
         self.papa = papa
 

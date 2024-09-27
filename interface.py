@@ -196,7 +196,7 @@ class nouvelAvionWindow:
 
 class menuAvion:
 
-    def __init__(self, avion, gameMap):
+    def __init__(self, avion):
         self.avion = avion
         self.window = self.window = pygame_gui.elements.UIWindow(pygame.Rect((400, 400), (600, 350)))
 
@@ -447,7 +447,7 @@ class etiquette:
             anchors={'top': 'top', 'top_target': self.indicatif},
             container=self.container)
 
-        self.speedIAS = pygame_gui.elements.UIButton(
+        self.clearedSpeed = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
             text="S",
             generate_click_events_from=clicks,
@@ -496,7 +496,7 @@ class etiquette:
             container=self.container)
 
         self.ligneDeux = [self.indicatif, self.type_dest]
-        self.ligneTrois = [self.AFL, self.CFL, self.DCT, self.speedIAS, self.rate]
+        self.ligneTrois = [self.AFL, self.CFL, self.DCT, self.clearedSpeed, self.rate]
         self.ligneQuatre = [self.XPT, self.XFL, self.PFL, self.nextSector]
         self.rect = self.container.get_abs_rect()
 
@@ -539,6 +539,17 @@ class etiquette:
         self.PFL.set_text("p" + str(avion.papa.PFL)[:2])
 
         self.XFL.set_text("x" + str(avion.papa.XFL)[:2])
+        if avion.papa.clearedIAS and self.extended:
+            self.clearedSpeed.set_text("k" + avion.papa.clearedIAS)
+        elif avion.papa.clearedMach and self.extended:
+            self.clearedSpeed.set_text("k" + avion.papa.clearedMach)
+        else:
+            self.clearedSpeed.set_text("S")
+
+        if avion.papa.clearedRate and self.extended:
+            self.rate.set_text("r" + avion.papa.clearedRate)
+        else:
+            self.rate.set_text("R")
 
         self.boutonAgauche()  # TODO utiliser cette fonction que quand c'est nécessaire
 
@@ -748,7 +759,21 @@ class menuValeurs:
 
         elif valeur == 'XPT':  # la diff de liste est qu'on ne prend pas en compte les points de notre secteur ici
             self.liste = [point['name'] for point in self.avion.papa.route['points']]
-            self.listeAff = self.liste[self.liste.index(avion.papa.XPT):]
+            self.listeAff = self.liste[self.liste.index(avion.papa.defaultXPT):]
+
+        elif valeur == 'C_IAS':
+            self.liste = [*range(0, 60)]
+            self.liste.reverse()
+            if avion.papa.clearedIAS:
+                indexDeVitesse = self.liste.index(int(avion.papa.clearedIAS[:2]))
+            else:
+                indexDeVitesse = self.liste.index(round(avion.papa.speedIAS / 10))
+            self.listeAff = self.liste[indexDeVitesse - 4: indexDeVitesse + 5]
+
+        elif valeur == 'C_Rate':
+            self.liste = [*range(500, 6000, 500)]
+            self.liste.reverse()
+            self.listeAff = self.liste[-7:]
 
         elif valeur in ['XFL', 'PFL', 'CFL']:
             self.liste = [*range(0, 600, 10)]
@@ -759,27 +784,80 @@ class menuValeurs:
 
         self.window = pygame_gui.elements.UIWindow(pygame.Rect((x, y), (width, height)),
                                                    window_display_title=valeur,
-                                                   object_id=pygame_gui.core.ObjectID('@menu', 'blanc'))
+                                                   object_id=pygame_gui.core.ObjectID('@menu', 'blanc'),
+                                                   draggable=False)
 
-        self.up = pygame_gui.elements.UIButton(
-            pygame.Rect((0, 0), (width, -1)),
+        self.topContainer = pygame_gui.elements.UIScrollingContainer(
             container=self.window,
-            text="↑"
-        )
+            relative_rect=pygame.Rect((0, 0), (0, 0)),
+            allow_scroll_y=False,
+            allow_scroll_x=False)
+
+        self.noeud = None
+        self.mach = None
+        self.resume = None
+        self.plusBouton = None
+        self.moinsBouton = None
+
+        if valeur == 'C_IAS':
+            self.noeud = pygame_gui.elements.UIButton(
+                        pygame.Rect((0, 0), (width / 2, -1)),
+                        container=self.topContainer,
+                        text="K")
+
+            self.mach = pygame_gui.elements.UIButton(
+                pygame.Rect((0, 0), (width / 2, -1)),
+                container=self.topContainer,
+                text="M",
+                anchors={'left': 'left', 'left_target': self.noeud})
+
+            self.resume = pygame_gui.elements.UIButton(
+                pygame.Rect((0, 0), (width, -1)),
+                container=self.topContainer,
+                text="RESUME",
+                anchors={'top': 'top', 'top_target': self.noeud})
+
+            self.moinsBouton = pygame_gui.elements.UIButton(
+                pygame.Rect((0, 0), (width / 2, -1)),
+                container=self.topContainer,
+                text="-",
+                anchors={'top': 'top', 'top_target': self.resume})
+
+            self.plusBouton = pygame_gui.elements.UIButton(
+                pygame.Rect((0, 0), (width / 2, -1)),
+                container=self.topContainer,
+                text="+",
+                anchors={'top': 'top', 'top_target': self.resume, 'left': 'left', 'left_target': self.moinsBouton})
+
+            self.topContainer.set_dimensions((width, self.noeud.get_abs_rect()[3] * 3))
+
+        elif self.valeur == 'C_Rate':
+
+            self.resume = pygame_gui.elements.UIButton(
+                pygame.Rect((0, 0), (width, -1)),
+                container=self.topContainer,
+                text="RESUME")
+
+            self.moinsBouton = pygame_gui.elements.UIButton(
+                pygame.Rect((0, 0), (width / 2, -1)),
+                container=self.topContainer,
+                text="-",
+                anchors={'top': 'top', 'top_target': self.resume})
+
+            self.plusBouton = pygame_gui.elements.UIButton(
+                pygame.Rect((0, 0), (width / 2, -1)),
+                container=self.topContainer,
+                text="+",
+                anchors={'top': 'top', 'top_target': self.resume, 'left': 'left', 'left_target': self.moinsBouton})
+
+            self.topContainer.set_dimensions((width, self.moinsBouton.get_abs_rect()[3] * 2))
 
         self.listeContainer = pygame_gui.elements.UIScrollingContainer(
             container=self.window,
             relative_rect=pygame.Rect((0, 0), (width, height)),
             allow_scroll_x=False,
             allow_scroll_y=False,
-            anchors={'top': 'top', 'top_target': self.up}
-        )
-
-        self.down = pygame_gui.elements.UIButton(
-            pygame.Rect((0, 0), (width, -1)),
-            container=self.window,
-            text="↓",
-            anchors={'top': 'top', 'top_target': self.listeContainer}
+            anchors={'top': 'top', 'top_target': self.topContainer}
         )
 
         tempo = scrollListGen(
@@ -788,14 +866,21 @@ class menuValeurs:
             self.listeContainer,
             sliderBool=False)
 
-        if valeur in ['XFL', 'PFL', 'CFL']:  # on ramène la fenêtre au bon endroit pour la souris (sur le PFL)
-            y = y - (self.up.get_abs_rect()[3]*4.5 + self.window.title_bar_height)
-            self.window.set_position((x, y))
         self.listeBoutons = tempo[1]
-        self.listeContainer.set_dimensions((width, len(self.listeAff) * self.up.get_abs_rect()[3]))
+
+        if valeur in ['XFL', 'PFL', 'CFL']:  # on ramène la fenêtre au bon endroit pour la souris (sur le PFL)
+            y = y - (self.topContainer.get_abs_rect()[3] + self.listeBoutons[0].get_abs_rect()[3] * 2.5 + self.window.title_bar_height)
+            self.window.set_position((x, y))
+
+        self.listeContainer.set_dimensions((width, len(self.listeAff) * self.listeBoutons[0].get_abs_rect()[3]))
+        self.window.set_minimum_dimensions((width, width))
+        height = (self.listeContainer.get_abs_rect()[3] +
+                  self.topContainer.rect[3] +
+                  self.window.title_bar_height)
+
         self.window.set_dimensions(
             (width,
-             self.listeContainer.get_abs_rect()[3] + 2 * self.up.get_abs_rect()[3] + self.window.title_bar_height * 2.2))
+             height))
 
     def checkEvent(self, event):
         """
@@ -804,22 +889,23 @@ class menuValeurs:
         :return:
         """
 
-        if event.ui_element == self.up:
-            indexDebut = self.liste.index(self.listeAff[0])  # on regarde où commence la liste dans l'autre
-            if indexDebut - 1 >= 0:  # cela vérifie qu'on n'est pas en butée de liste
-                self.listeAff = self.liste[indexDebut - 1: indexDebut - 1 + len(self.listeAff)]
-                self.scrollUpdate()
-
-        elif event.ui_element == self.down:
-            indexDebut = self.liste.index(self.listeAff[0])  # on regarde où commence la liste dans l'autre
-            if indexDebut + len(self.listeAff) <= len(self.liste) - 1:  # cela vérifie qu'on n'est pas en butée de liste
-                self.listeAff = self.liste[indexDebut + 1: indexDebut + 1 + len(self.listeAff)]
-                self.scrollUpdate()
-
-        elif event.ui_element in self.listeBoutons:
+        if event.ui_element in self.listeBoutons:
             self.kill()
 
-            if event.ui_element.text[0] == 'R':  # si on a une value qui correspond au PFL, alors il faut enlever le R
+            if self.valeur == 'C_Rate':
+                event.ui_element.set_text(event.ui_element.text[:2])
+
+            if self.valeur in ['C_IAS', 'C_Rate']:
+                if self.moinsBouton.is_selected:
+                    valeur = event.ui_element.text + '-'
+
+                elif self.plusBouton.is_selected:
+                    valeur = event.ui_element.text + '+'
+
+                else:
+                    valeur = event.ui_element.text
+
+            elif event.ui_element.text[0] == 'R':  # si on a une value qui correspond au PFL, alors il faut enlever le R
 
                 try:  # on essaye de convertir en int
                     valeur = int(event.ui_element.text[1:])
@@ -832,6 +918,38 @@ class menuValeurs:
                     valeur = event.ui_element.text
 
             return self.avion.Id, self.valeur, valeur
+
+        elif event.ui_element == self.plusBouton:
+            if self.plusBouton.is_selected:
+                self.plusBouton.unselect()
+            else:
+                self.plusBouton.select()
+                self.moinsBouton.unselect()
+
+        elif event.ui_element == self.moinsBouton:
+            if self.moinsBouton.is_selected:
+                self.moinsBouton.unselect()
+            else:
+                self.moinsBouton.select()
+                self.plusBouton.unselect()
+
+    def checkScrolled(self, event):
+        """
+        Vérifie si le menu est en train d'être scrollé
+        :return:
+        """ # TODO vérifire la collision menu souris
+
+        if event.ui_element == self.topContainer:
+            indexDebut = self.liste.index(self.listeAff[0])  # on regarde où commence la liste dans l'autre
+            if indexDebut - 1 >= 0:  # cela vérifie qu'on n'est pas en butée de liste
+                self.listeAff = self.liste[indexDebut - 1: indexDebut - 1 + len(self.listeAff)]
+                self.scrollUpdate()
+
+        elif event.ui_element == self.caca:
+            indexDebut = self.liste.index(self.listeAff[0])  # on regarde où commence la liste dans l'autre
+            if indexDebut + len(self.listeAff) <= len(self.liste) - 1:  # cela vérifie qu'on n'est pas en butée de liste
+                self.listeAff = self.liste[indexDebut + 1: indexDebut + 1 + len(self.listeAff)]
+                self.scrollUpdate()
 
     def scrollUpdate(self) -> None:
         """

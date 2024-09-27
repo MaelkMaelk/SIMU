@@ -368,6 +368,16 @@ while Running:
                 dictAvion[req[0]].changeSortieSecteur()
             elif req[1] == 'CFL':
                 dictAvion[req[0]].CFL = req[2]
+            elif req[1] == 'C_IAS':
+                if len(req) == 3:
+                    dictAvion[req[0]].clearedIAS = req[2]
+                else:
+                    dictAvion[req[0]].clearedIAS = None
+            elif req[1] == 'C_Rate':
+                if len(req) == 3:
+                    dictAvion[req[0]].clearedRate = req[2]
+                else:
+                    dictAvion[req[0]].clearedRate = None
             elif req[1] == 'XFL':
                 dictAvion[req[0]].XFL = req[2]
                 dictAvion[req[0]].changeSortieSecteur()

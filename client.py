@@ -192,7 +192,7 @@ def main(server_ip: str):
                             localRequests.append(action)
 
                         elif action == 'menuPIL' and menuAvion is None:  # si c'est menu alors, on vérifie qu'on peut menu
-                            menuAvion = interface.menuAvion(avion, carte)
+                            menuAvion = interface.menuAvion(avion)
 
                         elif action == 'menuATC' and menuATC is None:
                             menuATC = interface.menuATC(avion, pygame.mouse.get_pos())
