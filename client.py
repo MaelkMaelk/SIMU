@@ -1,3 +1,5 @@
+import pygame
+import horloge
 from network import Network
 import server_browser
 from player import *
@@ -24,7 +26,7 @@ clock = pygame.time.Clock()
 font = pygame.font.SysFont('arial', 18)
 
 
-def main(server_ip : str):
+def main(server_ip: str):
     global temps
     global height
     global width
@@ -34,6 +36,8 @@ def main(server_ip : str):
     # menus
     menuAvion = None
     menuATC = None
+    menuValeurs = None
+    flightDataWindow = None
 
     # on se connecte au serveur
     n = Network(server_ip)
@@ -41,7 +45,7 @@ def main(server_ip : str):
 
     i = 0
     packetId = 0
-    while packet == None and i < 200:
+    while packet is None and i < 200:
         n = Network(server_ip)
         packet = n.getP()
         i +=1
@@ -66,7 +70,9 @@ def main(server_ip : str):
     zoom = zoomDef
     scroll = scrollDef
     drag = [0, 0]
-    dragging = False
+    dragging_delay = 350  # il y a un délai avant de pouvoir drag (pour pouvoir ouvrir les menus notamment)
+    mouseDownTime = 0
+    empecherDragging = False
 
     # vecteurs et type
     vecteurs = False
@@ -97,7 +103,7 @@ def main(server_ip : str):
                 dictAvionsAff[avionId].update(avion)
             else:  # sinon
                 # on l'ajoute avec methode update de la classe dict
-                dictAvionsAff.update({avionId: Avion(avionId, avion)})
+                dictAvionsAff.update({avionId: Avion(avionId, avion, zoom, scroll)})
 
         if len(dictAvionsAff) > len(packet.dictAvions):  # si on a plus d'avions locaux qu'on en reçoit
             toBeRemovedOther = []
@@ -112,8 +118,6 @@ def main(server_ip : str):
         game = packet.game
         dictAvions = packet.dictAvions
 
-        triggered = False  # si un bouton est pressé, on s'en sert pour ne pas drag alors qu'on voulait appuyer bouton
-
         for event in pygame.event.get():
 
             if event.type == pygame.QUIT:
@@ -121,15 +125,32 @@ def main(server_ip : str):
                 pygame.quit()
 
             if event.type == pygame_gui.UI_BUTTON_ON_HOVERED:
+
+                if menuValeurs:  # on regarde ici pour dessiner les directs
+                    menuValeurs.checkHovered(event)
+
                 for avion in dictAvionsAff.values():
                     if avion.checkEtiquetteOnHover():  # renvoies True quand le bouton correspond à cette etiquette
+                        if flightDataWindow:  # si la FDW est déployée
+                            flightDataWindow.linkAvion(avion, carte['points'], game.heure)  # on associe l'avion à la FDW
+
                         break  # dès qu'on a trouvé le responsable, on casse
+
+            elif event.type == pygame_gui.UI_BUTTON_ON_UNHOVERED:
+                if menuValeurs:
+                    menuValeurs.checkUnHovered(event)
+
+            elif event.type == pygame_gui.UI_BUTTON_START_PRESS:
+                empecherDragging = True
+
+                for avion in dictAvionsAff.values():
+                    if avion.etiquetteExtended:  # si c'est cette etiquette qu'on survole
+                        avion.startPressTime = pygame.time.get_ticks()
+                        avion.dragOffset = calculateEtiquetteOffset(avion.etiquette.container)
 
             # on vérifie que l'alidade n'est pas actif
             elif event.type == pygame_gui.UI_BUTTON_PRESSED and not curseur_alidad:
-
-                # si un bouton est appuyé
-                triggered = True
+                empecherDragging = False
 
                 # on regarde si notre menu pour le pilote est actif
                 if menuAvion is not None:
@@ -154,6 +175,16 @@ def main(server_ip : str):
                         if type(action) in [list, tuple]:  # si c'est un tuple alors cela correspond à une requête
                             localRequests.append(action)
 
+                if menuValeurs is not None:
+
+                    # si on valide les modifs, alors la fonction checkEvent retourne les modifs
+                    action = menuValeurs.checkEvent(event)
+                    if action:
+                        if type(action) in [list, tuple]:  # si c'est un tuple alors cela correspond à une requête
+                            localRequests.append(action)
+                        elif action in ['HDG', 'DCT']:
+                            menuValeurs = interface.menuValeurs(menuValeurs.avion, pygame.mouse.get_pos(), action)
+
                 else:
                     for avion in dictAvionsAff.values():  # pour chaque avion
 
@@ -163,10 +194,14 @@ def main(server_ip : str):
                             localRequests.append(action)
 
                         elif action == 'menuPIL' and menuAvion is None:  # si c'est menu alors, on vérifie qu'on peut menu
-                            menuAvion = interface.menuAvion(avion, carte)
+                            menuAvion = interface.menuAvion(avion)
 
                         elif action == 'menuATC' and menuATC is None:
                             menuATC = interface.menuATC(avion, pygame.mouse.get_pos())
+
+                        elif menuValeurs is None and action is not None:
+                            # si on a renvoyé autre chose alors c'est une valeur pour ouvrir un menu
+                            menuValeurs = interface.menuValeurs(avion, pygame.mouse.get_pos(), action)
 
                     # Menu de selection nouvel avion
                     # si notre menu est ouvert
@@ -196,36 +231,38 @@ def main(server_ip : str):
                                 PFL=PFL)
 
                             localRequests.append((len(dictAvions), "Add", newPlane))
+
             elif event.type == pygame_gui.UI_TEXT_ENTRY_CHANGED:
                 nouvelAvionWin.checkFields(event)
 
-            # dragging
             if menuAvion or nouvelAvionWin:
                 pass
 
             # zoom géré ici
             elif event.type == pygame.MOUSEWHEEL:
+                cacaAuPipi = True
+                if menuValeurs is not None:
+                    cacaAuPipi = menuValeurs.checkScrolled(event)
 
-                before_x_pos = (width/2 - scroll[0]) / zoom
-                before_y_pos = (height/2 - scroll[1]) / zoom
+                if cacaAuPipi:  # on ne zoom que si on ne se sert pas de la molette dans le menu au-dessus
+                    before_x_pos = (width/2 - scroll[0]) / zoom
+                    before_y_pos = (height/2 - scroll[1]) / zoom
 
-                zoom = zoom+event.y/14
+                    zoom = zoom+event.y/14
 
-                after_x_pos = (width/2 - scroll[0]) / zoom
-                after_y_pos = (height/2 - scroll[1]) / zoom
+                    after_x_pos = (width/2 - scroll[0]) / zoom
+                    after_y_pos = (height/2 - scroll[1]) / zoom
 
-                scroll[0] += (after_x_pos - before_x_pos) * zoom
-                scroll[1] += (after_y_pos - before_y_pos) * zoom
+                    scroll[0] += (after_x_pos - before_x_pos) * zoom
+                    scroll[1] += (after_y_pos - before_y_pos) * zoom
 
-            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and drag == [0, 0] and not curseur_alidad:
-                drag = [pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1]]
-                dragging = True
-            elif event.type == pygame.MOUSEBUTTONUP and event.button == 1 and not curseur_alidad:
-                dragging = False
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
 
-            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and curseur_alidad:
-                alidad = True
-                alidadPos = pygame.mouse.get_pos()
+                mouseDownTime = pygame.time.get_ticks()  # on se sert de ce timing pour les menus et le dragging
+                if curseur_alidad:
+                    alidad = True
+                    alidadPos = pygame.mouse.get_pos()
+
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 3 and curseur_alidad:
                 alidad = False
                 curseur_alidad = False
@@ -236,18 +273,23 @@ def main(server_ip : str):
         if menuAvion is not None:
             menuAvion.checkSliders()
 
-        if triggered:
-            dragging = False
-            drag = [0, 0]
+        """Dragging"""
 
-        keys = pygame.key.get_pressed()
+        if (pygame.mouse.get_pressed()[0] and not empecherDragging and
+                dragging_delay + mouseDownTime <= pygame.time.get_ticks()):
+            pygame.mouse.set_cursor(pygame.cursors.ball)
 
-        if dragging:
             scroll[0] += pygame.mouse.get_pos()[0] - drag[0]
             scroll[1] += pygame.mouse.get_pos()[1] - drag[1]
             drag = [pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1]]
         else:
-            drag = [0, 0]
+            drag = [pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1]]
+            if not curseur_alidad:
+                pygame.mouse.set_cursor(pygame.cursors.arrow)
+
+        """Keys"""
+
+        keys = pygame.key.get_pressed()
 
         if not pressing and nouvelAvionWin is None:
 
@@ -263,6 +305,10 @@ def main(server_ip : str):
             if keys[pygame.K_a]:  # alidad start
                 curseur_alidad = True
                 pygame.mouse.set_cursor(pygame.cursors.broken_x)
+                pressing = True
+                delaiPressage = pygame.time.get_ticks()
+            if keys[pygame.K_f] and flightDataWindow is None:  # Flight Data Window
+                flightDataWindow = interface.flightDataWindow()
                 pressing = True
                 delaiPressage = pygame.time.get_ticks()
 
@@ -321,6 +367,14 @@ def main(server_ip : str):
             if not menuATC.checkAlive():
                 menuATC = None
 
+        if menuValeurs is not None:
+            if not menuValeurs.checkAlive():
+                menuValeurs = None
+
+        if flightDataWindow is not None:
+            if not flightDataWindow.checkAlive():
+                flightDataWindow = None
+
         if nouvelAvionWin is not None:
             if not nouvelAvionWin.checkAlive():
                 nouvelAvionWin = None
@@ -328,7 +382,7 @@ def main(server_ip : str):
         '''partie affichage'''
 
         # on remplit d'abord avec une couleur
-        win.fill((100, 100, 100))
+        win.fill((90, 90, 90))
 
         # on dessine les secteurs
         for secteur in carte['secteurs']:
@@ -341,7 +395,7 @@ def main(server_ip : str):
         # on dessine les routes
         for segment in carte['segments']['TRANSIT']:
             pygame.draw.line(win, (150, 150, 150), (segment[0][0]*zoom + scroll[0], segment[0][1]*zoom + scroll[1]),
-                             (segment[1][0]*zoom + scroll[0], segment[1][1]*zoom + scroll[1]), 2)
+                             (segment[1][0]*zoom + scroll[0], segment[1][1]*zoom + scroll[1]), 1)
 
         # on dessine les points
         for nom, point in carte['points'].items():
@@ -366,14 +420,9 @@ def main(server_ip : str):
             win.blit(img, (20, 50))
 
         # dessin Heure
-        heures = str(round(game.heure//3600 % 24))
-        if len(heures) == 1:
-            heures = '0' + heures
-        minutes = str(round(game.heure % 3600//60))
-        if len(minutes) == 1:
-            minutes = '0' + minutes
+        heureDisplay = horloge.affichageHeure(game.heure)
 
-        img = font.render(heures + ':' + minutes, True, (255, 105, 180))
+        img = font.render(heureDisplay, True, (255, 105, 180))
         win.blit(img, (20, 20))
 
         # dessin alidad

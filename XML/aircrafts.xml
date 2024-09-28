@@ -57,7 +57,7 @@
         <ROD>3000</ROD>
     </aircraft>
     <aircraft name="FA50">
-        <speed>330</speed>
+        <speed>400</speed>
         <ceiling>550</ceiling>
         <ROC>2000</ROC>
         <ROD>2500</ROD>

@@ -124,6 +124,10 @@
             <x>2057</x>
             <y>1425</y>
         </point>
+        <point name="FELIX">
+            <x>1617</x>
+            <y>1323</y>
+        </point>
         <point name="JAMBI">
             <x>1840</x>
             <y>1467</y>
@@ -157,16 +161,6 @@
             <y>1339</y>
         </point>
     </points>
-
-    <zones>
-        <zone name="NO_RADAR_LFVC">
-            <type>NO_RADAR</type>
-            <point>EG</point>
-            <radius>20</radius>
-            <plancher>0</plancher>
-            <plafond>5500</plafond>
-        </zone>
-    </zones>
 
     <secteurs>
         <secteur color="75,75,75">
@@ -232,12 +226,14 @@
     <routes>
         <route>
             <Type>DEPART</Type>
+            <destination>SO</destination>
             <point>
                 <name>LSGG</name>
                 <FL>120</FL>
             </point>
             <point>
                 <name>LIMAN</name>
+                <EPT>True</EPT>
             </point>
             <point>
                 <EFL>240</EFL>
@@ -248,6 +244,7 @@
             </point>
             <point>
                 <name>LANZA</name>
+                <XPT>True</XPT>
             </point>
             <point>
                 <name>MEN</name>
@@ -264,6 +261,8 @@
 
         <route>
             <Type>TRANSIT</Type>
+            <destination>SO</destination>
+            <provenance>NE</provenance>
             <point>
                 <name>MELKA</name>
             </point>
@@ -272,6 +271,7 @@
             </point>
             <point>
                 <name>LIMAN</name>
+                <EPT>True</EPT>
             </point>
             <point>
                 <name>LSE</name>
@@ -281,6 +281,7 @@
             </point>
             <point>
                 <name>LANZA</name>
+                <XPT>True</XPT>
             </point>
             <point>
                 <name>MEN</name>
@@ -297,6 +298,8 @@
 
         <route>
             <Type>TRANSIT</Type>
+            <destination>SE</destination>
+            <provenance>N</provenance>
             <point>
                 <name>BURGO</name>
             </point>
@@ -305,6 +308,7 @@
             </point>
             <point>
                 <name>LSE</name>
+                <EPT>True</EPT>
             </point>
             <point>
                 <name>LTP</name>
@@ -314,6 +318,7 @@
             </point>
             <point>
                 <name>SANTO</name>
+                <XPT>True</XPT>
             </point>
             <point>
                 <name>SAMOS</name>
@@ -323,6 +328,8 @@
 
         <route>
             <Type>TRANSIT</Type>
+            <destination>SE</destination>
+            <provenance>N</provenance>
             <point>
                 <name>BURGO</name>
             </point>
@@ -331,6 +338,7 @@
             </point>
             <point>
                 <name>LSE</name>
+                <EPT>True</EPT>
             </point>
             <point>
                 <name>LTP</name>
@@ -340,6 +348,7 @@
             </point>
             <point>
                 <name>SANTO</name>
+                <XPT>True</XPT>
             </point>
             <point>
                 <name>JAMBI</name>
@@ -349,11 +358,14 @@
 
         <route>
             <Type>TRANSIT</Type>
+            <provenance>E</provenance>
+            <destination>SO</destination>
             <point>
                 <name>JUVEN</name>
             </point>
             <point>
                 <name>BOSUA</name>
+                <EPT>True</EPT>
             </point>
             <point>
                 <name>GRENA</name>
@@ -363,6 +375,7 @@
             </point>
             <point>
                 <name>SPIDY</name>
+                <XPT>True</XPT>
             </point>
             <point>
                 <name>ETORI</name>
@@ -378,13 +391,15 @@
         </route>
 
         <route>
-            <Type>DEP</Type>
+            <Type>DEPART</Type>
+            <destination>SO</destination>
             <point>
                 <name>LIML</name>
                 <FL>20</FL>
             </point>
             <point>
                 <name>BOSUA</name>
+                <EPT>True</EPT>
                 <EFL>250</EFL>
             </point>
             <point>
@@ -395,6 +410,7 @@
             </point>
             <point>
                 <name>SPIDY</name>
+                <XPT>True</XPT>
             </point>
             <point>
                 <name>ETORI</name>
@@ -411,6 +427,8 @@
 
         <route>
             <Type>TRANSIT</Type>
+            <provenance>SO</provenance>
+            <destination>SE</destination>
             <point>
                 <name>GAI</name>
             </point>
@@ -422,6 +440,7 @@
             </point>
             <point>
                 <name>SPIDY</name>
+                <EPT>True</EPT>
             </point>
             <point>
                 <name>MTL</name>
@@ -431,6 +450,7 @@
             </point>
             <point>
                 <name>BOSUA</name>
+                <XPT>True</XPT>
             </point>
             <point>
                 <name>JUVEN</name>
@@ -441,6 +461,8 @@
 
         <route>
             <Type>TRANSIT</Type>
+            <provenance>SO</provenance>
+            <destination>NE</destination>
             <point>
                 <name>GAI</name>
             </point>
@@ -452,6 +474,7 @@
             </point>
             <point>
                 <name>SPIDY</name>
+                <EPT>True</EPT>
             </point>
             <point>
                 <name>MTL</name>
@@ -461,6 +484,7 @@
             </point>
             <point>
                 <name>MOZAO</name>
+                <XPT>True</XPT>
             </point>
             <point>
                 <name>SEVET</name>
@@ -471,6 +495,8 @@
 
         <route>
             <Type>TRANSIT</Type>
+            <provenance>S</provenance>
+            <destination>NE</destination>
             <point>
                 <name>ABISA</name>
             </point>
@@ -479,12 +505,14 @@
             </point>
             <point>
                 <name>MTL</name>
+                <EPT>True</EPT>
             </point>
             <point>
                 <name>LTP</name>
             </point>
             <point>
                 <name>MOZAO</name>
+                <XPT>True</XPT>
             </point>
             <point>
                 <name>SEVET</name>
@@ -495,6 +523,8 @@
 
         <route>
             <Type>TRANSIT</Type>
+            <provenance>S</provenance>
+            <destination>NO</destination>
             <point>
                 <name>ABISA</name>
             </point>
@@ -503,12 +533,14 @@
             </point>
             <point>
                 <name>MTL</name>
+                <EPT>True</EPT>
             </point>
             <point>
                 <name>MINDI</name>
             </point>
             <point>
                 <name>FREDI</name>
+                <XPT>True</XPT>
             </point>
             <point>
                 <name>CFA</name>
@@ -525,6 +557,8 @@
 
         <route>
             <Type>TRANSIT</Type>
+            <provenance>S</provenance>
+            <destination>NO</destination>
             <point>
                 <name>ABISA</name>
             </point>
@@ -533,12 +567,14 @@
             </point>
             <point>
                 <name>MTL</name>
+                <EPT>True</EPT>
             </point>
             <point>
                 <name>MINDI</name>
             </point>
             <point>
                 <name>FREDI</name>
+                <XPT>True</XPT>
             </point>
             <point>
                 <name>CFA</name>
@@ -552,8 +588,14 @@
 
         <route>
             <Type>TRANSIT</Type>
+            <provenance>SE</provenance>
+            <destination>NO</destination>
             <point>
                 <name>JAMBI</name>
+            </point>
+            <point>
+                <name>FELIX</name>
+                <EPT>True</EPT>
             </point>
             <point>
                 <name>MTL</name>
@@ -563,6 +605,7 @@
             </point>
             <point>
                 <name>FREDI</name>
+                <XPT>True</XPT>
             </point>
             <point>
                 <name>CFA</name>
@@ -576,8 +619,14 @@
 
         <route>
             <Type>TRANSIT</Type>
+            <provenance>SE</provenance>
+            <destination>NO</destination>
             <point>
                 <name>JAMBI</name>
+            </point>
+            <point>
+                <name>FELIX</name>
+                <EPT>True</EPT>
             </point>
             <point>
                 <name>MTL</name>
@@ -587,6 +636,7 @@
             </point>
             <point>
                 <name>FREDI</name>
+                <XPT>True</XPT>
             </point>
             <point>
                 <name>CFA</name>
@@ -602,7 +652,8 @@
         </route>
 
         <route name="Depart MTL">
-            <Type>DEP</Type>
+            <Type>DEPART</Type>
+            <destination>S</destination>
             <point>
                 <name>BST</name>
                 <FL>20</FL>
@@ -622,6 +673,7 @@
             </point>
             <point>
                 <name>MAJOR</name>
+                <XPT>True</XPT>
             </point>
             <point>
                 <name>ABISA</name>
@@ -630,7 +682,8 @@
         </route>
 
         <route name="Depart RETNO">
-            <Type>DEP</Type>
+            <Type>DEPART</Type>
+            <destination>SE</destination>
             <point>
                 <name>BST</name>
                 <FL>20</FL>
@@ -650,6 +703,7 @@
             </point>
             <point>
                 <name>SANTO</name>
+                <XPT>True</XPT>
             </point>
             <point>
                 <name>JAMBI</name>
@@ -658,7 +712,8 @@
         </route>
 
         <route name="Depart MEN">
-            <Type>DEP</Type>
+            <Type>DEPART</Type>
+            <destination>SO</destination>
             <point>
                 <name>BST</name>
                 <FL>20</FL>
@@ -668,6 +723,10 @@
             </point>
             <point>
                 <name>MINDI</name>
+            </point>
+            <point>
+                <name>LANZA</name>
+                <XPT>True</XPT>
             </point>
             <point>
                 <name>MEN</name>
@@ -683,5 +742,39 @@
             <sortie min="285" max="365">OS</sortie>
         </route>
     </routes>
+
+    <Aeroports>
+        <NE>
+            <AD>LOWI</AD>
+        </NE>
+
+        <N>
+            <AD>EGBB</AD>
+            <AD>EIDW</AD>
+        </N>
+
+        <NO>
+            <AD>EGBB</AD>
+        </NO>
+
+        <S>
+            <AD>DAAG</AD>
+        </S>
+
+        <SO>
+            <AD>LPPT</AD>
+        </SO>
+
+        <SE>
+            <AD>LGAT</AD>
+            <AD>LGAV</AD>
+            <AD>LGIR</AD>
+        </SE>
+
+        <E>
+            <AD>LIML</AD>
+        </E>
+
+    </Aeroports>
 
 </map>

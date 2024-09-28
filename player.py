@@ -1,4 +1,3 @@
-from typing import Iterable
 import pygame
 import math
 import pygame_gui
@@ -7,7 +6,7 @@ import geometry
 import interface
 
 
-def positionAffichage(x: int, y: int, zoom: float, scrollX: int, scrollY: int):  # TODO rassembler x, y en (x,y) pareil pour le scroll
+def positionAffichage(x: int, y: int, zoom: float, scrollX: float, scrollY: float):
     """
     :param x: position en x
     :param y: position en y
@@ -41,7 +40,7 @@ class Avion:
     global timeConstant
     global plotSize
 
-    def __init__(self, Id: int, papa):
+    def __init__(self, Id: int, papa, zoom: float, scroll: list[float, float]):
         self.Id = Id
         self.papa = papa
         clicks = frozenset([pygame.BUTTON_LEFT, pygame.BUTTON_RIGHT, pygame.BUTTON_MIDDLE])
@@ -57,16 +56,21 @@ class Avion:
         self.drawRouteBool = False
         self.locWarning = False
         self.etiquetteExtended = False
-        self.unHoverTime = pygame.time.get_ticks()
+        self.lastHoveredTime = 0
+        self.pointDessinDirect = None
+        self.drag = False  # if true l'etiquette se fait drag
+        self.dragOffset = (0, 0)  # le décalage de l'etiquette par rapport au curseur
+        self.startPressTime = 0
+
+        # zoom et scroll
+        self.affX = self.papa.x * zoom - plotSize + scroll[0]
+        self.affY = self.papa.y * zoom - plotSize + scroll[1]
 
         # etiquette
-        self.etiquetteX = papa.x + 60
-        self.etiquetteY = papa.y - 60
-        self.etiquettePos = 0
-
-        # Zoom & scroll
-        self.affX = 0
-        self.affY = 0
+        self.etiquetteX = self.affX + offsettEtiquetteDefault
+        self.etiquetteY = self.affY + offsettEtiquetteDefault
+        self.etiquetteOffsetX = offsettEtiquetteDefault
+        self.etiquetteOffsetY = offsettEtiquetteDefault
 
         # init de l'étiquette
         self.etiquette = interface.etiquette(self)
@@ -76,22 +80,11 @@ class Avion:
         # interaction avec les events
         self.returnValues = {}
 
-    def positionEtiquette(self):
-        """On place l'étiquette dans une des positions possibles (nord est, NO, SE, SO)"""
+    def positionEtiquette(self) -> None:
+        """Met à jour la position de l'étiquette"""
 
-        value = 45  # distance de l'etiquette par rapport au plot
-        if self.etiquettePos % 4 == 0:
-            self.etiquetteX = self.affX + plotSize + value
-            self.etiquetteY = self.affY + plotSize - value
-        elif self.etiquettePos % 4 == 1:
-            self.etiquetteX = self.affX + plotSize + value
-            self.etiquetteY = self.affY + plotSize + value
-        elif self.etiquettePos % 4 == 2:
-            self.etiquetteX = self.affX + plotSize - value
-            self.etiquetteY = self.affY + plotSize + value
-        else:
-            self.etiquetteX = self.affX + plotSize - value
-            self.etiquetteY = self.affY + plotSize - value
+        self.etiquetteX = self.affX + self.etiquetteOffsetX
+        self.etiquetteY = self.affY + self.etiquetteOffsetY
 
     def drawVector(self, color, window, vecteurSetting, zoom):
         """
@@ -122,12 +115,22 @@ class Avion:
         if self.drawRouteBool:
             self.drawRoute(points, win, zoom, scroll)
 
-        self.positionEtiquette()  # on détermine la position de l'étiquette (nord est, SE, NO, SO)
-        self.checkEtiquetteOnUnhover()
+        if self.pointDessinDirect:
+            self.drawDirect(points, self.pointDessinDirect, win, zoom, scroll)
+
+        if (self.startPressTime != 0 and self.startPressTime + dragDelay <= pygame.time.get_ticks()
+                and pygame.mouse.get_pressed()[0]):
+            self.etiquetteDrag()
+            self.drag = True
+        elif not pygame.mouse.get_pressed()[0]:  # si le bouton n'est plus pressé entre temps alors on drag pas
+            self.startPressTime = 0
+
+        self.positionEtiquette()
+        if self.etiquetteExtended:
+            self.checkStillHovered()
         self.extendEtiquette()
         self.etiquette.update(self)  # on update via la fonction de l'étiquette
-
-
+        width = 1
 
         # Dessin
         if self.visible:
@@ -135,12 +138,14 @@ class Avion:
                 color = (255, 120, 60)
             elif self.locWarning:
                 color = (100, 200, 100)
-            elif self.papa.part:
+            elif self.etiquetteExtended:
                 color = (30, 144, 255)
+                width = 3
             else:
                 color = (255, 255, 255)
 
-            pygame.draw.circle(win, (255, 255, 255), (self.affX + plotSize, self.affY + plotSize), plotSize, 1)
+            pygame.draw.circle(win, color, (self.affX + plotSize, self.affY + plotSize), plotSize, 1)
+            pygame.draw.circle(win, color, (self.affX + plotSize, self.affY + plotSize), plotSize / 1.5, 1)
 
             if vecteurs or self.papa.warning or self.locWarning:  # si on doit dessiner les vecteurs
                 self.drawVector(color, win, vecteurSetting, zoom)  # on appelle la fonction
@@ -150,9 +155,62 @@ class Avion:
                 affPlot = [plot[0] * zoom + scroll[0],
                            plot[1] * zoom + scroll[1]]
                 pygame.draw.circle(win, (255, 255, 255), affPlot, int(round(radius)), 1)
-                radius += 0.7
-            pygame.draw.line(win, (255, 255, 255), (self.affX + plotSize, self.affY + plotSize),
-                             (self.etiquetteX, self.etiquetteY))
+                radius += 0.3
+
+            point = self.findEtiquetteAnchorPoint()
+            if point is not None:
+                pygame.draw.line(win, color, (self.affX + plotSize, self.affY + plotSize),
+                                 (point[0], point[1]), width)
+
+    def findEtiquetteAnchorPoint(self) -> tuple[float, float]:
+        """
+        Trouve le point sur le périmètre de l'étiquette pour la relier avec la tête de chaine'
+        :return: Le point en question s'il est trouvé
+        """
+        rect = self.etiquette.container.get_abs_rect()
+
+        pointHaut = geometry.calculateIntersection((rect[0], rect[1]),
+                                                   (rect[0] + rect[2], rect[1]),
+                                                   (self.etiquette.centre[0], self.etiquette.centre[1]),
+                                                   (self.affX + plotSize, self.affY + plotSize))
+
+        pointGauche = geometry.calculateIntersection((rect[0], rect[1]),
+                                                     (rect[0], rect[1] + rect[3]),
+                                                    (self.etiquette.centre[0], self.etiquette.centre[1]),
+                                                    (self.affX + plotSize, self.affY + plotSize))
+
+        pointDroite = geometry.calculateIntersection((rect[0] + rect[2], rect[1]),
+                                                     (rect[0] + rect[2], rect[1] + rect[3]),
+                                                    (self.etiquette.centre[0], self.etiquette.centre[1]),
+                                                    (self.affX + plotSize, self.affY + plotSize))
+
+        pointBas = geometry.calculateIntersection((rect[0], rect[1] + rect[3]),
+                                                  (rect[0] + rect[2], rect[1] + rect[3]),
+                                                (self.etiquette.centre[0], self.etiquette.centre[1]),
+                                                (self.affX + plotSize, self.affY + plotSize))
+
+        if rect[0] <= pointHaut[0] <= rect[0] + rect[2] and self.affY <= self.etiquetteY:
+            return pointHaut
+        elif rect[0] <= pointBas[0] <= rect[0] + rect[2] and self.affY >= self.etiquetteY:
+            return pointBas
+        elif rect[1] <= pointGauche[1] <= rect[1] + rect[3] and self.affX <= self.etiquetteX:
+            return pointGauche
+        elif rect[1] <= pointDroite[1] <= rect[1] + rect[3] and self.affX >= self.etiquetteX:
+            return pointDroite
+
+    def drawDirect(self, points, point, win, zoom: float, scroll: list[float, float]):
+        """
+
+        :param points: liste des points de la carte pour récup les coors
+        :param point: le point avec lequel on veut une directe
+        :param win: fenêtre pygame
+        :param zoom: zoom
+        :param scroll: scroll (x, y)
+        :return:
+        """
+
+        coord = [points[point][0] * zoom + scroll[0], points[point][1] * zoom + scroll[1]]
+        pygame.draw.line(win, (0, 206, 209), (self.affX + plotSize, self.affY + plotSize), coord)
 
     def drawEstimatedRoute(self, points, temps, win, zoom, scroll):
         """
@@ -213,10 +271,10 @@ class Avion:
         :param scroll: le scroll format [x, y]
         :return:
         """
+        # TODO route qui se dessine correctement même quand on est en direct
 
         route = self.papa.route['points']  # on n'a besoin que des noms des points
         nextPoint = self.papa.nextPoint
-        ratio = 0
 
         point1 = points[route[route.index(nextPoint) - 1]['name']][:2]
         point2 = points[nextPoint['name']][:2]
@@ -244,12 +302,18 @@ class Avion:
 
         # on vérifie que le bouton est bien associé à l'etiquette
         if event.ui_element.ui_container == self.etiquette.container:
-            if event.mouse_button == 2 and not pilote:  # si c'est un clic milieu, alors on highlight ou non le bouton
-                # on trouve l'index du bouton
+            self.startPressTime = 0
+            if self.drag:
+                self.drag = False
+                return None  # comme on était en train de drag, on ne fait aucune action liée au bouton
+            if event.mouse_button == 2 and not pilote and event.ui_element is not self.etiquette.DCT:
+                # si c'est un clic milieu, alors on surligne ou non le bouton
+
                 liste = [[self.etiquette.speedGS], self.etiquette.ligneDeux,
                               self.etiquette.ligneTrois, self.etiquette.ligneQuatre]
                 indexLigne = 0
                 index = 0
+                # on trouve l'index du bouton
                 for indexLigne in range(4):
                     ligne = liste[indexLigne]
                     if event.ui_element in ligne:
@@ -261,33 +325,58 @@ class Avion:
             if event.mouse_button == 2 and not pilote:  # clic milieu
                 return self.Id, 'Warning'
 
-            elif event.mouse_button == 1:  # clic gauche
-                self.etiquettePos += 1
-
             elif event.mouse_button == 3:
                 if pilote:  # si on est en pilote alors ça supp l'avion
                     return self.Id, 'Remove'
                 self.locWarning = not self.locWarning  # toggle les warnings locs
 
         elif event.ui_element == self.etiquette.indicatif:
+
+            if event.mouse_button == 3 and pilote:
+                return self.Id, 'EtatFreq', None
+
             if event.mouse_button == 1 and pilote:
                 return 'menuPIL'
 
             elif event.mouse_button == 1:
                 return 'menuATC'
 
-                # return self.Id, 'EtatFreq', None
+            elif event.mouse_button == 3 and self.papa.integreOrganique and (
+                    self.etiquette.indicatif.get_object_ids()[1] in ['@etiquetteBold', '@etiquetteBoldBlue']
+                    or pilote):  # clic droit
 
-            elif event.mouse_button == 3 and (self.papa.integreOrganique or pilote):  # clic droit
                 self.unBold()
 
         elif event.ui_element == self.etiquette.speedGS and not self.papa.integreOrganique and not pilote:
             self.unBold()
             return self.Id, 'Integre'
 
-        elif event.ui_element == self.etiquette.XPT:
-            if event.mouse_button == 1 and not pilote:
-                self.drawRouteBool = not self.drawRouteBool
+        elif event.ui_element == self.etiquette.XPT and event.mouse_button == 3 and not pilote:
+            self.drawRouteBool = not self.drawRouteBool
+
+        elif event.ui_element == self.etiquette.XPT and event.mouse_button == 1 and not pilote:
+            return 'XPT'
+
+        elif event.ui_element == self.etiquette.DCT and event.mouse_button == 1 and not pilote:
+            return 'DCT'
+
+        elif event.ui_element == self.etiquette.DCT and event.mouse_button == 2 and not pilote:
+            return 'HDG'
+
+        elif event.ui_element == self.etiquette.XFL and event.mouse_button == 1 and not pilote:
+            return 'XFL'
+
+        elif event.ui_element == self.etiquette.PFL and event.mouse_button == 1 and not pilote:
+            return 'PFL'
+
+        elif event.ui_element == self.etiquette.CFL and event.mouse_button == 1 and not pilote:
+            return 'CFL'
+
+        elif event.ui_element == self.etiquette.clearedSpeed and event.mouse_button == 1 and not pilote:
+            return 'C_IAS'
+
+        elif event.ui_element == self.etiquette.rate and event.mouse_button == 1 and not pilote:
+            return 'C_Rate'
 
     def checkEtiquetteOnHover(self):
         """
@@ -300,20 +389,23 @@ class Avion:
             return True
         return False
 
-    def checkEtiquetteOnUnhover(self):
+    def checkStillHovered(self):
 
         """
         Vérifie si on doit ou non désétendre l'étiquette
         """
 
-        if self.etiquette.container.are_contents_hovered():
-            self.unHoverTime = pygame.time.get_ticks()
-        elif pygame.time.get_ticks() - self.unHoverTime > 400:
+        mouse = pygame.mouse.get_pos()
+        rect = self.etiquette.container.get_abs_rect()
+
+        if not (rect[0] <= mouse[0] <= rect[0] + rect[2] and rect[1] <= mouse[1] <= rect[1] + rect[3]):
             self.etiquetteExtended = False
 
     def extendEtiquette(self, force=False):
         """
         Étend ou range l'étiquette
+        :param force: si on veut forcer le rangement de l'etiquette. Utile quand on doit cacher certains boutons
+         après un changement (de surlignage par exemple)
         """
 
         if self.etiquetteExtended and not self.etiquette.extended:  # si on doit etendre et elle n'est pas étendue
@@ -330,19 +422,25 @@ class Avion:
             if self.etiquette.type_dest.get_object_ids()[1][-4:] != 'Blue':
                 self.etiquette.type_dest.hide()
 
-            if self.etiquette.DCT.get_object_ids()[1][-4:] != 'Blue':
+            if self.etiquette.DCT.get_object_ids()[1][-4:] != 'Blue' and not self.papa.clearedHeading:
                 self.etiquette.DCT.hide()
+            else:
+                self.etiquette.DCT.show()
 
-            if self.etiquette.speedIAS.get_object_ids()[1][-4:] != 'Blue':
-                self.etiquette.speedIAS.hide()  # TODO faire en sorte qu'ils ne se cache pas en -h ou -r
+            if self.etiquette.clearedSpeed.get_object_ids()[1][-4:] != 'Blue' and not self.papa.clearedIAS and not self.papa.clearedMach:
+                self.etiquette.clearedSpeed.hide()
+            else:
+                self.etiquette.clearedSpeed.show()
 
-            if self.etiquette.rate.get_object_ids()[1][-4:] != 'Blue':
+            if self.etiquette.rate.get_object_ids()[1][-4:] != 'Blue' and not self.papa.clearedRate:
                 self.etiquette.rate.hide()
+            else:
+                self.etiquette.rate.show()
 
             if self.etiquette.nextSector.get_object_ids()[1][-4:] != 'Blue':
                 self.etiquette.nextSector.hide()
 
-            if self.papa.XFL == round(self.papa.altitude / 100) and self.etiquette.XFL.get_object_ids()[1][-4:] != 'Blue':
+            if self.papa.XFL == self.papa.CFL and self.etiquette.XFL.get_object_ids()[1][-4:] != 'Blue':
                 self.etiquette.XFL.hide()
 
             if self.papa.CFL == round(self.papa.altitude / 100) and self.etiquette.CFL.get_object_ids()[1][-4:] != 'Blue':
@@ -458,14 +556,29 @@ class Avion:
         # on vérifie que l'état freq est bien celui d'après
         if liste_etat_freq.index(self.papa.etatFrequence) < liste_etat_freq.index(papa.etatFrequence):
             self.updateEtatFrequence(papa.etatFrequence)
+
         elif liste_etat_freq.index(self.papa.etatFrequence) > liste_etat_freq.index(papa.etatFrequence):
+            self.papa.etatFrequence = papa.etatFrequence
             etatFrequenceInit(self)  # si c'est un état freq précédent alors, on repart depuis le début
 
         # on vérifie que le surlignage des boutons est le même que sur le dernier paquet
-        if not self.papa.boutonsHighlight == papa.boutonsHighlight:
+        if self.papa.boutonsHighlight != papa.boutonsHighlight:
             self.checkHighlight(papa)  # s'il a changé, on met à jour le surlignage des boutons
 
+        if (self.papa.clearedRate != papa.clearedRate or self.papa.clearedIAS != papa.clearedIAS
+                or self.papa.clearedMach != papa.clearedMach or self.papa.clearedHeading != papa.clearedHeading):
+            # ici, on étend l'étiquette si certains paramètres qui forcent l'apparition de boutons ont changé
+            self.papa = papa
+            self.extendEtiquette(True)
+
         self.papa = papa
+
+    def etiquetteDrag(self) -> None:
+
+        mouse = pygame.mouse.get_pos()
+
+        self.etiquetteOffsetX = mouse[0] - self.dragOffset[0] - self.affX
+        self.etiquetteOffsetY = mouse[1] - self.dragOffset[1] - self.affY
 
 
 def bold(bouton) -> None:
@@ -480,3 +593,16 @@ def bold(bouton) -> None:
         nouvelObjID = '@etiquetteBold'
     bouton.change_object_id(pygame_gui.core.ObjectID(nouvelObjID, couleur))
 
+
+def calculateEtiquetteOffset(container) -> tuple[float, float]:
+    """
+    Calcule l'offset d'un container par rapport à la position de la souris
+    :param container: Le conatiner de l'etiquette avec lequel on veut l'offset
+    :return:
+    """
+
+    posEtiquette = container.get_abs_rect()
+    mouse = pygame.mouse.get_pos()
+    dragOffset = (mouse[0] - posEtiquette[0], mouse[1] - posEtiquette[1])
+
+    return dragOffset

@@ -1,5 +1,6 @@
 from geometry import *
 from valeurs_config import *
+import random
 
 
 class Game:
@@ -21,7 +22,8 @@ class Packet:
 
 class AvionPacket:
 
-    def __init__(self, gameMap, Id, indicatif, aircraft, perfos, route, arrival, FL=None, x=None, y=None, heading=None, PFL=None):
+    def __init__(self, gameMap, Id, indicatif, aircraft, perfos, route, arrival, FL=None, x=None, y=None, heading=None,
+                 PFL=None, medevac=False):
 
         self.Id = Id
         self.indicatif = indicatif
@@ -52,13 +54,23 @@ class AvionPacket:
 
         # RADAR display
         self.warning = False
-        self.part = False
         self.STCA = False
         self.montrer = False
         # états possibles : previousFreq, previousShoot, inFreq, nextCoord, nextShoot, nextFreq
         self.etatFrequence = "previousFreq"
         self.integreOrganique = False  # si on doit ou non afficher la case d'intégration organique
         self.boutonsHighlight = []
+        self.modeA = str(random.randint(1000, 9999))
+
+        if medevac:
+            self.medevac = 'MEDEVAC'  # TODO ajouter le noW
+        else:
+            self.medevac = ''
+
+        self.callsignFreq = 'Austrian'  # TODO ajouter les callsigns
+
+        self.provenance = random.choice(gameMap['aeroports'][route['provenance']])
+        self.destination = random.choice(gameMap['aeroports'][route['destination']])
 
         # perfo
         self.turnRate = turnRateDefault
@@ -85,10 +97,15 @@ class AvionPacket:
         else:
             self.PFL = 300
 
+        self.DCT = self.nextPoint['name']
+
         # On détermine le prochain secteur et le XFL en fonction du PFL, et si c'est une arrivée
         self.nextSector = None
+        self.defaultXPT = route['XPT']  # le XPT par default
+        self.XPT = self.defaultXPT
+        self.EPT = route['EPT']
 
-        if self.arrival: # si c'est une arrivée,
+        if self.arrival:  # si c'est une arrivée,
             self.XFL = route['arrival']['XFL']
             self.nextSector = route['arrival']['secteur']
 
@@ -105,8 +122,10 @@ class AvionPacket:
                 if sortie['min'] < self.PFL < sortie['max']:
                     self.nextSector = sortie['name']
 
-        if not self.nextSector:  # si on a pas réussi à mettre un secteur suivant, on met un défaut pour pas crash
-            self.nextSector = secteudDefaut
+        if not self.nextSector:  # si on n'a pas réussi à mettre un secteur suivant, on met un défaut pour pas crash
+            self.nextSector = secteurDefault
+
+        self.nextFrequency = '127.675'  # TODO faire les fréquences automatiques
 
         self.CFL = None
 
@@ -128,15 +147,32 @@ class AvionPacket:
         self.selectedAlti = self.CFL * 100
         self.selectedHeading = self.heading
         self.selectedIAS = self.speedIAS
+        self.mach = self.speedIAS
+        self.clearedIAS = None
+        self.clearedMach = None
+        self.clearedHeading = None
+        self.clearedRate = None
 
-    def changeSortie(self):
-
+    def changeXFL(self) -> None:
+        """
+        Change le XFL en fonction du PFL. À utliser quand le PFL change
+        :return:
+        """
+        print(self.PFL)
         if self.PFL > 365 and not self.arrival:
             self.nextSector = "RU"
             self.XFL = 360
+        elif not self.arrival:
+            self.XFL = self.PFL
+
+    def changeSortieSecteur(self) -> None:
+        """
+        Change le secteur de sortie. À utiliser quand le XFL change
+        :return:
+        """
 
         for sortie in self.route['sortie']:
-            if sortie['min'] < self.PFL < sortie['max']:
+            if sortie['min'] < self.XFL < sortie['max']:
                 self.nextSector = sortie['name']
                 break
 
@@ -194,7 +230,12 @@ class AvionPacket:
                     return True  # le return True permet au serveur de supprimer l'avion
                 else:
                     # on passe au point suivant dans la liste
+                    ancien = self.nextPoint  # pour la comparaison après
                     self.nextPoint = self.route['points'][self.route['points'].index(self.nextPoint) + 1]
+                    if ancien['name'] == self.DCT:  # si le point clairé est celui qu'on passe
+                        self.DCT = self.nextPoint['name']  # alors on passe au point suivant aussi
+
+
 
             self.selectedHeading = calculateHeading(self.x, self.y, gameMap['points'][self.nextPoint['name']][0],
                                                     gameMap['points'][self.nextPoint['name']][1])
@@ -212,8 +253,8 @@ class AvionPacket:
         self.headingRad = (self.heading - 90) / 180 * math.pi
 
         # comete
-        if len(self.comete) >= 6:  # si la comète est de taille max, on enlève le premier point, le + vieux
-            self.comete = self.comete[1:6]
+        if len(self.comete) >= 9:  # si la comète est de taille max, on enlève le premier point, le + vieux
+            self.comete = self.comete[1:9]
         self.comete.append((self.x, self.y))
 
         self.updateAlti()  # on change le niveau de l'avion si on est en evolution
@@ -229,3 +270,34 @@ class AvionPacket:
         self.x += self.speedPx * math.cos(self.headingRad)
         self.y += self.speedPx * math.sin(self.headingRad)
 
+    def calculeEstimate(self, points: dict, pointVoulu: str) -> None:
+        """
+        Calcule le temps à un point sur notre route. Pour avoir l'estimée, il faudra rajouter l'heure courante
+        :param points: dict des points de la carte
+        :param pointVoulu: le nom du point pour lequel on veut l'estimée
+        :return:
+        """
+        distance = 0
+        x1 = self.x
+        y1 = self.y
+
+        for point in self.route['points']:
+            if point['name'] == self.DCT:
+                break
+
+        debut = self.route['points'].index(point)
+
+        for point in self.route['points'][debut:]:  # on compte à partir du prochain point connu par le système
+
+            x2 = points[point['name']][0]
+            y2 = points[point['name']][1]
+
+            distance += calculateDistance(x1, y1, x2, y2)
+
+            if point['name'] == pointVoulu:
+                break
+
+            x1 = x2
+            y1 = y2
+
+        return distance / (self.speedPx / heureEnRefresh) * 3600

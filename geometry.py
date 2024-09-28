@@ -24,7 +24,8 @@ def calculateDistance(x1: int, y1: int, x2: int, y2: int):
     return math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
 
 
-def calculateShortestPoint(pointDroite1: list[int], pointDroite2: list[int], point: list[int]):
+def calculateShortestPoint(pointDroite1: list[float, float], pointDroite2: list[float, float],
+                           point: list[float, float]):
     """
     Calcule le point sur une droite où la distance ets la plus courte à un point
     :param pointDroite1: 1er point pour définir la droite, vecteur2 (x, y)
@@ -50,6 +51,55 @@ def calculateShortestPoint(pointDroite1: list[int], pointDroite2: list[int], poi
 
     # solve for x and y
     return np.linalg.inv(left_side).dot(right_side)
+
+
+def calculateIntersection(point1Droite, point2Droite, point1Droite2, point2Droite2) -> tuple[float, float]:
+
+    """
+    Calcule l'intersection entre deux droites
+    :param point1Droite:  1er point pour définir la droite, vecteur2 (x, y)
+    :param point2Droite: 2em point pour définir la droite, vecteur2 (x, y)
+    :param point1Droite2: 1er point pour définir la droite 2, vecteur2 (x, y)
+    :param point2Droite2: 2em point pour définir la droite 2, vecteur2 (x, y)
+    :return: Le point d'intersection des deux droites (x, y)
+    """
+    point = (0, 0)
+    coeffdroite1 = 0
+    coeffdroite2 = 0
+    ordonnee1 = 0
+    ordonnee2 = 0
+
+    if not point1Droite[0] == point2Droite[0]:  # si la droite est pile verticale, alors les calculs ne fonctionnent pas
+        # on calcule le coeff directeur de la droite
+        coeffdroite1 = (point1Droite[1] - point2Droite[1]) / (point1Droite[0] - point2Droite[0])
+        # on calcule l'ordonnée à l'origine
+        ordonnee1 = point1Droite[1] - coeffdroite1 * point1Droite[0]
+    else:  #
+        point = (point1Droite[0], 0)
+
+    if not point1Droite2[0] == point2Droite2[0]:
+        # on calcule le coeff directeur de la droite
+        coeffdroite2 = (point1Droite2[1] - point2Droite2[1]) / (point1Droite2[0] - point2Droite2[0])
+        # on calcule l'ordonnée à l'origine
+        ordonnee2 = point1Droite2[1] - coeffdroite2 * point1Droite2[0]
+    elif point != (0, 0):  # ici les deux droites sont verticales
+        print("Pas d'intersection entre ces deux droites, elles sont verticales toute les deux")
+    else:
+        point = (point1Droite2[0], 0)
+
+    if point == (0, 0):  # si aucune droite n'est verticale, on résout le système
+
+        left_side = np.array([[-coeffdroite1, 1], [-coeffdroite2, 1]])
+        right_side = np.array([ordonnee1, ordonnee2])
+        point = np.linalg.inv(left_side).dot(right_side)
+
+    elif point == (point1Droite[0], 0):  # si la 1ere droite est verticale :
+        point = (point1Droite[0], point1Droite[0] * coeffdroite2 + ordonnee2)
+
+    else:  # si la 2eme droite est verticale
+        point = (point1Droite2[0], point1Droite2[0] * coeffdroite1 + ordonnee1)
+
+    return point
 
 
 def calculateAngle(principal, secondaire):

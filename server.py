@@ -84,6 +84,21 @@ for secteur in root.find('secteurs'):
 
     gameMap['secteurs'].append({'couleur': [int(x) for x in secteur.attrib['color'].split(',')], 'contour': contour})
 
+listeAeroports = {}
+
+for direction in root.find('Aeroports'):
+    liste_de_cette_direction = []
+
+    for aeroport in direction:
+        liste_de_cette_direction.append(aeroport.text)
+
+    if not liste_de_cette_direction:
+        print("[Problème] Il n'y a pas d'aéroports pour la direction", direction.tag)
+
+    listeAeroports.update({direction.tag: liste_de_cette_direction})
+
+gameMap.update({'aeroports': listeAeroports})
+
 # parsing des routes pour conaître tous les types de routes, pour l'affichage des segments
 
 for route in root.find('routes'):
@@ -101,6 +116,8 @@ for route in root.find('routes'):  # construction des routes
     listeSortie = []
     listeRoutePoints = []
     arrival = False
+    XPT = route.findall('point')[-1].find('name').text  # on met le dernier point par défaut s'il n'est pas précisé
+    EPT = route.findall('point')[1].find('name').text  # on met le 1er point par défaut s'il n'est pas précisé
 
     x1 = gameMap['points'][route.find('point').find('name').text][0]
     y1 = gameMap['points'][route.find('point').find('name').text][1]
@@ -108,12 +125,27 @@ for route in root.find('routes'):  # construction des routes
     for point in route.findall('point'):
         pointDict = {}
         pointDict.update({'name': point.find('name').text})
+
         for XMLpoint in point:
             try:
                 XMLpointValue = int(XMLpoint.text)
             except:
                 XMLpointValue = XMLpoint.text
+
+                if XMLpoint.tag == 'XPT':
+                    XMLpointValue = bool(XMLpoint.text)
+
+                    if XMLpointValue:
+                        XPT = point.find('name').text
+
+                if XMLpoint.tag == 'EPT':
+                    XMLpointValue = bool(XMLpoint.text)
+
+                    if XMLpointValue:
+                        EPT = point.find('name').text
+
             pointDict.update({XMLpoint.tag: XMLpointValue})
+
         listeRoutePoints.append(pointDict)
 
         y2 = gameMap['points'][point.find('name').text][1]
@@ -122,6 +154,21 @@ for route in root.find('routes'):  # construction des routes
             gameMap['segments'][routeType].append(((x1, y1), (x2, y2)))
         x1 = x2
         y1 = y2
+    provenance = 'N'
+    destination = 'S'
+
+    if route.find('provenance') is not None:
+        provenance = route.find('provenance').text
+    else:
+        print('[Problème] pas de direction de provenance pour la route', nomRoute)
+        provenance = 'N'
+
+    if route.find('destination') is not None:
+        destination = route.find('destination').text
+    else:
+        print('[Problème] pas de direction de destination pour la route', nomRoute)
+        destination = 'S'
+
     if route.find('arrival') is not None:
         arrival = {'XFL': int(route.find('arrival').text), 'secteur': route.find('arrival').attrib['secteur']}
     for sortie in route.findall('sortie'):
@@ -130,7 +177,11 @@ for route in root.find('routes'):  # construction des routes
                                          'type': routeType,
                                          'points': listeRoutePoints,
                                          'sortie': listeSortie,
-                                         'arrival': arrival}})
+                                         'arrival': arrival,
+                                         'XPT': XPT,
+                                         'EPT': EPT,
+                                         'provenance': provenance,
+                                         'destination': destination}})
 
 gameMap.update({'mapScale': mapScale})
 
@@ -311,17 +362,41 @@ while Running:
                 dictAvion.pop(req[0])
             elif req[1] == 'Altitude':
                 dictAvion[req[0]].selectedAlti = req[2]
+            elif req[1] == 'PFL':
+                dictAvion[req[0]].PFL = req[2]
+                dictAvion[req[0]].changeXFL()
+                dictAvion[req[0]].changeSortieSecteur()
+            elif req[1] == 'CFL':
+                dictAvion[req[0]].CFL = req[2]
+            elif req[1] == 'C_IAS':
+                if len(req) == 3:
+                    dictAvion[req[0]].clearedIAS = req[2]
+                else:
+                    dictAvion[req[0]].clearedIAS = None
+            elif req[1] == 'C_Rate':
+                if len(req) == 3:
+                    dictAvion[req[0]].clearedRate = req[2]
+                else:
+                    dictAvion[req[0]].clearedRate = None
+            elif req[1] == 'XFL':
+                dictAvion[req[0]].XFL = req[2]
+                dictAvion[req[0]].changeSortieSecteur()
+            elif req[1] == 'XPT':
+                dictAvion[req[0]].XPT = req[2]
+            elif req[1] == 'HDG':
+                dictAvion[req[0]].clearedHeading = req[2]
             elif req[1] == 'Heading':
                 dictAvion[req[0]].headingMode = True
                 dictAvion[req[0]].selectedHeading = req[2]
             elif req[1] == 'IAS':
                 dictAvion[req[0]].selectedIAS = req[2]
+            elif req[1] == 'DCT':
+                dictAvion[req[0]].clearedHeading = None
+                dictAvion[req[0]].DCT = req[2]
             elif req[1] == 'Warning':
                 dictAvion[req[0]].warning = not dictAvion[req[0]].warning
             elif req[1] == 'Integre':
                 dictAvion[req[0]].integreOrganique = True
-            elif req[1] == 'Part':
-                dictAvion[req[0]].part = not dictAvion[req[0]].part
             elif req[1] == 'Direct':
                 dictAvion[req[0]].headingMode = False
                 for point in dictAvion[req[0]].route['points']:
@@ -336,10 +411,6 @@ while Running:
                     dictAvion[req[0]].boutonsHighlight.remove(req[2])
                 else:
                     dictAvion[req[0]].boutonsHighlight.append(req[2])
-            elif req[1] == 'PFL':
-                dictAvion[req[0]].PFL = req[2]
-            elif req[1] == 'Mouvement':
-                dictAvion[req[0]].Cmouvement()  # TODO faire un truc pour le mvt
             elif req[1] == 'Montrer':
                 dictAvion[req[0]].montrer = not dictAvion[req[0]].montrer
             elif req[1] == 'EtatFreq':
