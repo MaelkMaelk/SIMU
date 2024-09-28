@@ -522,10 +522,10 @@ class etiquette:
 
         self.speedGS.set_text(tickBox + str(avion.papa.speedGS)[:2] + evo)
 
-        if not avion.papa.headingMode:
+        if not avion.papa.clearedHeading:
             self.DCT.set_text(avion.papa.DCT)
         elif self.extended:
-            self.DCT.set_text("h" + str(avion.papa.selectedHeading))
+            self.DCT.set_text("h" + str(avion.papa.clearedHeading))
         else:
             self.DCT.set_text("h")
 
@@ -746,7 +746,7 @@ class menuValeurs:
         self.valeur = valeur
         self.lastHovered = 0  # valeur pour fermer le menu après un temps de non survol
 
-        width = 60
+        width = 70
         height = 240
 
         x = pos[0] - width / 2
@@ -755,7 +755,11 @@ class menuValeurs:
         self.liste = []
         self.listeAff = []
 
-        if valeur == 'DCT':
+        self.containerHdgGauche = None
+        self.containerHdgDroite = None
+        self.headingDCT = None
+
+        if valeur == 'DCT':  # TODO boutons directs en blanc
             self.liste = [point['name'] for point in self.avion.papa.route['points']]
             self.listeAff = self.liste[self.liste.index(avion.papa.nextPoint['name']):]
 
@@ -783,6 +787,16 @@ class menuValeurs:
             indexDuFL = self.liste.index(avion.papa.PFL)
             self.liste[indexDuFL] = "R" + str(avion.papa.PFL)
             self.listeAff = self.liste[indexDuFL - 4: indexDuFL + 5]
+
+        elif valeur == 'HDG':
+            if avion.papa.clearedHeading not in [None, ' ']:
+                cap = avion.papa.clearedHeading
+            else:
+                cap = round(avion.papa.heading // 5) * 5
+
+            self.liste = [*range(5, 365, 5)]
+            indexDuCap = self.liste.index(cap)
+            self.listeAff = self.liste[indexDuCap - 3: indexDuCap + 4]
 
         self.window = pygame_gui.elements.UIWindow(pygame.Rect((x, y), (width, height)),
                                                    window_display_title=valeur,
@@ -854,27 +868,115 @@ class menuValeurs:
 
             self.topContainer.set_dimensions((width, self.moinsBouton.get_abs_rect()[3] * 2))
 
-        self.listeContainer = pygame_gui.elements.UIScrollingContainer(
-            container=self.window,
-            relative_rect=pygame.Rect((0, 0), (width, height)),
-            allow_scroll_x=False,
-            allow_scroll_y=False,
-            anchors={'top': 'top', 'top_target': self.topContainer}
-        )
+        elif self.valeur == 'DCT':
 
-        tempo = scrollListGen(
-            self.listeAff,
-            pygame.Rect((0, 0), (width, -1)),
-            self.listeContainer,
-            sliderBool=False)
+            self.resume = pygame_gui.elements.UIButton(
+                pygame.Rect((0, 0), (width, -1)),
+                container=self.topContainer,
+                text="CONTINUE")
 
-        self.listeBoutons = tempo[1]
+            self.headingDCT = pygame_gui.elements.UIButton(
+                pygame.Rect((0, 0), (width, -1)),
+                container=self.topContainer,
+                text="HDG",
+                anchors={'top': 'top', 'top_target': self.resume})
+
+            self.topContainer.set_dimensions((width, self.headingDCT.get_abs_rect()[3] * 2))
+
+        if self.valeur == 'HDG':  # TODO boutons cap abs en blanc
+
+            listeDroite = []
+            listeGauche = []
+
+            for i in range(5, 35, 5):
+                listeDroite.append("+" + str(i))
+                listeGauche.append("-" + str(i))
+
+            listeDroite.append("+40")
+            listeGauche.append("-40")
+
+            self.resume = pygame_gui.elements.UIButton(
+                pygame.Rect((0, 0), (width, -1)),
+                container=self.topContainer,
+                text="CONTINUE")
+
+            self.headingDCT = pygame_gui.elements.UIButton(
+                pygame.Rect((0, 0), (width, -1)),
+                container=self.topContainer,
+                text="DCT",
+                anchors={'top': 'top', 'top_target': self.resume})
+
+            self.topContainer.set_dimensions((width, self.headingDCT.get_abs_rect()[3] * 2))
+
+            self.containerHdgGauche = pygame_gui.elements.UIScrollingContainer(
+                container=self.window,
+                relative_rect=pygame.Rect((0, 0), (width / 3, height)),
+                allow_scroll_x=False,
+                allow_scroll_y=False,
+                anchors={'top': 'top', 'top_target': self.topContainer}
+            )
+
+            scrollListGen(
+                listeGauche,
+                pygame.Rect((0, 0), (width / 3, -1)),
+                self.containerHdgGauche,
+                sliderBool=False)
+
+            self.listeContainer = pygame_gui.elements.UIScrollingContainer(
+                container=self.window,
+                relative_rect=pygame.Rect((0, 0), (width / 3, height)),
+                allow_scroll_x=False,
+                allow_scroll_y=False,
+                anchors={'top': 'top', 'top_target': self.topContainer,
+                         'left': 'left', 'left_target': self.containerHdgGauche}
+            )
+
+            tempo = scrollListGen(
+                self.listeAff,
+                pygame.Rect((0, 0), (width / 3, -1)),
+                self.listeContainer,
+                sliderBool=False)
+
+            self.listeBoutons = tempo[1]
+
+            self.containerHdgDroite = pygame_gui.elements.UIScrollingContainer(
+                container=self.window,
+                relative_rect=pygame.Rect((0, 0), (width / 3, height)),
+                allow_scroll_x=False,
+                allow_scroll_y=False,
+                anchors={'top': 'top', 'top_target': self.topContainer,
+                         'left': 'left', 'left_target': self.listeContainer}
+            )
+
+            scrollListGen(
+                listeDroite,
+                pygame.Rect((0, 0), (width / 3, -1)),
+                self.containerHdgDroite,
+                sliderBool=False)
+        else:
+            self.listeContainer = pygame_gui.elements.UIScrollingContainer(
+                container=self.window,
+                relative_rect=pygame.Rect((0, 0), (width, height)),
+                allow_scroll_x=False,
+                allow_scroll_y=False,
+                anchors={'top': 'top', 'top_target': self.topContainer}
+            )
+
+            tempo = scrollListGen(
+                self.listeAff,
+                pygame.Rect((0, 0), (width, -1)),
+                self.listeContainer,
+                sliderBool=False)
+
+            self.listeBoutons = tempo[1]
 
         if valeur in ['XFL', 'PFL', 'CFL']:  # on ramène la fenêtre au bon endroit pour la souris (sur le PFL)
             y = y - (self.topContainer.get_abs_rect()[3] + self.listeBoutons[0].get_abs_rect()[3] * 2.5 + self.window.title_bar_height)
             self.window.set_position((x, y))
 
-        self.listeContainer.set_dimensions((width, len(self.listeAff) * self.listeBoutons[0].get_abs_rect()[3]))
+        widthListeContainer = self.listeContainer.get_abs_rect()[2]
+
+        self.listeContainer.set_dimensions((widthListeContainer, len(self.listeAff) * self.listeBoutons[0].get_abs_rect()[3]))
         self.window.set_minimum_dimensions((width, width))
         height = (self.listeContainer.get_abs_rect()[3] +
                   self.topContainer.rect[3] +
@@ -934,6 +1036,21 @@ class menuValeurs:
             else:
                 self.moinsBouton.select()
                 self.plusBouton.unselect()
+
+        elif event.ui_element == self.resume:
+            self.kill()
+            if self.valeur in ['DCT', 'HDG']:  # si c'est un cap, alors on veut continuer au cap
+                return self.avion.Id, 'HDG', ' '
+
+            else:  # si c'est une rate ou IAS : on enlève
+                return self.avion.Id, self.valeur, None
+
+        elif event.ui_element == self.headingDCT:
+            self.kill()
+            if self.valeur == 'HDG':
+                return 'DCT'
+            else:
+                return 'HDG'
 
     def checkScrolled(self, event):
         """

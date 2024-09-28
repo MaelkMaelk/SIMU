@@ -383,12 +383,15 @@ while Running:
                 dictAvion[req[0]].changeSortieSecteur()
             elif req[1] == 'XPT':
                 dictAvion[req[0]].XPT = req[2]
+            elif req[1] == 'HDG':
+                dictAvion[req[0]].clearedHeading = req[2]
             elif req[1] == 'Heading':
                 dictAvion[req[0]].headingMode = True
                 dictAvion[req[0]].selectedHeading = req[2]
             elif req[1] == 'IAS':
                 dictAvion[req[0]].selectedIAS = req[2]
             elif req[1] == 'DCT':
+                dictAvion[req[0]].clearedHeading = None
                 dictAvion[req[0]].DCT = req[2]
             elif req[1] == 'Warning':
                 dictAvion[req[0]].warning = not dictAvion[req[0]].warning

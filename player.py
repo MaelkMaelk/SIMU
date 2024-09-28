@@ -271,6 +271,7 @@ class Avion:
         :param scroll: le scroll format [x, y]
         :return:
         """
+        # TODO route qui se dessine correctement même quand on est en direct
 
         route = self.papa.route['points']  # on n'a besoin que des noms des points
         nextPoint = self.papa.nextPoint
@@ -305,12 +306,14 @@ class Avion:
             if self.drag:
                 self.drag = False
                 return None  # comme on était en train de drag, on ne fait aucune action liée au bouton
-            if event.mouse_button == 2 and not pilote:  # si c'est un clic milieu, alors on surligne ou non le bouton
-                # on trouve l'index du bouton
+            if event.mouse_button == 2 and not pilote and event.ui_element is not self.etiquette.DCT:
+                # si c'est un clic milieu, alors on surligne ou non le bouton
+
                 liste = [[self.etiquette.speedGS], self.etiquette.ligneDeux,
                               self.etiquette.ligneTrois, self.etiquette.ligneQuatre]
                 indexLigne = 0
                 index = 0
+                # on trouve l'index du bouton
                 for indexLigne in range(4):
                     ligne = liste[indexLigne]
                     if event.ui_element in ligne:
@@ -356,6 +359,9 @@ class Avion:
 
         elif event.ui_element == self.etiquette.DCT and event.mouse_button == 1 and not pilote:
             return 'DCT'
+
+        elif event.ui_element == self.etiquette.DCT and event.mouse_button == 2 and not pilote:
+            return 'HDG'
 
         elif event.ui_element == self.etiquette.XFL and event.mouse_button == 1 and not pilote:
             return 'XFL'
@@ -418,7 +424,7 @@ class Avion:
             if self.etiquette.type_dest.get_object_ids()[1][-4:] != 'Blue':
                 self.etiquette.type_dest.hide()
 
-            if self.etiquette.DCT.get_object_ids()[1][-4:] != 'Blue':
+            if self.etiquette.DCT.get_object_ids()[1][-4:] != 'Blue' and not self.papa.clearedHeading:
                 self.etiquette.DCT.hide()
 
             if self.etiquette.clearedSpeed.get_object_ids()[1][-4:] != 'Blue' and not self.papa.clearedIAS and not self.papa.clearedMach:
@@ -560,7 +566,7 @@ class Avion:
             self.checkHighlight(papa)  # s'il a changé, on met à jour le surlignage des boutons
 
         if (self.papa.clearedRate != papa.clearedRate or self.papa.clearedIAS != papa.clearedIAS
-                or self.papa.clearedMach != papa.clearedMach):
+                or self.papa.clearedMach != papa.clearedMach or self.papa.clearedHeading != papa.clearedHeading):
             # ici, on étend l'étiquette si certains paramètres qui forcent l'apparition de boutons ont changé
             self.papa = papa
             self.extendEtiquette(True)
