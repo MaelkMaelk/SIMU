@@ -758,6 +758,8 @@ class menuValeurs:
         self.containerHdgGauche = None
         self.containerHdgDroite = None
         self.headingDCT = None
+        self.listeGauche = None
+        self.listeDroite = None
 
         if valeur == 'DCT':  # TODO boutons directs en blanc
             self.liste = [point['name'] for point in self.avion.papa.route['points']]
@@ -789,12 +791,10 @@ class menuValeurs:
             self.listeAff = self.liste[indexDuFL - 4: indexDuFL + 5]
 
         elif valeur == 'HDG':
-            if avion.papa.clearedHeading not in [None, ' ']:
-                cap = avion.papa.clearedHeading
-            else:
-                cap = round(avion.papa.heading // 5) * 5
 
-            self.liste = [*range(5, 365, 5)]
+            cap = round(avion.papa.heading // 5) * 5
+
+            self.liste = [*range(0, 365, 5)]
             indexDuCap = self.liste.index(cap)
             self.listeAff = self.liste[indexDuCap - 3: indexDuCap + 4]
 
@@ -916,11 +916,11 @@ class menuValeurs:
                 anchors={'top': 'top', 'top_target': self.topContainer}
             )
 
-            scrollListGen(
+            self.listeGauche = scrollListGen(
                 listeGauche,
                 pygame.Rect((0, 0), (width / 3, -1)),
                 self.containerHdgGauche,
-                sliderBool=False)
+                sliderBool=False)[1]
 
             self.listeContainer = pygame_gui.elements.UIScrollingContainer(
                 container=self.window,
@@ -948,11 +948,11 @@ class menuValeurs:
                          'left': 'left', 'left_target': self.listeContainer}
             )
 
-            scrollListGen(
+            self.listeDroite = scrollListGen(
                 listeDroite,
                 pygame.Rect((0, 0), (width / 3, -1)),
                 self.containerHdgDroite,
-                sliderBool=False)
+                sliderBool=False)[1]
         else:
             self.listeContainer = pygame_gui.elements.UIScrollingContainer(
                 container=self.window,
@@ -1051,6 +1051,23 @@ class menuValeurs:
                 return 'DCT'
             else:
                 return 'HDG'
+
+        elif self.valeur == 'HDG':
+            if event.ui_element in self.listeGauche:
+                self.kill()
+                if self.avion.papa.clearedHeading:
+                    heading = round(self.avion.papa.clearedHeading - int(event.ui_element.text[1:]))
+                else:
+                    heading = round(self.avion.papa.selectedHeading - int(event.ui_element.text[1:]))
+                return self.avion.Id, 'HDG', heading
+
+            elif event.ui_element in self.listeDroite:
+                self.kill()
+                if self.avion.papa.clearedHeading:
+                    heading = round(self.avion.papa.clearedHeading + int(event.ui_element.text[1:]))
+                else:
+                    heading = round(self.avion.papa.selectedHeading + int(event.ui_element.text[1:]))
+                return self.avion.Id, 'HDG', heading
 
     def checkScrolled(self, event):
         """

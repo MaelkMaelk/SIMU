@@ -398,9 +398,7 @@ class Avion:
         mouse = pygame.mouse.get_pos()
         rect = self.etiquette.container.get_abs_rect()
 
-        if rect[0] <= mouse[0] <= rect[0] + rect[2] and rect[1] <= mouse[1] <= rect[1] + rect[3]:
-            self.lastHoveredTime = pygame.time.get_ticks()
-        elif pygame.time.get_ticks() - self.lastHoveredTime > 400:
+        if not (rect[0] <= mouse[0] <= rect[0] + rect[2] and rect[1] <= mouse[1] <= rect[1] + rect[3]):
             self.etiquetteExtended = False
 
     def extendEtiquette(self, force=False):
@@ -426,6 +424,8 @@ class Avion:
 
             if self.etiquette.DCT.get_object_ids()[1][-4:] != 'Blue' and not self.papa.clearedHeading:
                 self.etiquette.DCT.hide()
+            else:
+                self.etiquette.DCT.show()
 
             if self.etiquette.clearedSpeed.get_object_ids()[1][-4:] != 'Blue' and not self.papa.clearedIAS and not self.papa.clearedMach:
                 self.etiquette.clearedSpeed.hide()
