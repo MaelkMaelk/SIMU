@@ -1127,7 +1127,13 @@ class menuValeurs:
         """
         if self.valeur in ['DCT', 'XPT']:
             if event.ui_element in self.listeBoutons:
-                self.avion.pointDessinDirect = None
+                dessin = False
+                for element in self.listeBoutons:
+                    if element.hovered:
+                        dessin = True
+                        break
+                if not dessin:
+                    self.avion.pointDessinDirect = None
 
     def checkMenuHovered(self) -> None:
         """
