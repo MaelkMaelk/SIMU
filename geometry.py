@@ -1,6 +1,6 @@
 import math
 import numpy as np
-
+from scipy.optimize import minimize
 
 def calculateHeading(x: int, y: int, xPoint: int, yPoint: int):
     if y > yPoint:
@@ -127,17 +127,31 @@ def calculateAngle(principal, secondaire):
 
 
 def distanceMinie(pos1: tuple[float, float], vitesse1: float, heading1: float,
-                  pos2: tuple[float, float], vitesse2: float, heading2: float):
+                  pos2: tuple[float, float], vitesse2: float, heading2: float) -> float:
     """
     Calcule la position future de deux avions où la distance sera minimale entre les deux.
-    :param pos1: Position actuelle de l'avion 1
-    :param vitesse1: Vitesse actuelle de l'avion 1
+    :param pos1: Position actuelle de l'avion 1 en px
+    :param vitesse1: Vitesse actuelle de l'avion 1 en px/sec
     :param heading1: Heading actuelle de l'avion 1 en radiants
-    :param pos2: Position actuelle de l'avion 2
-    :param vitesse2: Vitesse actuelle de l'avion 2
+    :param pos2: Position actuelle de l'avion 2 en px
+    :param vitesse2: Vitesse actuelle de l'avion 2 en px/sec
     :param heading2: Heading actuelle de l'avion 2 en radiants
-    :return:
+    :return: Temps dans lequel la distance sera la plus faible
     """
 
-    
+    x0 = 1.0
 
+    caca = minimize(
+        distanceEnFduTemps, x0, args=(pos1, vitesse1, heading1, pos2, vitesse2, heading2),
+        method='Nelder-Mead', tol=1e-4
+    )
+    return caca.x[0]
+
+
+def distanceEnFduTemps(temps, pos1: tuple[float, float], vitesse1: float, heading1: float,
+                       pos2: tuple[float, float], vitesse2: float, heading2: float):
+
+    return math.sqrt(
+        ((pos1[0] + vitesse1 * temps * math.cos(heading1)) - (pos2[0] + vitesse2 * temps * math.cos(heading2))) ** 2 +
+        ((pos1[1] + vitesse1 * temps * math.sin(heading1)) - (pos2[1] + vitesse2 * temps * math.sin(heading2))) ** 2
+    )

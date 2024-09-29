@@ -2,14 +2,14 @@
 <simu>
    <heure>1002</heure>
    <avions>
-      <avion heure="1000">
+      <avion heure="1002">
          <indicatif>FCACA</indicatif>
-         <aircraft>DA42</aircraft>
-         <route>GAI-JUVEN</route>
+         <aircraft>DH8D</aircraft>
+         <route>ABISA-BERNI</route>
          <altitude>30000</altitude>
          <arrival>False</arrival>
-         <x>720</x>
-         <y>1339</y>
+         <x>1375</x>
+         <y>1644</y>
          <PFL>300</PFL>
       </avion>
    </avions>

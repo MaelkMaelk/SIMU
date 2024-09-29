@@ -1,5 +1,7 @@
 import pygame
 import pygame_gui
+import math
+import geometry
 import horloge
 from valeurs_config import *
 
@@ -1260,6 +1262,86 @@ class flightDataWindow:
 
     def checkAlive(self):
         return self.window.alive()
+
+
+class aliSep:
+
+    def __init__(self, lettre):
+        self.lettre = lettre
+        self.avion1 = None
+        self.avion2 = None
+        self.distance = None
+        self.temps = None
+
+    def linkAvion(self, avion, carte) -> bool:
+
+        """
+        Associe un avion. Si un avion est déjà associé alors celà déclenche le calcul de la sep
+        :param avion: l'avion à associer
+        :param carte: les données de la carte
+        :return: si les deux avions ont été associés, renvoies True
+        """
+
+        if self.avion2:
+            return True
+
+        if not self.avion1:
+            self.avion1 = avion
+            return False
+
+        self.avion2 = avion
+
+        self.avion1.sep = True
+        self.avion2.sep = True
+
+        self.calculation(carte)
+
+        return True
+
+    def calculation(self, carte):
+
+        if not self.avion2:
+            return None
+
+        self.temps = geometry.distanceMinie(
+            (self.avion1.papa.x, self.avion1.papa.y), self.avion1.papa.speedPx / radarRefresh,
+            self.avion1.papa.headingRad,
+            (self.avion2.papa.x, self.avion2.papa.y), self.avion2.papa.speedPx / radarRefresh,
+            self.avion2.papa.headingRad,
+        )
+
+        self.distance = math.sqrt(
+            ((self.avion1.papa.x + self.avion1.papa.speedPx / radarRefresh * self.temps * math.cos(
+                self.avion1.papa.headingRad)) -
+             (self.avion2.papa.x + self.avion2.papa.speedPx / radarRefresh * self.temps * math.cos(
+                 self.avion2.papa.headingRad))) ** 2 +
+            ((self.avion1.papa.y + self.avion1.papa.speedPx / radarRefresh * self.temps * math.sin(
+                self.avion1.papa.headingRad)) -
+             (self.avion2.papa.y + self.avion2.papa.speedPx / radarRefresh * self.temps * math.sin(
+                 self.avion2.papa.headingRad))) ** 2)
+
+        self.avion1.sepSetting.update({self.lettre: [self.temps, self.distance * carte['mapScale']]})
+        self.avion2.sepSetting.update({self.lettre: [self.temps, self.distance * carte['mapScale']]})
+
+    def kill(self):
+
+        if not self.avion2 and self.avion1:
+            self.avion1 = None
+            return None
+
+        if not self.avion1:
+            return None
+
+        self.avion1.sepSetting.pop(self.lettre)
+        self.avion2.sepSetting.pop(self.lettre)
+
+        if len(self.avion1.sepSetting) == 0:
+            self.avion1.sep = False
+        if len(self.avion2.sepSetting) == 0:
+            self.avion2.sep = False
+
+        self.avion1 = None
+        self.avion2 = None
 
 
 

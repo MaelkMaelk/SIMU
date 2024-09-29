@@ -64,6 +64,11 @@ def main(server_ip: str):
     alidadPos = (0, 0)
     curseur_alidad = False
 
+    # alisep
+    curseur_aliSep = False
+    sepA = interface.aliSep('A')
+    sepB = interface.aliSep('B')
+
     # scroll and zoom
     zoomDef = 0.5
     scrollDef = [width / 4, height/4]
@@ -117,6 +122,9 @@ def main(server_ip: str):
                 dictAvionsAff.pop(avionId)
         game = packet.game
         dictAvions = packet.dictAvions
+
+        sepA.calculation(carte)
+        sepB.calculation(carte)
 
         for event in pygame.event.get():
 
@@ -184,6 +192,18 @@ def main(server_ip: str):
                             localRequests.append(action)
                         elif action in ['HDG', 'DCT']:
                             menuValeurs = interface.menuValeurs(menuValeurs.avion, pygame.mouse.get_pos(), action)
+
+                if curseur_aliSep:
+                    for avion in dictAvionsAff.values():
+                        if avion.checkClicked(event):
+                            if curseur_aliSep == 'A':
+                                if sepA.linkAvion(avion, carte):
+                                    curseur_aliSep = False
+                                    pygame.mouse.set_cursor(pygame.cursors.arrow)
+                            else:
+                                if sepB.linkAvion(avion, carte):
+                                    curseur_aliSep = False
+                                    pygame.mouse.set_cursor(pygame.cursors.arrow)
 
                 else:
                     for avion in dictAvionsAff.values():  # pour chaque avion
@@ -267,6 +287,9 @@ def main(server_ip: str):
                 alidad = False
                 curseur_alidad = False
                 pygame.mouse.set_cursor(pygame.cursors.arrow)
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 3 and curseur_aliSep:
+                curseur_aliSep = False
+                pygame.mouse.set_cursor(pygame.cursors.arrow)
 
             manager.process_events(event)
 
@@ -284,7 +307,7 @@ def main(server_ip: str):
             drag = [pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1]]
         else:
             drag = [pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1]]
-            if not curseur_alidad:
+            if not curseur_alidad and not curseur_aliSep:
                 pygame.mouse.set_cursor(pygame.cursors.arrow)
 
         """Keys"""
@@ -307,6 +330,19 @@ def main(server_ip: str):
                 pygame.mouse.set_cursor(pygame.cursors.broken_x)
                 pressing = True
                 delaiPressage = pygame.time.get_ticks()
+            if keys[pygame.K_g]:  # alidad start
+                sepA.kill()
+                curseur_aliSep = 'A'
+                pygame.mouse.set_cursor(pygame.cursors.diamond)
+                pressing = True
+                delaiPressage = pygame.time.get_ticks()
+            if keys[pygame.K_h]:  # alidad start
+                sepB.kill()
+                curseur_aliSep = 'B'
+                pygame.mouse.set_cursor(pygame.cursors.diamond)
+                pressing = True
+                delaiPressage = pygame.time.get_ticks()
+
             if keys[pygame.K_f] and flightDataWindow is None:  # Flight Data Window
                 flightDataWindow = interface.flightDataWindow()
                 pressing = True

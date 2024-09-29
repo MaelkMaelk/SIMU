@@ -55,6 +55,8 @@ class Avion:
         self.predictionPoint = None  # point pour la prédiction de route
         self.drawRouteBool = False
         self.locWarning = False
+        self.sep = False
+        self.sepSetting = {}  # [temps à dessiner, distance minie en nm]
         self.etiquetteExtended = False
         self.lastHoveredTime = 0
         self.pointDessinDirect = None
@@ -102,6 +104,48 @@ class Avion:
             self.affY + plotSize + self.papa.speedPx * 60 / radarRefresh * vecteurSetting * zoom * math.sin(
                 self.papa.headingRad)), 2)
 
+    def drawSep(self, window, zoom):
+        """
+        Dessine la sep avec un autre avion
+        :param window:
+        :param zoom:
+        :return:
+        """
+        sep = (0, 9999999)
+
+        for lettre, sepSetting in self.sepSetting.items():
+            if sepSetting[1] <= sep[1] and 0 <= sepSetting[0]:
+                sep = sepSetting
+
+        sepSetting = sep
+
+        coords = [self.affX + plotSize + self.papa.speedPx / radarRefresh * sepSetting[0] * zoom * math.cos(
+                self.papa.headingRad),
+                  self.affY + plotSize + self.papa.speedPx / radarRefresh * sepSetting[0] * zoom * math.sin(
+                      self.papa.headingRad)
+                  ]
+
+        if sepSetting[1] <= 6:
+            color = (255, 0, 0)
+        elif sepSetting[1] <= 9:
+            color = (241, 237, 57)
+        else:
+            color = (157, 193, 126)
+
+        pygame.draw.line(window, color, (self.affX + plotSize, self.affY + plotSize), coords, 2)
+
+        font = pygame.font.SysFont('arial', 15)
+
+        coords[0] += 2
+        for lettre, sepSetting in self.sepSetting.items():
+            if 0 <= sepSetting[0]:
+                img = font.render(lettre + str(round(sepSetting[1], 1)), True, color)
+                window.blit(img, coords)
+                coords[1] += 15
+            else:
+                img = font.render(lettre, True, (255, 255, 255))
+                window.blit(img, coords)
+
     def draw(self, win, zoom, scroll, vecteurs, vecteurSetting, points):
 
         # updates
@@ -133,34 +177,39 @@ class Avion:
         width = 1
 
         # Dessin
-        if self.visible:
-            if self.papa.warning:
-                color = (255, 120, 60)
-            elif self.locWarning:
-                color = (100, 200, 100)
-            elif self.etiquetteExtended:
-                color = (30, 144, 255)
-                width = 3
-            else:
-                color = (255, 255, 255)
+        if not self.visible:
+            return None
 
-            pygame.draw.circle(win, color, (self.affX + plotSize, self.affY + plotSize), plotSize, 1)
-            pygame.draw.circle(win, color, (self.affX + plotSize, self.affY + plotSize), plotSize / 1.5, 1)
+        if self.papa.warning:
+            color = (255, 120, 60)
+        elif self.locWarning:
+            color = (100, 200, 100)
+        elif self.etiquetteExtended:
+            color = (30, 144, 255)
+            width = 3
+        else:
+            color = (255, 255, 255)
 
-            if vecteurs or self.papa.warning or self.locWarning:  # si on doit dessiner les vecteurs
-                self.drawVector(color, win, vecteurSetting, zoom)  # on appelle la fonction
+        pygame.draw.circle(win, color, (self.affX + plotSize, self.affY + plotSize), plotSize, 1)
+        pygame.draw.circle(win, color, (self.affX + plotSize, self.affY + plotSize), plotSize / 1.5, 1)
 
-            radius = 1
-            for plot in self.papa.comete:
-                affPlot = [plot[0] * zoom + scroll[0],
-                           plot[1] * zoom + scroll[1]]
-                pygame.draw.circle(win, (255, 255, 255), affPlot, int(round(radius)), 1)
-                radius += 0.3
+        if self.sep:
+            self.drawSep(win, zoom)
 
-            point = self.findEtiquetteAnchorPoint()
-            if point is not None:
-                pygame.draw.line(win, color, (self.affX + plotSize, self.affY + plotSize),
-                                 (point[0], point[1]), width)
+        elif vecteurs or self.papa.warning or self.locWarning:  # si on doit dessiner les vecteurs
+            self.drawVector(color, win, vecteurSetting, zoom)  # on appelle la fonction
+
+        radius = 1
+        for plot in self.papa.comete:
+            affPlot = [plot[0] * zoom + scroll[0],
+                       plot[1] * zoom + scroll[1]]
+            pygame.draw.circle(win, (255, 255, 255), affPlot, int(round(radius)), 1)
+            radius += 0.3
+
+        point = self.findEtiquetteAnchorPoint()
+        if point is not None:
+            pygame.draw.line(win, color, (self.affX + plotSize, self.affY + plotSize),
+                             (point[0], point[1]), width)
 
     def findEtiquetteAnchorPoint(self) -> tuple[float, float]:
         """
@@ -186,8 +235,8 @@ class Avion:
 
         pointBas = geometry.calculateIntersection((rect[0], rect[1] + rect[3]),
                                                   (rect[0] + rect[2], rect[1] + rect[3]),
-                                                (self.etiquette.centre[0], self.etiquette.centre[1]),
-                                                (self.affX + plotSize, self.affY + plotSize))
+                                                 (self.etiquette.centre[0], self.etiquette.centre[1]),
+                                                 (self.affX + plotSize, self.affY + plotSize))
 
         if rect[0] <= pointHaut[0] <= rect[0] + rect[2] and self.affY <= self.etiquetteY:
             return pointHaut
@@ -290,6 +339,19 @@ class Avion:
                              (pointDeux[0] * zoom + scroll[0], pointDeux[1] * zoom + scroll[1]), 2)
 
             pointUn = pointDeux  # on passe au prochain point
+
+    def checkClicked(self, event) -> bool:
+        """
+        Renvoies True si un des boutons (avion ou etiquette) correspond à cet event
+        :param event:
+        :return:
+        """
+        if event.ui_element == self.bouton:
+            return True
+        if event.ui_element.ui_container == self.etiquette.container:
+            return True
+        else:
+            return False
 
     def checkEvent(self, event, pilote):
 

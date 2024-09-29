@@ -467,6 +467,7 @@ while Running:
             dictAvion.pop(avion)
         for avion in list(dictAvion.values()):
             # tous les calculs de distances sont ici effectués en pixel, la conversion se fait avec le mapScale
+            # TODO remplacer ce STCA avec le nouveau dans server_def
             STCAtriggered = False
             predictedPos = []
             VspeedOne = avion.evolution
