@@ -312,7 +312,7 @@ def main(server_ip: str):
                 pressing = True
                 delaiPressage = pygame.time.get_ticks()
 
-                # commandes vecteurs
+            # commandes pour vecteurs
             if keys[pygame.K_3]:
                 vecteurSetting = 3
                 pressing = True

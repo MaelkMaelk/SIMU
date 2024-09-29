@@ -51,6 +51,35 @@
            "active_border": "#3E3E3E"
          }
       },
+   "menuBleu": {
+        "colours":
+         {
+           "normal_border": "#808080",
+           "hovered_border": "#808080",
+           "disabled_border": "#808080",
+           "selected_border": "#808080",
+           "active_border": "#808080"
+         }
+  },
+  "menuBlanc": {
+        "colours":
+         {
+           "normal_bg": "#C6DADA",
+           "hovered_bg": "#A3B6C4",
+           "active_bg": "#C6DADA"
+         }
+  },
+  "@menuLabel":
+      {
+        "misc": {
+          "border_width": "1",
+          "text_horiz_alignment": "left",
+          "text_horiz_alignment_padding": "0",
+          "text_vert_alignment": "left",
+          "text_vert_alignment_padding": "2",
+          "shadow_width": "0"
+        }
+      },
   "@flightDataWindow":
       {
         "misc": {

@@ -124,3 +124,20 @@ def calculateAngle(principal, secondaire):
         return [principal - secondaire, 180 - principal + secondaire]
     else:
         return [secondaire - principal + 360, principal - 180 - secondaire]
+
+
+def distanceMinie(pos1: tuple[float, float], vitesse1: float, heading1: float,
+                  pos2: tuple[float, float], vitesse2: float, heading2: float):
+    """
+    Calcule la position future de deux avions où la distance sera minimale entre les deux.
+    :param pos1: Position actuelle de l'avion 1
+    :param vitesse1: Vitesse actuelle de l'avion 1
+    :param heading1: Heading actuelle de l'avion 1 en radiants
+    :param pos2: Position actuelle de l'avion 2
+    :param vitesse2: Vitesse actuelle de l'avion 2
+    :param heading2: Heading actuelle de l'avion 2 en radiants
+    :return:
+    """
+
+    
+

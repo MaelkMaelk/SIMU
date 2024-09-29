@@ -12,13 +12,14 @@ def selectButtonInList(liste: list, event):
             bouton.unselect()
 
 
-def scrollListGen(valueList, rect, container, sliderBool=True, sliderDroite=False):
+def scrollListGen(valueList, rect, container, sliderBool=True, sliderDroite=False, objectID = None):
     """Fonction qui construit une liste de boutons, avec une scrollbar width 17
     :arg valueList: liste des valeurs en txt ou autre peu importe
     :arg rect: taille des boutons
     :arg container: conteneur Pygame_gui dans lequel on met les boutons
     :parameter sliderBool: Bool, si on veut un slider ou non. True par defaut
     :parameter sliderDroite: Bool, si on veut le slider à droite ou non
+    :parameter objectID: Une option de thème optionnelle pour les boutons.
     :return (slider, listeBoutons)"""
 
     valueList = list(valueList)
@@ -41,7 +42,7 @@ def scrollListGen(valueList, rect, container, sliderBool=True, sliderDroite=Fals
     liste = [pygame_gui.elements.UIButton(
         relative_rect=rect,
         text=str(valueList[0]),
-        container=container, anchors=boutonAnchor)]
+        container=container, anchors=boutonAnchor, object_id=objectID)]
 
     for value in valueList[1:]:
         boutonAnchor.update({'top': 'top', 'top_target': liste[-1]})
@@ -49,7 +50,8 @@ def scrollListGen(valueList, rect, container, sliderBool=True, sliderDroite=Fals
             relative_rect=rect,
             text=str(value),
             container=container,
-            anchors=boutonAnchor))
+            anchors=boutonAnchor,
+            object_id=objectID))
 
     if sliderDroite:
         decalage = liste[0].get_abs_rect()[2]
@@ -760,14 +762,17 @@ class menuValeurs:
         self.headingDCT = None
         self.listeGauche = None
         self.listeDroite = None
+        objectID = None
 
         if valeur == 'DCT':  # TODO boutons directs en blanc
             self.liste = [point['name'] for point in self.avion.papa.route['points']]
             self.listeAff = self.liste[self.liste.index(avion.papa.nextPoint['name']):]
+            objectID = pygame_gui.core.ObjectID('@menuLabel', 'menuBlanc')
 
         elif valeur == 'XPT':  # la diff de liste est qu'on ne prend pas en compte les points de notre secteur ici
             self.liste = [point['name'] for point in self.avion.papa.route['points']]
             self.listeAff = self.liste[self.liste.index(avion.papa.defaultXPT):]
+            objectID = pygame_gui.core.ObjectID('@menuLabel', 'menuBlanc')
 
         elif valeur == 'C_IAS':
             self.liste = [*range(0, 60)]
@@ -797,6 +802,7 @@ class menuValeurs:
             self.liste = [*range(0, 365, 5)]
             indexDuCap = self.liste.index(cap)
             self.listeAff = self.liste[indexDuCap - 3: indexDuCap + 4]
+            objectID = pygame_gui.core.ObjectID('@menuLabel', 'menuBlanc')
 
         self.window = pygame_gui.elements.UIWindow(pygame.Rect((x, y), (width, height)),
                                                    window_display_title=valeur,
@@ -918,7 +924,7 @@ class menuValeurs:
 
             self.listeGauche = scrollListGen(
                 listeGauche,
-                pygame.Rect((0, 0), (width / 3, -1)),
+                pygame.Rect((1, 0), (width / 3, -1)),
                 self.containerHdgGauche,
                 sliderBool=False)[1]
 
@@ -933,15 +939,16 @@ class menuValeurs:
 
             tempo = scrollListGen(
                 self.listeAff,
-                pygame.Rect((0, 0), (width / 3, -1)),
+                pygame.Rect((1, 0), (width / 3, -1)),
                 self.listeContainer,
-                sliderBool=False)
+                sliderBool=False,
+                objectID=objectID)
 
             self.listeBoutons = tempo[1]
 
             self.containerHdgDroite = pygame_gui.elements.UIScrollingContainer(
                 container=self.window,
-                relative_rect=pygame.Rect((0, 0), (width / 3, height)),
+                relative_rect=pygame.Rect((1, 0), (width / 3, height)),
                 allow_scroll_x=False,
                 allow_scroll_y=False,
                 anchors={'top': 'top', 'top_target': self.topContainer,
@@ -950,7 +957,7 @@ class menuValeurs:
 
             self.listeDroite = scrollListGen(
                 listeDroite,
-                pygame.Rect((0, 0), (width / 3, -1)),
+                pygame.Rect((1, 0), (width / 3, -1)),
                 self.containerHdgDroite,
                 sliderBool=False)[1]
         else:
@@ -964,9 +971,10 @@ class menuValeurs:
 
             tempo = scrollListGen(
                 self.listeAff,
-                pygame.Rect((0, 0), (width, -1)),
+                pygame.Rect((1, 0), (width, -1)),
                 self.listeContainer,
-                sliderBool=False)
+                sliderBool=False,
+                objectID=objectID)
 
             self.listeBoutons = tempo[1]
 
