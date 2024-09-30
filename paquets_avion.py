@@ -69,8 +69,15 @@ class AvionPacket:
 
         self.callsignFreq = 'Austrian'  # TODO ajouter les callsigns
 
-        self.provenance = random.choice(gameMap['aeroports'][route['provenance']])
-        self.destination = random.choice(gameMap['aeroports'][route['destination']])
+        if route['type'] == 'DEPART':
+            self.provenance = route['provenance']
+        else:
+            self.provenance = random.choice(gameMap['aeroports'][route['provenance']])
+
+        if self.arrival:
+            self.destination = route['arrival']['aeroport']
+        else:
+            self.destination = random.choice(gameMap['aeroports'][route['destination']])
 
         # perfo
         self.turnRate = turnRateDefault
@@ -118,7 +125,6 @@ class AvionPacket:
                 self.XFL = 300
 
             for sortie in self.route['sortie']:
-                print(sortie['min'] < self.PFL < sortie['max'])
                 if sortie['min'] < self.PFL < sortie['max']:
                     self.nextSector = sortie['name']
 

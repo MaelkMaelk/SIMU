@@ -227,6 +227,7 @@
         <route>
             <Type>DEPART</Type>
             <destination>SO</destination>
+            <AD>LSGG</AD>
             <point>
                 <name>LSGG</name>
                 <FL>120</FL>
@@ -298,7 +299,7 @@
 
         <route>
             <Type>TRANSIT</Type>
-            <destination>SE</destination>
+            <destination>E-SE</destination>
             <provenance>N</provenance>
             <point>
                 <name>BURGO</name>
@@ -393,6 +394,7 @@
         <route>
             <Type>DEPART</Type>
             <destination>SO</destination>
+            <AD>LIML</AD>
             <point>
                 <name>LIML</name>
                 <FL>20</FL>
@@ -455,7 +457,7 @@
             <point>
                 <name>JUVEN</name>
             </point>
-            <arrival secteur="M2">260</arrival>
+            <arrival AD="LIML" secteur="M2">260</arrival>
             <sortie min="245" max="365">M2</sortie>
         </route>
 
@@ -489,7 +491,7 @@
             <point>
                 <name>SEVET</name>
             </point>
-            <arrival secteur="EI">250</arrival>
+            <arrival AD="LSGG" secteur="EI">250</arrival>
             <sortie min="245" max="365">G2</sortie>
         </route>
 
@@ -517,7 +519,7 @@
             <point>
                 <name>SEVET</name>
             </point>
-            <arrival secteur="EI">250</arrival>
+            <arrival AD="LSGG" secteur="EI">250</arrival>
             <sortie min="245" max="365">G2</sortie>
         </route>
 
@@ -653,6 +655,7 @@
 
         <route name="Depart MTL">
             <Type>DEPART</Type>
+            <AD>LFVB</AD>
             <destination>S</destination>
             <point>
                 <name>BST</name>
@@ -683,6 +686,7 @@
 
         <route name="Depart RETNO">
             <Type>DEPART</Type>
+            <AD>LFVB</AD>
             <destination>SE</destination>
             <point>
                 <name>BST</name>
@@ -713,6 +717,7 @@
 
         <route name="Depart MEN">
             <Type>DEPART</Type>
+            <AD>LFVB</AD>
             <destination>SO</destination>
             <point>
                 <name>BST</name>
@@ -745,34 +750,78 @@
 
     <Aeroports>
         <NE>
-            <AD>LOWI</AD>
+            <AD>EDDT</AD>
+            <AD>EDDF</AD>
+            <AD>EKCH</AD>
+            <AD>EHAM</AD>
+            <AD>ESSB</AD>
+            <AD>ENGM</AD>
+            <AD>EPWA</AD>
         </NE>
 
         <N>
             <AD>EGBB</AD>
             <AD>EIDW</AD>
+            <AD>EGCC</AD>
+            <AD>EGGD</AD>
+            <AD>EGKK</AD>
+            <AD>LFPG</AD>
+            <AD>LFPO</AD>
+            <AD>LFQQ</AD>
         </N>
 
         <NO>
             <AD>EGBB</AD>
+            <AD>LFPG</AD>
+            <AD>LFPO</AD>
+            <AD>LFQQ</AD>
+            <AD>LFRS</AD>
+            <AD>EIDW</AD>
+            <AD>EGCC</AD>
+            <AD>EGGD</AD>
+            <AD>EGKK</AD>
+            <AD>BIRK</AD>
         </NO>
 
         <S>
             <AD>DAAG</AD>
+            <AD>DRRN</AD>
+            <AD>DTTA</AD>
+            <AD>GCTS</AD>
         </S>
 
         <SO>
             <AD>LPPT</AD>
+            <AD>LPPR</AD>
+            <AD>LFBD</AD>
+            <AD>LFBO</AD>
+            <AD>LFBP</AD>
+            <AD>LFBT</AD>
+            <AD>LFBZ</AD>
+            <AD>LEIB</AD>
+            <AD>LEMD</AD>
+            <AD>LEMG</AD>
+            <AD>LEPA</AD>
         </SO>
 
         <SE>
+            <AD>LFKC</AD>
+            <AD>LFKJ</AD>
+        </SE>
+
+        <E-SE>
             <AD>LGAT</AD>
             <AD>LGAV</AD>
             <AD>LGIR</AD>
-        </SE>
+            <AD>LIMF</AD>
+            <AD>LIPZ</AD>
+        </E-SE>
 
         <E>
-            <AD>LIML</AD>
+            <AD>LOWW</AD>
+            <AD>LOWI</AD>
+            <AD>LOWS</AD>
+            <AD>LHBP</AD>
         </E>
 
     </Aeroports>

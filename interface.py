@@ -899,7 +899,7 @@ class menuValeurs:
 
             self.topContainer.set_dimensions((width, self.headingDCT.get_abs_rect()[3] * 2))
 
-        if self.valeur == 'HDG':  # TODO boutons cap abs en blanc
+        if self.valeur == 'HDG':
 
             listeDroite = []
             listeGauche = []
@@ -947,14 +947,12 @@ class menuValeurs:
                          'left': 'left', 'left_target': self.containerHdgGauche}
             )
 
-            tempo = scrollListGen(
+            self.listeBoutons = scrollListGen(
                 self.listeAff,
                 pygame.Rect((1, 0), (width / 3, -1)),
                 self.listeContainer,
                 sliderBool=False,
-                objectID=objectID)
-
-            self.listeBoutons = tempo[1]
+                objectID=objectID)[1]
 
             self.containerHdgDroite = pygame_gui.elements.UIScrollingContainer(
                 container=self.window,

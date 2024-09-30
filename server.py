@@ -156,8 +156,9 @@ for route in root.find('routes'):  # construction des routes
         y1 = y2
     provenance = 'N'
     destination = 'S'
-
-    if route.find('provenance') is not None:
+    if routeType == 'DEPART':
+        provenance = route.find('AD').text
+    elif route.find('provenance') is not None:
         provenance = route.find('provenance').text
     else:
         print('[Problème] pas de direction de provenance pour la route', nomRoute)
@@ -170,7 +171,7 @@ for route in root.find('routes'):  # construction des routes
         destination = 'S'
 
     if route.find('arrival') is not None:
-        arrival = {'XFL': int(route.find('arrival').text), 'secteur': route.find('arrival').attrib['secteur']}
+        arrival = {'XFL': int(route.find('arrival').text), 'secteur': route.find('arrival').attrib['secteur'], 'aeroport': route.find('arrival').attrib['AD']}
     for sortie in route.findall('sortie'):
         listeSortie.append({'name': sortie.text, 'min': int(sortie.attrib['min']), 'max': int(sortie.attrib['max'])})
     gameMap['routes'].update({nomRoute: {'name': nomRoute,
@@ -447,7 +448,7 @@ while Running:
                 spawn[1]['aircraft'],
                 aircraftType[spawn[1]['aircraft']],
                 spawnRoute,
-                spawn[1]['arrival'],
+                spawn[1]['arrival'] == 'True',
                 FL=spawnFL)})
             toBeRemovedFromSpawn.append(spawn)
             planeId += 1
