@@ -807,11 +807,11 @@ class menuValeurs:
 
         elif valeur == 'HDG':
 
-            cap = round(avion.papa.heading // 5) * 5
+            cap = round(avion.papa.heading // 5) * 5 + 5
 
-            self.liste = [*range(0, 365, 5)]
+            self.liste = [*range(5, 365, 5)]
             indexDuCap = self.liste.index(cap)
-            self.listeAff = self.liste[indexDuCap - 3: indexDuCap + 4]
+            self.listeAff = [self.liste[(indexDuCap - 3 + i) % len(self.liste)] for i in range(7)]
             objectID = pygame_gui.core.ObjectID('@menuLabel', 'menuBlanc')
 
         self.window = pygame_gui.elements.UIWindow(pygame.Rect((x, y), (width, height)),
@@ -1100,17 +1100,17 @@ class menuValeurs:
 
         if not rect[0] <= mouse[0] <= rect[0] + rect[2] and rect[1] <= mouse[1] <= rect[1] + rect[3]:
             return True
-        if event.y >= 0:  # on regarde dans quel sens on scroll
 
-            indexDebut = self.liste.index(self.listeAff[0])  # on regarde où commence la liste dans l'autre
-            if indexDebut - 1 >= 0:  # cela vérifie qu'on n'est pas en butée de liste
-                self.listeAff = self.liste[indexDebut - 1: indexDebut - 1 + len(self.listeAff)]
-                self.scrollUpdate()
+        indexDebut = self.liste.index(self.listeAff[0])
+
+        if event.y >= 0:  # on regarde dans quel sens on scroll
+            newIndex = (indexDebut - 1) % len(self.liste)
         else:
-            indexDebut = self.liste.index(self.listeAff[0])  # on regarde où commence la liste dans l'autre
-            if indexDebut + len(self.listeAff) <= len(self.liste) - 1:  # cela vérifie qu'on n'est pas en butée de liste
-                self.listeAff = self.liste[indexDebut + 1: indexDebut + 1 + len(self.listeAff)]
-                self.scrollUpdate()
+            newIndex = (indexDebut + 1) % len(self.liste)
+
+        self.listeAff = [self.liste[(newIndex + i) % len(self.liste)] for i in range(7)]
+
+        self.scrollUpdate()
 
     def scrollUpdate(self) -> None:
         """
