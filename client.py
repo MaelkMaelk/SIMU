@@ -38,6 +38,7 @@ def main(server_ip: str):
     menuATC = None
     menuValeurs = None
     flightDataWindow = None
+    menuRadar = interface.menuRadar()
 
     # on se connecte au serveur
     n = Network(server_ip)
@@ -66,8 +67,7 @@ def main(server_ip: str):
 
     # alisep
     curseur_aliSep = False
-    sepA = interface.aliSep('A')
-    sepB = interface.aliSep('B')
+    sepDict = {'A': interface.aliSep('A'), 'B': interface.aliSep('B'), 'C': interface.aliSep('C')}
 
     # scroll and zoom
     zoomDef = 0.5
@@ -123,8 +123,8 @@ def main(server_ip: str):
         game = packet.game
         dictAvions = packet.dictAvions
 
-        sepA.calculation(carte)
-        sepB.calculation(carte)
+        for sep in sepDict.values():
+            sep.calculation(carte)
 
         for event in pygame.event.get():
 
@@ -159,6 +159,34 @@ def main(server_ip: str):
             # on vérifie que l'alidade n'est pas actif
             elif event.type == pygame_gui.UI_BUTTON_PRESSED and not curseur_alidad:
                 empecherDragging = False
+                
+                if menuRadar.checkActive():
+                    action = menuRadar.checkEvent(event)
+
+                    if action is not None:
+
+                        if type(action) in [list, tuple]:
+
+                            if action[0] == 'VecteursToggle':
+                                if vecteurSetting == action[1]:
+                                    vecteurs = not vecteurs
+                                else:
+                                    vecteurs = True
+                                    vecteurSetting = action[1]
+
+                            elif action[0] == 'Vecteurs':
+                                vecteurSetting = action[1]
+
+                            elif action[0] == 'Sep':
+                                sepDict[action[1]].kill()
+                                curseur_aliSep = action[1]
+                                pygame.mouse.set_cursor(pygame.cursors.diamond)
+                        elif action == 'Alidade':
+                            curseur_alidad = True
+                            pygame.mouse.set_cursor(pygame.cursors.broken_x)
+
+                        elif action == 'Cercles':
+                            pass
 
                 # on regarde si notre menu pour le pilote est actif
                 if menuAvion is not None:
@@ -194,16 +222,13 @@ def main(server_ip: str):
                             menuValeurs = interface.menuValeurs(menuValeurs.avion, pygame.mouse.get_pos(), action)
 
                 if curseur_aliSep:
-                    for avion in dictAvionsAff.values():
-                        if avion.checkClicked(event):
-                            if curseur_aliSep == 'A':
-                                if sepA.linkAvion(avion, carte):
-                                    curseur_aliSep = False
-                                    pygame.mouse.set_cursor(pygame.cursors.arrow)
-                            else:
-                                if sepB.linkAvion(avion, carte):
-                                    curseur_aliSep = False
-                                    pygame.mouse.set_cursor(pygame.cursors.arrow)
+                    for sep in sepDict:
+                        if sep == curseur_aliSep:
+                            for avion in dictAvionsAff.values():
+                                if avion.checkClicked(event):
+                                    if sepDict[sep].linkAvion(avion, carte):
+                                        curseur_aliSep = False
+                                        pygame.mouse.set_cursor(pygame.cursors.arrow)
 
                 else:
                     for avion in dictAvionsAff.values():  # pour chaque avion
@@ -287,9 +312,14 @@ def main(server_ip: str):
                 alidad = False
                 curseur_alidad = False
                 pygame.mouse.set_cursor(pygame.cursors.arrow)
+
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 3 and curseur_aliSep:
                 curseur_aliSep = False
                 pygame.mouse.set_cursor(pygame.cursors.arrow)
+
+            elif (event.type == pygame.MOUSEBUTTONUP and event.button == 1 and not empecherDragging
+                  and not (curseur_aliSep or curseur_alidad) and mouseDownTime + 150 >= pygame.time.get_ticks()):
+                menuRadar.show()
 
             manager.process_events(event)
 
@@ -325,44 +355,9 @@ def main(server_ip: str):
                 affichage_type_avion = not affichage_type_avion
                 pressing = True
                 delaiPressage = pygame.time.get_ticks()
-            if keys[pygame.K_a]:  # alidad start
-                curseur_alidad = True
-                pygame.mouse.set_cursor(pygame.cursors.broken_x)
-                pressing = True
-                delaiPressage = pygame.time.get_ticks()
-            if keys[pygame.K_g]:  # alidad start
-                sepA.kill()
-                curseur_aliSep = 'A'
-                pygame.mouse.set_cursor(pygame.cursors.diamond)
-                pressing = True
-                delaiPressage = pygame.time.get_ticks()
-            if keys[pygame.K_h]:  # alidad start
-                sepB.kill()
-                curseur_aliSep = 'B'
-                pygame.mouse.set_cursor(pygame.cursors.diamond)
-                pressing = True
-                delaiPressage = pygame.time.get_ticks()
 
             if keys[pygame.K_f] and flightDataWindow is None:  # Flight Data Window
                 flightDataWindow = interface.flightDataWindow()
-                pressing = True
-                delaiPressage = pygame.time.get_ticks()
-
-            # commandes pour vecteurs
-            if keys[pygame.K_3]:
-                vecteurSetting = 3
-                pressing = True
-                delaiPressage = pygame.time.get_ticks()
-            if keys[pygame.K_6]:
-                vecteurSetting = 6
-                pressing = True
-                delaiPressage = pygame.time.get_ticks()
-            if keys[pygame.K_9]:
-                vecteurSetting = 9
-                pressing = True
-                delaiPressage = pygame.time.get_ticks()
-            if keys[pygame.K_v]:
-                vecteurs = not vecteurs
                 pressing = True
                 delaiPressage = pygame.time.get_ticks()
 
@@ -414,6 +409,9 @@ def main(server_ip: str):
         if nouvelAvionWin is not None:
             if not nouvelAvionWin.checkAlive():
                 nouvelAvionWin = None
+
+        if menuRadar.checkActive():
+            menuRadar.checkMenuHovered()
 
         '''partie affichage'''
 

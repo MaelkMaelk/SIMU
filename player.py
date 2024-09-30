@@ -111,6 +111,7 @@ class Avion:
         :param zoom:
         :return:
         """
+
         sep = (0, 9999999)
 
         for lettre, sepSetting in self.sepSetting.items():
@@ -143,7 +144,7 @@ class Avion:
                 window.blit(img, coords)
                 coords[1] += 15
             else:
-                img = font.render(lettre, True, (255, 255, 255))
+                img = font.render(lettre, True, (170, 170, 255))
                 window.blit(img, coords)
 
     def draw(self, win, zoom, scroll, vecteurs, vecteurSetting, points):

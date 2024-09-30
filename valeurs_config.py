@@ -11,4 +11,4 @@ plotSize = 5  # taille des plots avions
 listeEtrangers = ['G2', 'M2']  # liste des secteurs ajdacents non interopérables
 dragDelay = 150  # on utilise cette valeur seuil pour déterminer si on doit cliquer sur un bouton ou drag l'etiquette
 offsettEtiquetteDefault = 30  # de combien les etiquettes sont décalées en px à quand on les dessine la 1ere fois
-temps_disparition_menus = 600  # en combien de milli sec les menus disparaissent après ne plus être survolé
+temps_disparition_menus = 300  # en combien de milli sec les menus disparaissent après ne plus être survolé

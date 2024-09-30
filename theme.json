@@ -110,6 +110,27 @@
            "active_bg": "#3E3E3E"
          }
       },
+  "@menuRadar":
+      {
+        "misc": {
+          "border_width": "2",
+          "shadow_width": "0",
+          "enable_title_bar": "0"
+        },
+        "colours":
+         {
+           "normal_border": "#6B7C91",
+           "hovered_border": "#6B7C91",
+           "disabled_border": "#6B7C91",
+           "selected_border": "#6B7C91",
+           "active_border": "#6B7C91",
+           "dark_bg": "#7F94AD",
+           "normal_text": "#000000",
+           "hovered_text": "#505050",
+           "selected_text": "#A0A0A0",
+           "active_bg":"#5A697A"
+         }
+      },
       "@etiquette":
      {
        "colours":
