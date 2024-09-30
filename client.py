@@ -65,6 +65,10 @@ def main(server_ip: str):
     alidadPos = (0, 0)
     curseur_alidad = False
 
+    # cercles
+    curseur_cercles = False
+    cerclePos = None
+
     # alisep
     curseur_aliSep = False
     sepDict = {'A': interface.aliSep('A'), 'B': interface.aliSep('B'), 'C': interface.aliSep('C')}
@@ -186,7 +190,9 @@ def main(server_ip: str):
                             pygame.mouse.set_cursor(pygame.cursors.broken_x)
 
                         elif action == 'Cercles':
-                            pass
+                            cerclePos = None
+                            curseur_cercles = True
+                            pygame.mouse.set_cursor(pygame.cursors.broken_x)
 
                 # on regarde si notre menu pour le pilote est actif
                 if menuAvion is not None:
@@ -307,19 +313,23 @@ def main(server_ip: str):
                 if curseur_alidad:
                     alidad = True
                     alidadPos = pygame.mouse.get_pos()
+                elif curseur_cercles:
+                    souris = pygame.mouse.get_pos()
+                    cerclePos = ((souris[0] - scroll[0]) / zoom, (souris[1] - scroll[1]) / zoom)
 
-            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 3 and curseur_alidad:
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 3 and (curseur_alidad or curseur_cercles or curseur_aliSep):
                 alidad = False
                 curseur_alidad = False
-                pygame.mouse.set_cursor(pygame.cursors.arrow)
-
-            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 3 and curseur_aliSep:
+                curseur_cercles = False
                 curseur_aliSep = False
                 pygame.mouse.set_cursor(pygame.cursors.arrow)
 
             elif (event.type == pygame.MOUSEBUTTONUP and event.button == 1 and not empecherDragging
                   and not (curseur_aliSep or curseur_alidad) and mouseDownTime + 150 >= pygame.time.get_ticks()):
-                menuRadar.show()
+                if curseur_cercles:
+                    curseur_cercles = False
+                else:
+                    menuRadar.show()
 
             manager.process_events(event)
 
@@ -337,7 +347,7 @@ def main(server_ip: str):
             drag = [pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1]]
         else:
             drag = [pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1]]
-            if not curseur_alidad and not curseur_aliSep:
+            if not curseur_alidad and not curseur_aliSep and not curseur_cercles:
                 pygame.mouse.set_cursor(pygame.cursors.arrow)
 
         """Keys"""
@@ -431,6 +441,17 @@ def main(server_ip: str):
             pygame.draw.line(win, (150, 150, 150), (segment[0][0]*zoom + scroll[0], segment[0][1]*zoom + scroll[1]),
                              (segment[1][0]*zoom + scroll[0], segment[1][1]*zoom + scroll[1]), 1)
 
+        # dessin des cercles concentriques
+        if cerclePos is not None:
+
+            for i in range(15):
+
+                pygame.draw.circle(
+                    win, (120, 120, 120),
+                    (cerclePos[0] * zoom + scroll[0], cerclePos[1] * zoom + scroll[1]),
+                    10 * i / mapScale * zoom, 1
+                )
+
         # on dessine les points
         for nom, point in carte['points'].items():
             pygame.draw.polygon(win, (155, 155, 155), ((point[0]*zoom + scroll[0], point[1]*zoom - 2 + scroll[1]), (point[0]*zoom + 2 + scroll[0], point[1]*zoom+2 + scroll[1]), (point[0]*zoom-2 + scroll[0], point[1]*zoom+2 + scroll[1])), 1)
@@ -438,12 +459,9 @@ def main(server_ip: str):
             # win.blit(img, (point[0]*zoom + 10 + scroll[0], point[1]*zoom+10 + scroll[1]))
 
         # on affiche les avions
-        if pilote:
-            for avion in dictAvionsAff.values():
-                avion.draw(win, zoom, scroll, vecteurs, vecteurSetting, carte['points'])
-        else:
-            for avion in dictAvionsAff.values():
-                avion.draw(win, zoom, scroll, vecteurs, vecteurSetting, carte['points'])
+
+        for avion in dictAvionsAff.values():
+            avion.draw(win, zoom, scroll, vecteurs, vecteurSetting, carte['points'])
 
         # on affiche les boutons
         manager.update(time_delta)
