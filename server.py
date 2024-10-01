@@ -50,7 +50,7 @@ playerId = 0
 dictAvion = {}  # dict contenant tous les avions
 requests = []  # liste des requêtes que le serveur doit gérer
 segments = {}
-gameMap = {'points': {}, 'secteurs': [], 'segments': [], 'routes': {}, 'mapScale': 0}
+gameMap = {'points': {}, 'zones': [], 'segments': [], 'routes': {}, 'mapScale': 0}
 
 # XML map loading
 
@@ -73,19 +73,32 @@ for point in root.find('points'):  # on parcourt la liste xml de points
 
     gameMap['points'].update({name: (x, y, balise)})
 
-for secteur in root.find('secteurs'):
+for zone in root.find('zones'):
 
     contour = []  # liste des points délimitant le contour du secteur, dans l'ordre de lecture xml
 
-    for limite in secteur.findall('limite'):
+    for limite in zone.findall('limite'):
         x = int(limite.find('x').text)
         y = int(limite.find('y').text)
         contour.append((x, y))
 
-    gameMap['secteurs'].append({'couleur': [int(x) for x in secteur.attrib['color'].split(',')], 'contour': contour})
+    gameMap['zones'].append({'couleur': [int(x) for x in zone.attrib['color'].split(',')], 'contour': contour})
+
+dictSecteurs = {}
+for secteur in root.find('secteurs'):
+
+    nom = secteur.attrib['name']
+    frequence = secteur.find('frequence').text
+    etranger = False
+    if secteur.find('etranger') is not None:
+        if secteur.find('etranger').text == 'True':
+            etranger = True
+
+    dictSecteurs.update({nom: {'frequence': frequence, 'etranger': etranger}})
+
+gameMap.update({'secteurs': dictSecteurs})
 
 listeAeroports = {}
-
 for direction in root.find('Aeroports'):
     liste_de_cette_direction = []
 
@@ -365,8 +378,7 @@ while Running:
                 dictAvion[req[0]].selectedAlti = req[2]
             elif req[1] == 'PFL':
                 dictAvion[req[0]].PFL = req[2]
-                dictAvion[req[0]].changeXFL()
-                dictAvion[req[0]].changeSortieSecteur()
+                dictAvion[req[0]].changeXFL(gameMap)
             elif req[1] == 'CFL':
                 dictAvion[req[0]].CFL = req[2]
             elif req[1] == 'C_IAS':
@@ -381,7 +393,7 @@ while Running:
                     dictAvion[req[0]].clearedRate = None
             elif req[1] == 'XFL':
                 dictAvion[req[0]].XFL = req[2]
-                dictAvion[req[0]].changeSortieSecteur()
+                dictAvion[req[0]].changeSortieSecteur(gameMap)
             elif req[1] == 'XPT':
                 dictAvion[req[0]].XPT = req[2]
             elif req[1] == 'HDG':

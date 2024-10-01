@@ -542,6 +542,7 @@ class etiquette:
             self.DCT.set_text("h")
 
         self.XPT.set_text(avion.papa.XPT)
+        self.nextSector.set_text(avion.papa.nextSector)
 
         # alti
         self.AFL.set_text(str(round(avion.papa.altitude / 100)) + " " + avion.papa.altitudeEvoTxt)
@@ -1106,7 +1107,7 @@ class menuValeurs:
         else:
             newIndex = (indexDebut + 1) % len(self.liste)
 
-        self.listeAff = [self.liste[(newIndex + i) % len(self.liste)] for i in range(7)]
+        self.listeAff = [self.liste[(newIndex + i) % len(self.liste)] for i in range(len(self.listeAff))]
 
         self.scrollUpdate()
 

@@ -334,9 +334,9 @@ class Avion:
         for point in route:
             pointDeux = [points[point['name']][0], points[point['name']][1]]
 
-            pygame.draw.line(win, (25, 25, 170),
+            pygame.draw.line(win, (46, 80, 174),
                              (pointUn[0] * zoom + scroll[0], pointUn[1] * zoom + scroll[1]),
-                             (pointDeux[0] * zoom + scroll[0], pointDeux[1] * zoom + scroll[1]), 2)
+                             (pointDeux[0] * zoom + scroll[0], pointDeux[1] * zoom + scroll[1]), 3)
 
             pointUn = pointDeux  # on passe au prochain point
 

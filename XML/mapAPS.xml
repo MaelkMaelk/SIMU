@@ -6,6 +6,40 @@
     <floor>245</floor>  # plancher de notre secteur
     <ceiling>365</ceiling> # plafond
 
+    <secteurs>  # liste des secteurs adjacents
+        <secteur name="I2">
+            <frequence>125.830</frequence>
+        </secteur>
+        <secteur name="S2">
+            <frequence>127.840</frequence>
+        </secteur>
+        <secteur name="N2">
+            <frequence>128.050</frequence>
+        </secteur>
+        <secteur name="N3">
+            <frequence>131.175</frequence>
+        </secteur>
+        <secteur name="RU">
+            <frequence>132.740</frequence>
+        </secteur>
+        <secteur name="EI">
+            <frequence>119.275</frequence>
+        </secteur>
+        <secteur name="OM">
+            <frequence>124.080</frequence>
+        </secteur>
+        <secteur name="OS">
+            <frequence>134.610</frequence>
+        </secteur>
+        <secteur name="M2">
+            <frequence>130.275</frequence>
+            <etranger>True</etranger>
+        </secteur>
+        <secteur name="G2">
+            <frequence>127.675</frequence>
+            <etranger>True</etranger>
+        </secteur>
+    </secteurs>
  
     <points>
         <point name="WS">
@@ -162,8 +196,8 @@
         </point>
     </points>
 
-    <secteurs>
-        <secteur color="75,75,75">
+    <zones>
+        <zone color="75,75,75">
             <limite>
                 <x>1109</x>
                 <y>915</y>
@@ -220,8 +254,8 @@
                 <x>1107</x>
                 <y>1266</y>
             </limite>
-        </secteur>
-    </secteurs>
+        </zone>
+    </zones>
 
     <routes>
         <route>

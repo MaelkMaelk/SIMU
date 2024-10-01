@@ -429,12 +429,12 @@ def main(server_ip: str):
         win.fill((90, 90, 90))
 
         # on dessine les secteurs
-        for secteur in carte['secteurs']:
+        for zone in carte['zones']:
             liste_affichage_secteurs = []
-            for point in secteur['contour']:
+            for point in zone['contour']:
                 pos = positionAffichage(point[0], point[1], zoom, scroll[0], scroll[1])
                 liste_affichage_secteurs.append((pos[0], pos[1]))
-            pygame.draw.polygon(win, secteur['couleur'], liste_affichage_secteurs)
+            pygame.draw.polygon(win, zone['couleur'], liste_affichage_secteurs)
 
         # on dessine les routes
         for segment in carte['segments']['TRANSIT']:
