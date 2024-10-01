@@ -757,10 +757,12 @@
             <AD>ESSB</AD>
             <AD>ENGM</AD>
             <AD>EPWA</AD>
+            <AD>EGLL</AD>
         </NE>
 
         <N>
             <AD>EGBB</AD>
+            <AD>EGLL</AD>
             <AD>EIDW</AD>
             <AD>EGCC</AD>
             <AD>EGGD</AD>
@@ -807,6 +809,9 @@
         <SE>
             <AD>LFKC</AD>
             <AD>LFKJ</AD>
+            <AD>DAAG</AD>
+            <AD>DRRN</AD>
+            <AD>DTTA</AD>
         </SE>
 
         <E-SE>

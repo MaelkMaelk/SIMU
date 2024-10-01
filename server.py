@@ -449,7 +449,9 @@ while Running:
                 aircraftType[spawn[1]['aircraft']],
                 spawnRoute,
                 spawn[1]['arrival'] == 'True',
-                FL=spawnFL)})
+                FL=spawnFL,
+                x=spawn[1]['x'],
+                y=spawn[1]['y'])})
             toBeRemovedFromSpawn.append(spawn)
             planeId += 1
 

@@ -1,3 +1,4 @@
+import geometry
 from geometry import *
 from valeurs_config import *
 import random
@@ -88,12 +89,8 @@ class AvionPacket:
         self.route = route
 
         self.headingMode = False
-        # TODO changer ça pour pouvoir mettre un avion nimporte ou sur la route
-        if calculateDistance(self.x, self.y, gameMap['points'][self.route['points'][0]['name']][0],
-                             gameMap['points'][self.route['points'][0]['name']][1]) <= 4 * self.speedPx:
-            self.nextPoint = self.route['points'][1]
-        else:
-            self.nextPoint = self.route['points'][0]
+
+        self.nextPoint = geometry.findClosestSegment(route['points'], (self.x, self.y), gameMap['points'])
 
         self.evolution = 0  # taux de variation/radar refresh
         self.altitudeEvoTxt = '-'

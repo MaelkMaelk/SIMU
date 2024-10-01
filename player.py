@@ -321,10 +321,9 @@ class Avion:
         :param scroll: le scroll format [x, y]
         :return:
         """
-        # TODO route qui se dessine correctement même quand on est en direct
 
         route = self.papa.route['points']  # on n'a besoin que des noms des points
-        nextPoint = self.papa.nextPoint
+        nextPoint = geometry.findClosestSegment(route, (self.papa.x, self.papa.y), points)
 
         point1 = points[route[route.index(nextPoint) - 1]['name']][:2]
         point2 = points[nextPoint['name']][:2]
