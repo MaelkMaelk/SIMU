@@ -90,7 +90,8 @@ class AvionPacket:
 
         self.headingMode = False
 
-        self.nextPoint = geometry.findClosestSegment(route['points'], (self.x, self.y), gameMap['points'])[1]
+        self.nextPoint = None
+        self.findNextPoint(gameMap)
 
         self.evolution = 0  # taux de variation/radar refresh
         self.altitudeEvoTxt = '-'
@@ -156,6 +157,10 @@ class AvionPacket:
         self.clearedMach = None
         self.clearedHeading = None
         self.clearedRate = None
+
+    def findNextPoint(self, carte):
+
+        self.nextPoint = geometry.findClosestSegment(self.route['points'], (self.x, self.y), carte['points'])[1]
 
     def changeXFL(self, carte) -> None:
         """

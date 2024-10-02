@@ -371,6 +371,28 @@ while Running:
                                      xEcriture=req[2].x,
                                      yEcriture=req[2].y,
                                      PFLEcriture=req[2].PFL)
+            elif req[1] == 'DelayedAdd':
+
+                avionSpawnListe.append((game.heure + req[2][0], req[2][1]))
+
+                if mode_ecriture:
+
+                    heures = str(round(game.heure + req[2][0] // 3600))
+                    if len(heures) == 1:
+                        heures = '0' + heures
+                    minutes = str(round(game.heure + req[2][0] % 3600 // 60))
+                    if len(minutes) == 1:
+                        minutes = '0' + minutes
+
+                    generateAvionXML(avionsXML,
+                                     heures + minutes,
+                                     req[2][1].indicatif,
+                                     req[2][1].aircraft,
+                                     req[2][1].route['name'],
+                                     req[2][1].altitude,
+                                     xEcriture=req[2][1].x,
+                                     yEcriture=req[2][1].y,
+                                     PFLEcriture=req[2][1].PFL)
 
             elif req[1] == 'Remove':
                 dictAvion.pop(req[0])

@@ -221,6 +221,19 @@ def main(server_ip: str):
                         if type(action) in [list, tuple]:  # si c'est un tuple alors cela correspond à une requête
                             localRequests.append(action)
 
+                if conflitGen is not None:
+                    action = conflitGen.checkEvent(event)
+
+                    if action:
+                        if type(action) is tuple:
+                            localRequests.append((len(dictAvions), "DelayedAdd", action))
+                        else:
+                            localRequests.append((len(dictAvions), "Add", action))
+                            conflitBool = False
+                            for avion in dictAvionsAff.values():
+                                avion.conflitSelected = False
+                        conflitGen = None
+
                 if menuValeurs is not None:
 
                     # si on valide les modifs, alors la fonction checkEvent retourne les modifs
@@ -289,7 +302,7 @@ def main(server_ip: str):
                                 PFL=PFL)
 
                             if newPlaneData['conflit']:
-                                conflitGen = outils_radar.conflictGenerator(win, newPlane)
+                                conflitGen = outils_radar.conflictGenerator(win, newPlane, carte)
                                 conflitBool = True
                             else:
                                 localRequests.append((len(dictAvions), "Add", newPlane))

@@ -88,11 +88,13 @@ class aliSep:
 
 class conflictGenerator:
 
-    def __init__(self, win, avion):
+    def __init__(self, win, avion, carte):
 
         size = win.get_size()
         width = size[0] / 3
         height = 40
+
+        self.carte = carte
 
         self.slider = pygame_gui.elements.UIHorizontalScrollBar(
             pygame.Rect((size[0] / 2 - width / 2, 10), (width, height)),
@@ -120,6 +122,16 @@ class conflictGenerator:
         if self.slider.has_moved_recently:
             self.temps = self.slider.start_percentage * self.maxTemps
 
+    def checkEvent(self, event):
+
+        """
+        Vérifies si les boutons sont appuyés et prend les actions nécessaires.
+        :param event:
+        :return:
+        """
+        if event.ui_element == self.valider:
+            return self.kill()
+
     def computeSpawn(self, pos: list[float, float] | tuple[float, float], carte):
         """
         Change la position, ou le delay de spawn de l'avion en fonction de la position voulue et des perfos
@@ -127,6 +139,7 @@ class conflictGenerator:
         :param carte: La carte du jeu
         :return:
         """
+
         points = carte['points']
         route = self.avion.route['points']
         distance = self.temps * self.avion.speedPx / radarRefresh  # quelle distance va parcourir l'avion en ce temps
@@ -149,7 +162,7 @@ class conflictGenerator:
 
         if distance_calcule <= distance:  # si on doit parcourir plus que ce qu'on a calculé au spawn
             #  alors on delay le spawn, temps ici en sec
-            self.spawnDelay = (distance_calcule - distance) / self.avion.speedPx * radarRefresh
+            self.spawnDelay = int((distance - distance_calcule) / self.avion.speedPx * radarRefresh)
             self.x = points[route[0]['name']][0]
             self.y = points[route[0]['name']][1]
 
@@ -157,7 +170,7 @@ class conflictGenerator:
                 self.drawListe.append(points[route[index]['name']])
 
         else:  # si on doit parcourir moins, alors on fait apparaître l'avion plus proche du secteur
-            self.spawnDelay = 0
+            self.spawnDelay = None
             distanceAparcourir = distance_calcule - distance
             index = 0
             found = False
@@ -174,6 +187,8 @@ class conflictGenerator:
                     self.x = ratio * (point2[0] - point1[0]) + point1[0]
                     self.y = ratio * (point2[1] - point1[1]) + point1[1]
                     self.drawListe.append((self.x, self.y))
+                    self.avion.x = self.x
+                    self.avion.y = self.y
                     found = True
 
                 else:
@@ -192,7 +207,15 @@ class conflictGenerator:
                              (point1[0] * zoom + scroll[0], point1[1] * zoom + scroll[1]),
                              (point2[0] * zoom + scroll[0], point2[1] * zoom + scroll[1]))
 
+        if self.spawnDelay:
+            font = pygame.font.SysFont('arial', 15)
+            img = font.render("Délai à l'apparition: " + str(self.spawnDelay) + "s", True, (170, 170, 255))
+            win.blit(img, (self.drawListe[0][0] * zoom + scroll[0], self.drawListe[0][1] * zoom + scroll[1]))
+
     def kill(self):
         self.valider.kill()
         self.slider.kill()
+        self.avion.findNextPoint(self.carte)
+        if self.spawnDelay:
+            return self.spawnDelay, self.avion
         return self.avion
