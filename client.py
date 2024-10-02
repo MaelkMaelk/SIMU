@@ -1,5 +1,6 @@
 import pygame
 import horloge
+import outils_radar
 from network import Network
 import server_browser
 from player import *
@@ -7,6 +8,7 @@ import pygame_gui
 import interface
 from paquets_avion import *
 import math
+import outils_radar
 
 # recherche de tous les serveurs sur le réseau
 address = server_browser.serverBrowser()
@@ -34,6 +36,8 @@ def main(server_ip: str):
 
     distance = 10
     # menus
+    conflitBool = False
+    conflitGen = None
     menuAvion = None
     menuATC = None
     menuValeurs = None
@@ -71,7 +75,7 @@ def main(server_ip: str):
 
     # alisep
     curseur_aliSep = False
-    sepDict = {'A': interface.aliSep('A'), 'B': interface.aliSep('B'), 'C': interface.aliSep('C')}
+    sepDict = {'A': outils_radar.aliSep('A'), 'B': outils_radar.aliSep('B'), 'C': outils_radar.aliSep('C')}
 
     # scroll and zoom
     zoomDef = 0.5
@@ -239,7 +243,9 @@ def main(server_ip: str):
                 else:
                     for avion in dictAvionsAff.values():  # pour chaque avion
 
-                        action = avion.checkEvent(event, pilote)  # on vérifie si l'event est associé avec ses boutons
+                        action = avion.checkEvent(event, pilote, conflitBool)  
+                        
+                        # on vérifie si l'event est associé avec ses boutons
 
                         if type(action) in [list, tuple]:  # si c'est un tuple alors cela correspond à une requête
                             localRequests.append(action)
@@ -262,6 +268,7 @@ def main(server_ip: str):
 
                         # on vérifie que newPlane n'est pas None (les valeurs ont été renvoyés)
                         if newPlaneData:
+
                             # on crée alors un nouvel avion
                             FL = None
                             PFL = None
@@ -281,7 +288,11 @@ def main(server_ip: str):
                                 FL=FL,
                                 PFL=PFL)
 
-                            localRequests.append((len(dictAvions), "Add", newPlane))
+                            if newPlaneData['conflit']:
+                                conflitGen = outils_radar.conflictGenerator(win, newPlane)
+                                conflitBool = True
+                            else:
+                                localRequests.append((len(dictAvions), "Add", newPlane))
 
             elif event.type == pygame_gui.UI_TEXT_ENTRY_CHANGED:
                 nouvelAvionWin.checkFields(event)
@@ -331,10 +342,17 @@ def main(server_ip: str):
                 else:
                     menuRadar.show()
 
+            elif event.type == pygame.MOUSEBUTTONUP and event.button == 2 and not empecherDragging and conflitGen:
+                mouse = pygame.mouse.get_pos()
+                conflitGen.computeSpawn(((mouse[0] - scroll[0]) / zoom, (mouse[1] - scroll[1]) / zoom), carte)
+
             manager.process_events(event)
 
         if menuAvion is not None:
             menuAvion.checkSliders()
+
+        if conflitGen is not None:
+            conflitGen.checkScrollBar()
 
         """Dragging"""
 
@@ -459,6 +477,20 @@ def main(server_ip: str):
             # win.blit(img, (point[0]*zoom + 10 + scroll[0], point[1]*zoom+10 + scroll[1]))
 
         # on affiche les avions
+
+        if conflitGen is not None:
+            conflitGen.draw(win, zoom, scroll)
+            color = [10, 10, 10]
+            for avion in dictAvionsAff.values():
+                if color[0] <= 255 - 40:
+                    color[0] += 70
+                elif color[1] <= 255 - 40:
+                    color[0] = 255
+                    color[1] += 70
+                elif color[2] <= 255 - 40:
+                    color[1] = 255
+                    color[2] += 70
+                avion.drawEstimatedRoute(carte['points'], conflitGen.temps, color, win, zoom, scroll)
 
         for avion in dictAvionsAff.values():
             avion.draw(win, zoom, scroll, vecteurs, vecteurSetting, carte['points'])

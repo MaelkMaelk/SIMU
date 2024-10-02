@@ -60,6 +60,7 @@ class Avion:
         self.etiquetteExtended = False
         self.lastHoveredTime = 0
         self.pointDessinDirect = None
+        self.conflitSelected = False
         self.drag = False  # if true l'etiquette se fait drag
         self.dragOffset = (0, 0)  # le décalage de l'etiquette par rapport au curseur
         self.startPressTime = 0
@@ -262,17 +263,21 @@ class Avion:
         coord = [points[point][0] * zoom + scroll[0], points[point][1] * zoom + scroll[1]]
         pygame.draw.line(win, (0, 206, 209), (self.affX + plotSize, self.affY + plotSize), coord)
 
-    def drawEstimatedRoute(self, points, temps, win, zoom, scroll):
+    def drawEstimatedRoute(self, points, temps, color, win, zoom, scroll):
         """
         Dessine la route future de l'avion jusuq'à un certain point défini par une valeur de temps
         C'est une bonne approximation de la future position de l'avion, à vitesse constante
         :param points: la liste des points récupérer les coords
-        :param temps: combien de temps doit faire la route dessinée
+        :param temps: combien de temps doit faire la route dessinée en sec
+        :param color: La couleur du tracé
         :param win: l'écran pygame
         :param zoom: le niveau de zoom
         :param scroll: le scroll format [x, y]
         :return:
         """
+
+        if not self.conflitSelected:
+            return None
 
         route = self.papa.route['points']  # on n'a besoin que des noms des points
         nextPoint = self.papa.nextPoint
@@ -280,7 +285,7 @@ class Avion:
 
         route = route[route.index(nextPoint):]  # on ne considère que la route devant l'avion
         pointUn = [self.papa.x, self.papa.y]  # on commence à dessiner à partir de l'avion
-        distance = temps * self.papa.speedPx  # on établit la distance de la route avec notre vitesse
+        distance = temps * self.papa.speedPx / radarRefresh  # on établit la distance de la route avec notre vitesse
 
         for point in route:
             pointDeux = [points[point['name']][0], points[point['name']][1]]
@@ -296,18 +301,18 @@ class Avion:
                              pointUn[1] + (pointDeux[1] - pointUn[1]) * ratio]
 
                 # on dessine alors la dernière branche
-                pygame.draw.line(win, (0, 255, 0),
+                pygame.draw.line(win, color,
                                  (pointUn[0] * zoom + scroll[0], pointUn[1] * zoom + scroll[1]),
-                                 (pointDeux[0] * zoom + scroll[0], pointDeux[1] * zoom + scroll[1]))
+                                 (pointDeux[0] * zoom + scroll[0], pointDeux[1] * zoom + scroll[1]), 2)
 
                 self.predictionPoint = pointDeux
 
                 break  # on casse la boucle for, pas la peine de faire des calculs pour plus loin, la prédi est finie
 
             else:  # si le trajet s'arrête après la branche, on dessine la branche en entier
-                pygame.draw.line(win, (0, 255, 0),
+                pygame.draw.line(win, color,
                                  (pointUn[0] * zoom + scroll[0], pointUn[1] * zoom + scroll[1]),
-                                 (pointDeux[0] * zoom + scroll[0], pointDeux[1] * zoom + scroll[1]))
+                                 (pointDeux[0] * zoom + scroll[0], pointDeux[1] * zoom + scroll[1]), 2)
 
             distance -= legDistance  # on enlève la distance de la branche parcourue à la distance à parcourir
             pointUn = pointDeux  # on passe au prochain point
@@ -323,7 +328,7 @@ class Avion:
         """
 
         route = self.papa.route['points']  # on n'a besoin que des noms des points
-        nextPoint = geometry.findClosestSegment(route, (self.papa.x, self.papa.y), points)
+        nextPoint = geometry.findClosestSegment(route, (self.papa.x, self.papa.y), points)[1]
 
         point1 = points[route[route.index(nextPoint) - 1]['name']][:2]
         point2 = points[nextPoint['name']][:2]
@@ -353,10 +358,11 @@ class Avion:
         else:
             return False
 
-    def checkEvent(self, event, pilote):
+    def checkEvent(self, event, pilote, conflitBool):
 
         """
         Vérifie si un bouton associé à l'avion correspond à l'event
+        :param conflitBool: Si ou non, on est en mode création de conflits
         :param event: événement à vérifier
         :param pilote: si l'interface est en mode pilote ou non
         :return:
@@ -364,10 +370,16 @@ class Avion:
 
         # on vérifie que le bouton est bien associé à l'etiquette
         if event.ui_element.ui_container == self.etiquette.container:
+
             self.startPressTime = 0
             if self.drag:
                 self.drag = False
                 return None  # comme on était en train de drag, on ne fait aucune action liée au bouton
+
+            if conflitBool:
+                self.conflitSelected = not self.conflitSelected
+                return None
+
             if event.mouse_button == 2 and not pilote and event.ui_element is not self.etiquette.DCT:
                 # si c'est un clic milieu, alors on surligne ou non le bouton
 
@@ -384,6 +396,11 @@ class Avion:
                 return self.Id, 'HighlightBouton', (indexLigne, index)
 
         if event.ui_element == self.bouton:
+
+            if conflitBool:
+                self.conflitSelected = not self.conflitSelected
+                return None
+
             if event.mouse_button == 2 and not pilote:  # clic milieu
                 return self.Id, 'Warning'
 

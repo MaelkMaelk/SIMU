@@ -25,6 +25,9 @@
         <secteur name="EI">
             <frequence>119.275</frequence>
         </secteur>
+        <secteur name="RI">
+            <frequence>124.2</frequence>
+        </secteur>
         <secteur name="OM">
             <frequence>124.080</frequence>
         </secteur>

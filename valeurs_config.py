@@ -6,6 +6,7 @@ altiDefault = 30000  # alti en pied par défault, si on ne rentre pas d'alti pou
 acceldefault = 3  # accélération/decelération de kt par refresh
 turnRateDefault = 10  # turnrate/refresh par défault
 liste_etat_freq = ['previousFreq', 'previousShoot', 'inFreq', 'nextCoord', 'nextShoot', 'nextFreq']
+valeurCoord = 8  # combien de minute avant la sortie la coord passe
 plotSize = 5  # taille des plots avions
 dragDelay = 150  # on utilise cette valeur seuil pour déterminer si on doit cliquer sur un bouton ou drag l'etiquette
 offsettEtiquetteDefault = 30  # de combien les etiquettes sont décalées en px à quand on les dessine la 1ere fois

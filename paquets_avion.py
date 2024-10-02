@@ -90,7 +90,7 @@ class AvionPacket:
 
         self.headingMode = False
 
-        self.nextPoint = geometry.findClosestSegment(route['points'], (self.x, self.y), gameMap['points'])
+        self.nextPoint = geometry.findClosestSegment(route['points'], (self.x, self.y), gameMap['points'])[1]
 
         self.evolution = 0  # taux de variation/radar refresh
         self.altitudeEvoTxt = '-'
@@ -194,6 +194,8 @@ class AvionPacket:
         else:
             i = liste_etat_freq.index(self.etatFrequence)
             if i != len(liste_etat_freq) - 1:  # on vérifie que ce n'est pas le dernier état fréquence
+                if self.etranger and self.etatFrequence == 'nextCoord':
+                    i += 1
                 self.etatFrequence = liste_etat_freq[i + 1]
        
     def updateAlti(self):
@@ -225,6 +227,12 @@ class AvionPacket:
             self.evolution = 0
 
     def move(self, gameMap):
+
+        # frequence update
+        if self.etatFrequence == 'inFreq':
+
+            if self.calculeEstimate(gameMap['points'], self.XPT) <= 60 * valeurCoord:  # si on sort dans moins de 6min
+                self.updateEtatFreq()
         
         # heading update
         if not self.headingMode:  # si l'avion est en direct et pas en cap
@@ -239,7 +247,7 @@ class AvionPacket:
                     ancien = self.nextPoint  # pour la comparaison après
                     self.nextPoint = self.route['points'][self.route['points'].index(self.nextPoint) + 1]
                     if ancien['name'] == self.DCT:  # si le point clairé est celui qu'on passe
-                        self.DCT = self.nextPoint['name']  # alors on passe au point suivant aussi
+                        self.DCT = self.nextPoint['name']  # alors, on passe au point suivant aussi
 
             self.selectedHeading = calculateHeading(self.x, self.y, gameMap['points'][self.nextPoint['name']][0],
                                                     gameMap['points'][self.nextPoint['name']][1])
@@ -274,7 +282,7 @@ class AvionPacket:
         self.x += self.speedPx * math.cos(self.headingRad)
         self.y += self.speedPx * math.sin(self.headingRad)
 
-    def calculeEstimate(self, points: dict, pointVoulu: str) -> None:
+    def calculeEstimate(self, points: dict, pointVoulu: str) -> float:
         """
         Calcule le temps à un point sur notre route. Pour avoir l'estimée, il faudra rajouter l'heure courante
         :param points: dict des points de la carte

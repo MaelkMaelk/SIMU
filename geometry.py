@@ -189,16 +189,17 @@ def distanceMiniEnFduTemps(temps, pos1: tuple[float, float], vitesse1: float, he
     )
 
 
-def findClosestSegment(route: list, position: tuple[float, float], points: dict):
+def findClosestSegment(route: list, position: tuple[float, float], points: dict) -> tuple:
     """
-    Retourne le 2em point du segment de la route le plus proche de notre position
-    :param route: la route qu'on analyse
-    :param position: la position qu'on veut comparer
-    :param points: la carte du jeu
+    Retourne les 2 points du segment de la route le plus proche de notre position dans l'ordre de la route.
+    :param route: La route qu'on analyse
+    :param position: La position qu'on veut comparer
+    :param points: La carte du jeu
     :return:
     """
 
-    closest = route[0]
+    start = route[0]
+    end = route[0]
     distance = 99999999
 
     for index in range(len(route) - 1):  # dans cette boucle, on cherche à quel segment on est le plus proche
@@ -214,8 +215,8 @@ def findClosestSegment(route: list, position: tuple[float, float], points: dict)
         disancte = calculateDistance(position[0], position[1], intersection[0], intersection[1])
 
         if disancte <= distance:
-
-            closest = point2
+            start = point
+            end = point2
             distance = disancte
 
-    return closest
+    return start, end
