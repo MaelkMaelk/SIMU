@@ -210,7 +210,7 @@ for aircraft in root:
                                    'ROC': int(aircraft.find('ROC').text),
                                    'ROD': int(aircraft.find('ROD').text)}})
 
-
+planeId = 0
 try:  # on essaye de charger une simu, si elle existe
     tree = ET.parse('XML/' + SIMU)
 
@@ -232,7 +232,28 @@ try:  # on essaye de charger une simu, si elle existe
         heureSpawn = avion.attrib['heure']
         heureSpawn = int(heureSpawn[0:2]) * 3600 + int(heureSpawn[2:]) * 60
 
-        avionSpawnListe.append((heureSpawn, avionDict))
+        for route in gameMap['routes']:
+            if route == avionDict['route']:
+                spawnRoute = gameMap['routes'][route]
+                break
+        if 'altitude' in avionDict:
+            spawnFL = round(avionDict['altitude'] / 100)
+        else:
+            spawnFL = None
+        avionPack = AvionPacket(
+            gameMap,
+            planeId,
+            avionDict['indicatif'],
+            avionDict['aircraft'],
+            aircraftType[avionDict['aircraft']],
+            spawnRoute,
+            avionDict['arrival'] == 'True',
+            FL=spawnFL,
+            x=avionDict['x'],
+            y=avionDict['y'])
+        planeId += 1
+
+        avionSpawnListe.append((heureSpawn, avionPack))
 except:  # sinon, on demande juste l'heure de début
 
     heure = input('Heure de début de simu, format: hhmm')
@@ -341,7 +362,6 @@ start_new_thread(threaded_waiting, ())
 start_new_thread(threaded_ping_responder, ())
 temps = time.time()
 STCAtriggered = False
-planeId = 0
 accelerationTemporelle = 1
 Running = True
 while Running:
@@ -467,27 +487,8 @@ while Running:
     toBeRemovedFromSpawn = []
     for spawn in avionSpawnListe:
         if spawn[0] <= game.heure:
-            for route in gameMap['routes']:
-                if route == spawn[1]['route']:
-                    spawnRoute = gameMap['routes'][route]
-                    break
-            if 'altitude' in spawn[1]:
-                spawnFL = round(spawn[1]['altitude']/100)
-            else:
-                spawnFL = None
-            dictAvion.update({planeId: AvionPacket(
-                gameMap,
-                planeId,
-                spawn[1]['indicatif'],
-                spawn[1]['aircraft'],
-                aircraftType[spawn[1]['aircraft']],
-                spawnRoute,
-                spawn[1]['arrival'] == 'True',
-                FL=spawnFL,
-                x=spawn[1]['x'],
-                y=spawn[1]['y'])})
             toBeRemovedFromSpawn.append(spawn)
-            planeId += 1
+            dictAvion.update({spawn[1].Id: spawn[1]})
 
     for avion in toBeRemovedFromSpawn:
         avionSpawnListe.remove(avion)
