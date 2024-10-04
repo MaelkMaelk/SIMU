@@ -1,7 +1,9 @@
+
+# Module imports
 import pygame
 import pygame_gui
-import horloge
-from valeurs_config import *
+import Python.horloge as horloge
+from Python.valeurs_config import *
 
 
 def selectButtonInList(liste: list, event):

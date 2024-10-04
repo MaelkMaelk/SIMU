@@ -24,8 +24,8 @@
          {
              "name": "regular",
              "size": "12",
-             "regular_path": "../fonts/LTSuperior-SemiBold.otf",
-             "bold_path": "../fonts/LTSuperior-Black.otf"
+             "regular_path": "ressources/fonts/LTSuperior-SemiBold.otf",
+             "bold_path": "ressources/fonts/LTSuperior-Black.otf"
              }
    },
   "@menu":
@@ -38,8 +38,8 @@
         "font": {
           "name": "bold",
           "size": "12",
-          "regular_path": "../fonts/LTSuperior-SemiBold.otf",
-          "bold_path": "../fonts/LTSuperior-Black.otf"
+          "regular_path": "ressources/fonts/LTSuperior-SemiBold.otf",
+          "bold_path": "ressources/fonts/LTSuperior-Black.otf"
         },
         "colours":
          {
@@ -93,8 +93,8 @@
         "font": {
           "name": "bold",
           "size": "15",
-          "regular_path": "../fonts/LTSuperior-SemiBold.otf",
-          "bold_path": "../fonts/LTSuperior-Black.otf"
+          "regular_path": "ressources/fonts/LTSuperior-SemiBold.otf",
+          "bold_path": "ressources/fonts/LTSuperior-Black.otf"
         },
         "colours":
          {
@@ -153,8 +153,8 @@
          {
              "name": "bold",
              "size": "12",
-             "regular_path": "../fonts/LTSuperior-SemiBold.otf",
-             "bold_path": "../fonts/LTSuperior-Black.otf"
+             "regular_path": "ressources/fonts/LTSuperior-SemiBold.otf",
+             "bold_path": "ressources/fonts/LTSuperior-Black.otf"
              }
      },
   "@etiquetteBold":
@@ -177,8 +177,8 @@
           "name": "bold",
           "size": "12",
           "bold": "1",
-          "regular_path": "../fonts/LTSuperior-SemiBold.otf",
-          "bold_path": "../fonts/LTSuperior-Black.otf"
+          "regular_path": "ressources/fonts/LTSuperior-SemiBold.otf",
+          "bold_path": "ressources/fonts/LTSuperior-Black.otf"
         }
       },
   "@etiquetteBoldBlue":
@@ -201,8 +201,8 @@
           "name": "bold",
           "size": "12",
           "bold": "1",
-          "regular_path": "../fonts/LTSuperior-SemiBold.otf",
-          "bold_path": "../fonts/LTSuperior-Black.otf"
+          "regular_path": "ressources/fonts/LTSuperior-SemiBold.otf",
+          "bold_path": "ressources/fonts/LTSuperior-Black.otf"
         }
       },
   "@etiquetteBlue":
@@ -224,8 +224,8 @@
         "font": {
           "name": "bold",
           "size": "12",
-          "regular_path": "../fonts/LTSuperior-SemiBold.otf",
-          "bold_path": "../fonts/LTSuperior-Black.otf"
+          "regular_path": "ressources/fonts/LTSuperior-SemiBold.otf",
+          "bold_path": "ressources/fonts/LTSuperior-Black.otf"
         }
       },
   "rose":

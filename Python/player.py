@@ -1,9 +1,15 @@
-import pygame
+
+# Native imports
 import math
+
+# Module imports
+import pygame
 import pygame_gui
-from valeurs_config import *
-import geometry
-import interface
+
+# Imports fichiers
+from Python.valeurs_config import *
+import Python.geometry as geometry
+import Python.interface as interface
 
 
 def positionAffichage(x: int, y: int, zoom: float, scrollX: float, scrollY: float):

@@ -1,6 +1,10 @@
-from Python import geometry
+
+# Native imports
 import math
-from valeurs_config import *
+
+# Imports fichiers
+import Python.geometry as geometry
+from Python.valeurs_config import *
 
 
 def STCA(avion1, avion2, carte) -> bool:

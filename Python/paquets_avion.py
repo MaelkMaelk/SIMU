@@ -1,7 +1,10 @@
-import geometry
-from geometry import *
-from valeurs_config import *
+
+# Native imports
 import random
+
+# Imports fichiers
+from Python.geometry import *
+from Python.valeurs_config import *
 
 
 class Game:
@@ -160,7 +163,7 @@ class AvionPacket:
 
     def findNextPoint(self, carte):
 
-        self.nextPoint = geometry.findClosestSegment(self.route['points'], (self.x, self.y), carte['points'])[1]
+        self.nextPoint = findClosestSegment(self.route['points'], (self.x, self.y), carte['points'])[1]
 
     def changeXFL(self, carte) -> None:
         """

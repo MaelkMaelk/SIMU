@@ -1,9 +1,14 @@
+
+# Native imports
+import math
+
+# Module imports
 import pygame
 import pygame_gui
 
-import geometry
-import math
-from valeurs_config import *
+# Imports fichiers
+import Python.geometry as geometry
+from Python.valeurs_config import *
 
 
 class aliSep:

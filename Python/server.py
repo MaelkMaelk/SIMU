@@ -1,10 +1,11 @@
+
+# Native imports
 import socket
+import math
 import sys
+import pickle
 from _thread import *
 from queue import Queue
-from Python.network import MCAST_GRP, MCAST_PORT, port
-from Python.paquets_avion import *
-import pickle
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
 import time
@@ -12,13 +13,18 @@ import struct
 import platform
 from pathlib import Path
 
-dossierXML = Path("").absolute().parent / 'XML'
+# Import fichiers
+from Python.network import MCAST_GRP, MCAST_PORT, port
+from Python.paquets_avion import *
+
+
+dossierXML = Path("").absolute() / 'XML'
 
 carte = 'carteSecteur.xml'
 aircraftFile = 'aircraft.xml'
 simu = 'simu.xml'
 mode_ecriture = True
-open(dossierXML / carte)
+
 # On se connecte à internet pour avoir notre adresse IP locale... Oui oui
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock.connect(("8.8.8.8", 80))
@@ -335,11 +341,9 @@ def threaded_client(conn, caca):
 
             conn.sendall(pickle.dumps(reply))
             nombre = 0
-        except:
-            if nombre >= 200:
-                break
-            else:
-                nombre += 1
+
+        except error:
+            print(error)
 
     print("Lost connection")
     conn.close()
@@ -487,7 +491,7 @@ while Running:
                     accelerationTemporelle -= 0.5
             elif req[1] == 'Save' and mode_ecriture:
                 xmlstr = minidom.parseString(ET.tostring(SimuTree)).toprettyxml(indent="   ")
-                with open("../XML/simu.xml", "w") as f:
+                with open("XML/simu.xml", "w") as f:
                     f.write(xmlstr)
 
     toBeRemovedFromSpawn = []

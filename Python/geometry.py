@@ -1,4 +1,8 @@
+
+# Native imports
 import math
+
+# Module imports
 import numpy as np
 from scipy.optimize import minimize
 

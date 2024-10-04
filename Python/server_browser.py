@@ -1,5 +1,8 @@
+
+# Native Imports
 import socket
 
+# Imports fichiers
 from Python.network import MCAST_GRP, MCAST_PORT
 
 def serverBrowser():

@@ -1,12 +1,18 @@
-import horloge
-from network import Network
-import server_browser
-from player import *
-import pygame_gui
-import interface
-from paquets_avion import *
+
+# Native import
+import time
 import math
-import outils_radar
+from pathlib import Path
+import os
+
+# fichiers
+import Python.horloge as horloge
+from Python.network import Network
+import Python.server_browser as server_browser
+from Python.player import *
+import Python.interface as interface
+from Python.paquets_avion import *
+import Python.outils_radar as outils_radar
 
 # recherche de tous les serveurs sur le réseau
 address = server_browser.serverBrowser()
@@ -18,7 +24,8 @@ width = 1000
 height = 1000
 
 win = pygame.display.set_mode((width, height))
-manager = pygame_gui.UIManager((width, height), '../theme.json')
+path = Path(os.getcwd())
+manager = pygame_gui.UIManager((width, height), path / 'ressources' / 'theme.json')
 
 pygame.display.set_caption("Client")
 temps = pygame.time.get_ticks()
@@ -51,6 +58,7 @@ def main(server_ip: str):
     while packet is None and i < 200:
         n = Network(server_ip)
         packet = n.getP()
+        time.sleep(0.3)
         i +=1
 
     perfos = packet.perfos
