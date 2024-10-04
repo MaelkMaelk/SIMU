@@ -1,7 +1,5 @@
 import pygame
 import pygame_gui
-import math
-import geometry
 import horloge
 from valeurs_config import *
 

@@ -1,4 +1,4 @@
-import geometry
+from Python import geometry
 import math
 from valeurs_config import *
 

@@ -1,6 +1,4 @@
-import pygame
 import horloge
-import outils_radar
 from network import Network
 import server_browser
 from player import *
@@ -20,7 +18,7 @@ width = 1000
 height = 1000
 
 win = pygame.display.set_mode((width, height))
-manager = pygame_gui.UIManager((width, height), 'theme.json')
+manager = pygame_gui.UIManager((width, height), '../theme.json')
 
 pygame.display.set_caption("Client")
 temps = pygame.time.get_ticks()
@@ -89,7 +87,6 @@ def main(server_ip: str):
 
     # vecteurs et type
     vecteurs = False
-    affichage_type_avion = False
     vecteurSetting = 6
 
     # fenêtre nouvel avion
@@ -165,7 +162,10 @@ def main(server_ip: str):
                         avion.dragOffset = calculateEtiquetteOffset(avion.etiquette.container)
 
             # on vérifie que l'alidade n'est pas actif
-            elif event.type == pygame_gui.UI_BUTTON_PRESSED and not curseur_alidad:
+            elif event.type == pygame_gui.UI_BUTTON_PRESSED and curseur_alidad:
+                empecherDragging = False
+
+            elif event.type == pygame_gui.UI_BUTTON_PRESSED:
                 empecherDragging = False
                 
                 if menuRadar.checkActive():
@@ -229,9 +229,9 @@ def main(server_ip: str):
                             localRequests.append((len(dictAvions), "DelayedAdd", action))
                         else:
                             localRequests.append((len(dictAvions), "Add", action))
-                            conflitBool = False
                             for avion in dictAvionsAff.values():
                                 avion.conflitSelected = False
+                        conflitBool = False
                         conflitGen = None
 
                 if menuValeurs is not None:
@@ -392,10 +392,6 @@ def main(server_ip: str):
                 scroll = scrollDef
                 pressing = True
                 delaiPressage = pygame.time.get_ticks()
-            if keys[pygame.K_t]:  # type avions
-                affichage_type_avion = not affichage_type_avion
-                pressing = True
-                delaiPressage = pygame.time.get_ticks()
 
             if keys[pygame.K_f] and flightDataWindow is None:  # Flight Data Window
                 flightDataWindow = interface.flightDataWindow()
@@ -426,6 +422,7 @@ def main(server_ip: str):
             if keys[pygame.K_s]:
                 localRequests.append((0, 'Save'))
                 delaiPressage = pygame.time.get_ticks()
+
         elif True not in pygame.key.ScancodeWrapper() and pygame.time.get_ticks() - delaiPressage >= 150:
             # on vérifie que plus aucune touche n'est pressée et on remet la variable à son état initial
             pressing = False

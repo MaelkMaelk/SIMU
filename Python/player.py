@@ -227,18 +227,18 @@ class Avion:
 
         pointGauche = geometry.calculateIntersection((rect[0], rect[1]),
                                                      (rect[0], rect[1] + rect[3]),
-                                                    (self.etiquette.centre[0], self.etiquette.centre[1]),
-                                                    (self.affX + plotSize, self.affY + plotSize))
+                                                     (self.etiquette.centre[0], self.etiquette.centre[1]),
+                                                     (self.affX + plotSize, self.affY + plotSize))
 
         pointDroite = geometry.calculateIntersection((rect[0] + rect[2], rect[1]),
                                                      (rect[0] + rect[2], rect[1] + rect[3]),
-                                                    (self.etiquette.centre[0], self.etiquette.centre[1]),
-                                                    (self.affX + plotSize, self.affY + plotSize))
+                                                     (self.etiquette.centre[0], self.etiquette.centre[1]),
+                                                     (self.affX + plotSize, self.affY + plotSize))
 
         pointBas = geometry.calculateIntersection((rect[0], rect[1] + rect[3]),
                                                   (rect[0] + rect[2], rect[1] + rect[3]),
-                                                 (self.etiquette.centre[0], self.etiquette.centre[1]),
-                                                 (self.affX + plotSize, self.affY + plotSize))
+                                                  (self.etiquette.centre[0], self.etiquette.centre[1]),
+                                                  (self.affX + plotSize, self.affY + plotSize))
 
         if rect[0] <= pointHaut[0] <= rect[0] + rect[2] and self.affY <= self.etiquetteY:
             return pointHaut

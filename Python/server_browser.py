@@ -1,6 +1,6 @@
 import socket
 
-from network import MCAST_GRP, MCAST_PORT
+from Python.network import MCAST_GRP, MCAST_PORT
 
 def serverBrowser():
     """Lan scan et server browser en une fonction

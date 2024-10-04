@@ -224,7 +224,10 @@ class conflictGenerator:
         """
         points = carte['points']
         self.temps = temps
-        distance = (self.temps - self.spawnDelay) * self.avion.speedPx / radarRefresh  # quelle distance va parcourir l'avion en ce temps
+        delay = 0
+        if self.spawnDelay:
+            delay = self.spawnDelay
+        distance = (self.temps - delay) * self.avion.speedPx / radarRefresh  # quelle distance va parcourir l'avion en ce temps
 
         startPlot = geometry.findClosestSegment(self.avion.route['points'], (self.x, self.y), points)[1]
         liste = self.avion.route['points'][self.avion.route['points'].index(startPlot):]
@@ -238,7 +241,6 @@ class conflictGenerator:
             legDistance = geometry.calculateDistance(point1[0], point1[1], point2[0], point2[1])
             if distance - legDistance <= 0:
                 ratio = distance / legDistance
-                print(ratio)
                 x = ratio * (point2[0] - point1[0]) + point1[0]
                 y = ratio * (point2[1] - point1[1]) + point1[1]
                 self.drawListe.append(point1)

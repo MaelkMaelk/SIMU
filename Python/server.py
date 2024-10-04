@@ -2,18 +2,23 @@ import socket
 import sys
 from _thread import *
 from queue import Queue
-from network import MCAST_GRP, MCAST_PORT, port
-from paquets_avion import *
+from Python.network import MCAST_GRP, MCAST_PORT, port
+from Python.paquets_avion import *
 import pickle
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
 import time
 import struct
 import platform
+from pathlib import Path
 
-SIMU = 'simu.xml'
+dossierXML = Path("").absolute().parent / 'XML'
+
+carte = 'carteSecteur.xml'
+aircraftFile = 'aircraft.xml'
+simu = 'simu.xml'
 mode_ecriture = True
-
+open(dossierXML / carte)
 # On se connecte à internet pour avoir notre adresse IP locale... Oui oui
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock.connect(("8.8.8.8", 80))
@@ -54,7 +59,7 @@ gameMap = {'points': {}, 'zones': [], 'segments': [], 'routes': {}, 'mapScale': 
 
 # XML map loading
 
-tree = ET.parse('XML/mapAPS.xml')
+tree = ET.parse(dossierXML / carte)
 root = tree.getroot()
 mapScale = float(root.find('scale').text)  # conversion nm-px
 
@@ -200,7 +205,7 @@ for route in root.find('routes'):  # construction des routes
 gameMap.update({'mapScale': mapScale})
 
 aircraftType = {}
-tree = ET.parse('XML/aircrafts.xml')
+tree = ET.parse(dossierXML / aircraftFile)
 root = tree.getroot()
 
 for aircraft in root:
@@ -212,7 +217,8 @@ for aircraft in root:
 
 planeId = 0
 try:  # on essaye de charger une simu, si elle existe
-    tree = ET.parse('XML/' + SIMU)
+
+    tree = ET.parse(dossierXML / simu)
 
     heure = tree.find('heure').text
     heure = int(heure[0:2]) * 3600 + int(heure[2:]) * 60
@@ -481,7 +487,7 @@ while Running:
                     accelerationTemporelle -= 0.5
             elif req[1] == 'Save' and mode_ecriture:
                 xmlstr = minidom.parseString(ET.tostring(SimuTree)).toprettyxml(indent="   ")
-                with open("XML/simu.xml", "w") as f:
+                with open("../XML/simu.xml", "w") as f:
                     f.write(xmlstr)
 
     toBeRemovedFromSpawn = []
