@@ -115,12 +115,14 @@ class conflictGenerator:
         self.spawnDelay = None
         self.drawListe = None
 
-    def checkScrollBar(self):
+    def checkScrollBar(self, carte):
 
         """Ajuste la valeur de temps en fonction du slider s'il est scrollé"""
 
         if self.slider.has_moved_recently:
             self.temps = self.slider.start_percentage * self.maxTemps
+            if self.x:
+                self.increaseTime(self.temps, carte)
 
     def checkEvent(self, event):
 
@@ -211,6 +213,42 @@ class conflictGenerator:
             font = pygame.font.SysFont('arial', 15)
             img = font.render("Délai à l'apparition: " + str(self.spawnDelay) + "s", True, (170, 170, 255))
             win.blit(img, (self.drawListe[0][0] * zoom + scroll[0], self.drawListe[0][1] * zoom + scroll[1]))
+
+    def increaseTime(self, temps, carte):
+
+        """
+        Augmente le temps de dessin sans changer le point de spawn
+        :param carte: La carte du jeu
+        :param temps: Le nouveau temps de dessin
+        :return:
+        """
+        points = carte['points']
+        self.temps = temps
+        distance = (self.temps - self.spawnDelay) * self.avion.speedPx / radarRefresh  # quelle distance va parcourir l'avion en ce temps
+
+        startPlot = geometry.findClosestSegment(self.avion.route['points'], (self.x, self.y), points)[1]
+        liste = self.avion.route['points'][self.avion.route['points'].index(startPlot):]
+        self.drawListe = [(self.x, self.y)]
+
+        point1 = (self.x, self.y)
+        self.drawListe.append(point1)
+        for index in range(len(liste)):
+            point2 = points[liste[index]['name']]
+
+            legDistance = geometry.calculateDistance(point1[0], point1[1], point2[0], point2[1])
+            if distance - legDistance <= 0:
+                ratio = distance / legDistance
+                print(ratio)
+                x = ratio * (point2[0] - point1[0]) + point1[0]
+                y = ratio * (point2[1] - point1[1]) + point1[1]
+                self.drawListe.append(point1)
+                self.drawListe.append((x, y))
+                break
+
+            else:
+                distance -= legDistance
+                self.drawListe.append(point2)
+            point1 = point2
 
     def kill(self):
         self.valider.kill()

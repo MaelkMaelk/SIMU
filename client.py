@@ -365,7 +365,7 @@ def main(server_ip: str):
             menuAvion.checkSliders()
 
         if conflitGen is not None:
-            conflitGen.checkScrollBar()
+            conflitGen.checkScrollBar(carte)
 
         """Dragging"""
 
