@@ -1,5 +1,10 @@
+
+# Native imports
 import math
+
+# Module imports
 import numpy as np
+from scipy.optimize import minimize
 
 
 def calculateHeading(x: int, y: int, xPoint: int, yPoint: int):
@@ -20,17 +25,21 @@ def calculateHeading(x: int, y: int, xPoint: int, yPoint: int):
     return heading
 
 
-def calculateDistance(x1: int, y1: int, x2: int, y2: int):
+def calculateDistance(x1: int | float, y1: int | float, x2: int | float, y2: int | float):
     return math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
 
 
-def calculateShortestPoint(pointDroite1: list[float, float], pointDroite2: list[float, float],
-                           point: list[float, float]):
+def calculateShortestPoint(pointDroite1: list[float, float] | tuple[float, float],
+                           pointDroite2: list[float, float] | tuple[float, float],
+                           point: list[float, float] | tuple[float, float],
+                           segment=False
+                           ):
     """
     Calcule le point sur une droite où la distance ets la plus courte à un point
     :param pointDroite1: 1er point pour définir la droite, vecteur2 (x, y)
     :param pointDroite2: 2em point pour définir la droite, vecteur2 (x, y)
     :param point: point avec lequel on fait le calcul, vecteur2 (x, y)
+    :param segment: si on doit considérer comme un objet ou comme une droite
     :return: retourne le point d'intersection du segment et de la droite (x, y)
     """
 
@@ -47,13 +56,40 @@ def calculateShortestPoint(pointDroite1: list[float, float], pointDroite2: list[
         left_side = np.array([[-coeffdroite1, 1], [-coeffdroitePerp, 1]])
         right_side = np.array([ordonnee1, ordonnee2])
     else:  # si la droite est verticale alors c'est super simple de trouver les coords du point
-        return pointDroite1[0], point[1]
+
+        solution = pointDroite1[0], point[1]
+
+        if segment:
+
+            if not pointDroite1[1] <= pointDroite2[1]:  # on trie les points pour que le 1 ai le y le plus petit
+                pointDroite1, pointDroite2 = pointDroite2, pointDroite1
+
+            if point[1] <= pointDroite1[1]:  # on vérifie ensuite si le y est ou non compris dans le segment
+                solution = pointDroite1
+
+            elif point[1] >= pointDroite2[1]:
+                solution = pointDroite2
+
+        return solution
 
     # solve for x and y
-    return np.linalg.inv(left_side).dot(right_side)
+    solution = np.linalg.inv(left_side).dot(right_side)
+
+    if segment:
+        if not pointDroite1[0] <= pointDroite2[0]:  # on trie les points pour que le 1 ai le x le plus petit
+            pointDroite1, pointDroite2 = pointDroite2, pointDroite1
+
+        if solution[0] <= pointDroite1[0]:  # on vérifie ensuite si le x est ou non compris dans le segment
+            solution = pointDroite1
+
+        elif solution[0] >= pointDroite2[0]:
+            solution = pointDroite2
+
+    return solution
 
 
-def calculateIntersection(point1Droite, point2Droite, point1Droite2, point2Droite2) -> tuple[float, float]:
+def calculateIntersection(point1Droite, point2Droite,
+                          point1Droite2, point2Droite2) -> tuple[float, float]:
 
     """
     Calcule l'intersection entre deux droites
@@ -124,3 +160,67 @@ def calculateAngle(principal, secondaire):
         return [principal - secondaire, 180 - principal + secondaire]
     else:
         return [secondaire - principal + 360, principal - 180 - secondaire]
+
+
+def distanceMinie(pos1: tuple[float, float], vitesse1: float, heading1: float,
+                  pos2: tuple[float, float], vitesse2: float, heading2: float) -> float:
+    """
+    Calcule la position future de deux avions où la distance sera minimale entre les deux.
+    :param pos1: Position actuelle de l'avion 1 en px
+    :param vitesse1: Vitesse actuelle de l'avion 1 en px/sec
+    :param heading1: Heading actuelle de l'avion 1 en radiants
+    :param pos2: Position actuelle de l'avion 2 en px
+    :param vitesse2: Vitesse actuelle de l'avion 2 en px/sec
+    :param heading2: Heading actuelle de l'avion 2 en radiants
+    :return: Temps dans lequel la distance sera la plus faible
+    """
+
+    x0 = 1.0
+
+    caca = minimize(
+        distanceMiniEnFduTemps, x0, args=(pos1, vitesse1, heading1, pos2, vitesse2, heading2),
+        method='Nelder-Mead', tol=1e-4
+    )
+    return caca.x[0]
+
+
+def distanceMiniEnFduTemps(temps, pos1: tuple[float, float], vitesse1: float, heading1: float,
+                           pos2: tuple[float, float], vitesse2: float, heading2: float):
+
+    return math.sqrt(
+        ((pos1[0] + vitesse1 * temps * math.cos(heading1)) - (pos2[0] + vitesse2 * temps * math.cos(heading2))) ** 2 +
+        ((pos1[1] + vitesse1 * temps * math.sin(heading1)) - (pos2[1] + vitesse2 * temps * math.sin(heading2))) ** 2
+    )
+
+
+def findClosestSegment(route: list, position: tuple[float, float], points: dict) -> tuple:
+    """
+    Retourne les 2 points du segment de la route le plus proche de notre position dans l'ordre de la route.
+    :param route: La route qu'on analyse
+    :param position: La position qu'on veut comparer
+    :param points: La carte du jeu
+    :return:
+    """
+
+    start = route[0]
+    end = route[0]
+    distance = 99999999
+
+    for index in range(len(route) - 1):  # dans cette boucle, on cherche à quel segment on est le plus proche
+        point = route[index]
+        point2 = route[index + 1]
+        coords1 = (points[point['name']][0], points[point['name']][1])
+        coords2 = (points[point2['name']][0], points[point2['name']][1])
+
+        # d'abord, on trouve le point le plus proche de notre pos sur ce segment
+        intersection = calculateShortestPoint(
+            coords1, coords2, position, True)
+
+        disancte = calculateDistance(position[0], position[1], intersection[0], intersection[1])
+
+        if disancte <= distance:
+            start = point
+            end = point2
+            distance = disancte
+
+    return start, end

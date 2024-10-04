@@ -6,6 +6,43 @@
     <floor>245</floor>  # plancher de notre secteur
     <ceiling>365</ceiling> # plafond
 
+    <secteurs>  # liste des secteurs adjacents
+        <secteur name="I2">
+            <frequence>125.830</frequence>
+        </secteur>
+        <secteur name="S2">
+            <frequence>127.840</frequence>
+        </secteur>
+        <secteur name="N2">
+            <frequence>128.050</frequence>
+        </secteur>
+        <secteur name="N3">
+            <frequence>131.175</frequence>
+        </secteur>
+        <secteur name="RU">
+            <frequence>132.740</frequence>
+        </secteur>
+        <secteur name="EI">
+            <frequence>119.275</frequence>
+        </secteur>
+        <secteur name="RI">
+            <frequence>124.2</frequence>
+        </secteur>
+        <secteur name="OM">
+            <frequence>124.080</frequence>
+        </secteur>
+        <secteur name="OS">
+            <frequence>134.610</frequence>
+        </secteur>
+        <secteur name="M2">
+            <frequence>130.275</frequence>
+            <etranger>True</etranger>
+        </secteur>
+        <secteur name="G2">
+            <frequence>127.675</frequence>
+            <etranger>True</etranger>
+        </secteur>
+    </secteurs>
  
     <points>
         <point name="WS">
@@ -162,8 +199,8 @@
         </point>
     </points>
 
-    <secteurs>
-        <secteur color="75,75,75">
+    <zones>
+        <zone color="75,75,75">
             <limite>
                 <x>1109</x>
                 <y>915</y>
@@ -220,13 +257,14 @@
                 <x>1107</x>
                 <y>1266</y>
             </limite>
-        </secteur>
-    </secteurs>
+        </zone>
+    </zones>
 
     <routes>
         <route>
             <Type>DEPART</Type>
             <destination>SO</destination>
+            <AD>LSGG</AD>
             <point>
                 <name>LSGG</name>
                 <FL>120</FL>
@@ -298,7 +336,7 @@
 
         <route>
             <Type>TRANSIT</Type>
-            <destination>SE</destination>
+            <destination>E-SE</destination>
             <provenance>N</provenance>
             <point>
                 <name>BURGO</name>
@@ -393,6 +431,7 @@
         <route>
             <Type>DEPART</Type>
             <destination>SO</destination>
+            <AD>LIML</AD>
             <point>
                 <name>LIML</name>
                 <FL>20</FL>
@@ -455,7 +494,7 @@
             <point>
                 <name>JUVEN</name>
             </point>
-            <arrival secteur="M2">260</arrival>
+            <arrival AD="LIML" secteur="M2">260</arrival>
             <sortie min="245" max="365">M2</sortie>
         </route>
 
@@ -489,7 +528,7 @@
             <point>
                 <name>SEVET</name>
             </point>
-            <arrival secteur="EI">250</arrival>
+            <arrival AD="LSGG" secteur="EI">250</arrival>
             <sortie min="245" max="365">G2</sortie>
         </route>
 
@@ -517,7 +556,7 @@
             <point>
                 <name>SEVET</name>
             </point>
-            <arrival secteur="EI">250</arrival>
+            <arrival AD="LSGG" secteur="EI">250</arrival>
             <sortie min="245" max="365">G2</sortie>
         </route>
 
@@ -653,6 +692,7 @@
 
         <route name="Depart MTL">
             <Type>DEPART</Type>
+            <AD>LFVB</AD>
             <destination>S</destination>
             <point>
                 <name>BST</name>
@@ -683,6 +723,7 @@
 
         <route name="Depart RETNO">
             <Type>DEPART</Type>
+            <AD>LFVB</AD>
             <destination>SE</destination>
             <point>
                 <name>BST</name>
@@ -713,6 +754,7 @@
 
         <route name="Depart MEN">
             <Type>DEPART</Type>
+            <AD>LFVB</AD>
             <destination>SO</destination>
             <point>
                 <name>BST</name>
@@ -745,34 +787,83 @@
 
     <Aeroports>
         <NE>
-            <AD>LOWI</AD>
+            <AD>EDDT</AD>
+            <AD>EDDF</AD>
+            <AD>EKCH</AD>
+            <AD>EHAM</AD>
+            <AD>ESSB</AD>
+            <AD>ENGM</AD>
+            <AD>EPWA</AD>
+            <AD>EGLL</AD>
         </NE>
 
         <N>
             <AD>EGBB</AD>
+            <AD>EGLL</AD>
             <AD>EIDW</AD>
+            <AD>EGCC</AD>
+            <AD>EGGD</AD>
+            <AD>EGKK</AD>
+            <AD>LFPG</AD>
+            <AD>LFPO</AD>
+            <AD>LFQQ</AD>
         </N>
 
         <NO>
             <AD>EGBB</AD>
+            <AD>LFPG</AD>
+            <AD>LFPO</AD>
+            <AD>LFQQ</AD>
+            <AD>LFRS</AD>
+            <AD>EIDW</AD>
+            <AD>EGCC</AD>
+            <AD>EGGD</AD>
+            <AD>EGKK</AD>
+            <AD>BIRK</AD>
         </NO>
 
         <S>
             <AD>DAAG</AD>
+            <AD>DRRN</AD>
+            <AD>DTTA</AD>
+            <AD>GCTS</AD>
         </S>
 
         <SO>
             <AD>LPPT</AD>
+            <AD>LPPR</AD>
+            <AD>LFBD</AD>
+            <AD>LFBO</AD>
+            <AD>LFBP</AD>
+            <AD>LFBT</AD>
+            <AD>LFBZ</AD>
+            <AD>LEIB</AD>
+            <AD>LEMD</AD>
+            <AD>LEMG</AD>
+            <AD>LEPA</AD>
         </SO>
 
         <SE>
+            <AD>LFKC</AD>
+            <AD>LFKJ</AD>
+            <AD>DAAG</AD>
+            <AD>DRRN</AD>
+            <AD>DTTA</AD>
+        </SE>
+
+        <E-SE>
             <AD>LGAT</AD>
             <AD>LGAV</AD>
             <AD>LGIR</AD>
-        </SE>
+            <AD>LIMF</AD>
+            <AD>LIPZ</AD>
+        </E-SE>
 
         <E>
-            <AD>LIML</AD>
+            <AD>LOWW</AD>
+            <AD>LOWI</AD>
+            <AD>LOWS</AD>
+            <AD>LHBP</AD>
         </E>
 
     </Aeroports>

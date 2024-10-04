@@ -1,4 +1,5 @@
-numpy
+numpy~=2.1.1
 pygame-ce
-pygame_gui
+pygame_gui~=0.6.12
 python-i18n
+scipy~=1.14.1

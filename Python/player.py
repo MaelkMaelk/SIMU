@@ -1,9 +1,15 @@
-import pygame
+
+# Native imports
 import math
+
+# Module imports
+import pygame
 import pygame_gui
-from valeurs_config import *
-import geometry
-import interface
+
+# Imports fichiers
+from Python.valeurs_config import *
+import Python.geometry as geometry
+import Python.interface as interface
 
 
 def positionAffichage(x: int, y: int, zoom: float, scrollX: float, scrollY: float):
@@ -55,9 +61,12 @@ class Avion:
         self.predictionPoint = None  # point pour la prédiction de route
         self.drawRouteBool = False
         self.locWarning = False
+        self.sep = False
+        self.sepSetting = {}  # [temps à dessiner, distance minie en nm]
         self.etiquetteExtended = False
         self.lastHoveredTime = 0
         self.pointDessinDirect = None
+        self.conflitSelected = False
         self.drag = False  # if true l'etiquette se fait drag
         self.dragOffset = (0, 0)  # le décalage de l'etiquette par rapport au curseur
         self.startPressTime = 0
@@ -102,6 +111,49 @@ class Avion:
             self.affY + plotSize + self.papa.speedPx * 60 / radarRefresh * vecteurSetting * zoom * math.sin(
                 self.papa.headingRad)), 2)
 
+    def drawSep(self, window, zoom):
+        """
+        Dessine la sep avec un autre avion
+        :param window:
+        :param zoom:
+        :return:
+        """
+
+        sep = (0, 9999999)
+
+        for lettre, sepSetting in self.sepSetting.items():
+            if sepSetting[1] <= sep[1] and 0 <= sepSetting[0]:
+                sep = sepSetting
+
+        sepSetting = sep
+
+        coords = [self.affX + plotSize + self.papa.speedPx / radarRefresh * sepSetting[0] * zoom * math.cos(
+                self.papa.headingRad),
+                  self.affY + plotSize + self.papa.speedPx / radarRefresh * sepSetting[0] * zoom * math.sin(
+                      self.papa.headingRad)
+                  ]
+
+        if sepSetting[1] <= 6:
+            color = (255, 0, 0)
+        elif sepSetting[1] <= 9:
+            color = (241, 237, 57)
+        else:
+            color = (157, 193, 126)
+
+        pygame.draw.line(window, color, (self.affX + plotSize, self.affY + plotSize), coords, 2)
+
+        font = pygame.font.SysFont('arial', 15)
+
+        coords[0] += 2
+        for lettre, sepSetting in self.sepSetting.items():
+            if 0 <= sepSetting[0]:
+                img = font.render(lettre + str(round(sepSetting[1], 1)), True, color)
+                window.blit(img, coords)
+                coords[1] += 15
+            else:
+                img = font.render(lettre, True, (170, 170, 255))
+                window.blit(img, coords)
+
     def draw(self, win, zoom, scroll, vecteurs, vecteurSetting, points):
 
         # updates
@@ -133,34 +185,39 @@ class Avion:
         width = 1
 
         # Dessin
-        if self.visible:
-            if self.papa.warning:
-                color = (255, 120, 60)
-            elif self.locWarning:
-                color = (100, 200, 100)
-            elif self.etiquetteExtended:
-                color = (30, 144, 255)
-                width = 3
-            else:
-                color = (255, 255, 255)
+        if not self.visible:
+            return None
 
-            pygame.draw.circle(win, color, (self.affX + plotSize, self.affY + plotSize), plotSize, 1)
-            pygame.draw.circle(win, color, (self.affX + plotSize, self.affY + plotSize), plotSize / 1.5, 1)
+        if self.papa.warning:
+            color = (255, 120, 60)
+        elif self.locWarning:
+            color = (100, 200, 100)
+        elif self.etiquetteExtended:
+            color = (30, 144, 255)
+            width = 3
+        else:
+            color = (255, 255, 255)
 
-            if vecteurs or self.papa.warning or self.locWarning:  # si on doit dessiner les vecteurs
-                self.drawVector(color, win, vecteurSetting, zoom)  # on appelle la fonction
+        pygame.draw.circle(win, color, (self.affX + plotSize, self.affY + plotSize), plotSize, 1)
+        pygame.draw.circle(win, color, (self.affX + plotSize, self.affY + plotSize), plotSize / 1.5, 1)
 
-            radius = 1
-            for plot in self.papa.comete:
-                affPlot = [plot[0] * zoom + scroll[0],
-                           plot[1] * zoom + scroll[1]]
-                pygame.draw.circle(win, (255, 255, 255), affPlot, int(round(radius)), 1)
-                radius += 0.3
+        if self.sep:
+            self.drawSep(win, zoom)
 
-            point = self.findEtiquetteAnchorPoint()
-            if point is not None:
-                pygame.draw.line(win, color, (self.affX + plotSize, self.affY + plotSize),
-                                 (point[0], point[1]), width)
+        elif vecteurs or self.papa.warning or self.locWarning:  # si on doit dessiner les vecteurs
+            self.drawVector(color, win, vecteurSetting, zoom)  # on appelle la fonction
+
+        radius = 1
+        for plot in self.papa.comete:
+            affPlot = [plot[0] * zoom + scroll[0],
+                       plot[1] * zoom + scroll[1]]
+            pygame.draw.circle(win, (255, 255, 255), affPlot, int(round(radius)), 1)
+            radius += 0.3
+
+        point = self.findEtiquetteAnchorPoint()
+        if point is not None:
+            pygame.draw.line(win, color, (self.affX + plotSize, self.affY + plotSize),
+                             (point[0], point[1]), width)
 
     def findEtiquetteAnchorPoint(self) -> tuple[float, float]:
         """
@@ -176,18 +233,18 @@ class Avion:
 
         pointGauche = geometry.calculateIntersection((rect[0], rect[1]),
                                                      (rect[0], rect[1] + rect[3]),
-                                                    (self.etiquette.centre[0], self.etiquette.centre[1]),
-                                                    (self.affX + plotSize, self.affY + plotSize))
+                                                     (self.etiquette.centre[0], self.etiquette.centre[1]),
+                                                     (self.affX + plotSize, self.affY + plotSize))
 
         pointDroite = geometry.calculateIntersection((rect[0] + rect[2], rect[1]),
                                                      (rect[0] + rect[2], rect[1] + rect[3]),
-                                                    (self.etiquette.centre[0], self.etiquette.centre[1]),
-                                                    (self.affX + plotSize, self.affY + plotSize))
+                                                     (self.etiquette.centre[0], self.etiquette.centre[1]),
+                                                     (self.affX + plotSize, self.affY + plotSize))
 
         pointBas = geometry.calculateIntersection((rect[0], rect[1] + rect[3]),
                                                   (rect[0] + rect[2], rect[1] + rect[3]),
-                                                (self.etiquette.centre[0], self.etiquette.centre[1]),
-                                                (self.affX + plotSize, self.affY + plotSize))
+                                                  (self.etiquette.centre[0], self.etiquette.centre[1]),
+                                                  (self.affX + plotSize, self.affY + plotSize))
 
         if rect[0] <= pointHaut[0] <= rect[0] + rect[2] and self.affY <= self.etiquetteY:
             return pointHaut
@@ -212,17 +269,21 @@ class Avion:
         coord = [points[point][0] * zoom + scroll[0], points[point][1] * zoom + scroll[1]]
         pygame.draw.line(win, (0, 206, 209), (self.affX + plotSize, self.affY + plotSize), coord)
 
-    def drawEstimatedRoute(self, points, temps, win, zoom, scroll):
+    def drawEstimatedRoute(self, points, temps, color, win, zoom, scroll):
         """
         Dessine la route future de l'avion jusuq'à un certain point défini par une valeur de temps
         C'est une bonne approximation de la future position de l'avion, à vitesse constante
         :param points: la liste des points récupérer les coords
-        :param temps: combien de temps doit faire la route dessinée
+        :param temps: combien de temps doit faire la route dessinée en sec
+        :param color: La couleur du tracé
         :param win: l'écran pygame
         :param zoom: le niveau de zoom
         :param scroll: le scroll format [x, y]
         :return:
         """
+
+        if not self.conflitSelected:
+            return None
 
         route = self.papa.route['points']  # on n'a besoin que des noms des points
         nextPoint = self.papa.nextPoint
@@ -230,7 +291,7 @@ class Avion:
 
         route = route[route.index(nextPoint):]  # on ne considère que la route devant l'avion
         pointUn = [self.papa.x, self.papa.y]  # on commence à dessiner à partir de l'avion
-        distance = temps * self.papa.speedPx  # on établit la distance de la route avec notre vitesse
+        distance = temps * self.papa.speedPx / radarRefresh  # on établit la distance de la route avec notre vitesse
 
         for point in route:
             pointDeux = [points[point['name']][0], points[point['name']][1]]
@@ -246,18 +307,18 @@ class Avion:
                              pointUn[1] + (pointDeux[1] - pointUn[1]) * ratio]
 
                 # on dessine alors la dernière branche
-                pygame.draw.line(win, (0, 255, 0),
+                pygame.draw.line(win, color,
                                  (pointUn[0] * zoom + scroll[0], pointUn[1] * zoom + scroll[1]),
-                                 (pointDeux[0] * zoom + scroll[0], pointDeux[1] * zoom + scroll[1]))
+                                 (pointDeux[0] * zoom + scroll[0], pointDeux[1] * zoom + scroll[1]), 2)
 
                 self.predictionPoint = pointDeux
 
                 break  # on casse la boucle for, pas la peine de faire des calculs pour plus loin, la prédi est finie
 
             else:  # si le trajet s'arrête après la branche, on dessine la branche en entier
-                pygame.draw.line(win, (0, 255, 0),
+                pygame.draw.line(win, color,
                                  (pointUn[0] * zoom + scroll[0], pointUn[1] * zoom + scroll[1]),
-                                 (pointDeux[0] * zoom + scroll[0], pointDeux[1] * zoom + scroll[1]))
+                                 (pointDeux[0] * zoom + scroll[0], pointDeux[1] * zoom + scroll[1]), 2)
 
             distance -= legDistance  # on enlève la distance de la branche parcourue à la distance à parcourir
             pointUn = pointDeux  # on passe au prochain point
@@ -271,10 +332,9 @@ class Avion:
         :param scroll: le scroll format [x, y]
         :return:
         """
-        # TODO route qui se dessine correctement même quand on est en direct
 
         route = self.papa.route['points']  # on n'a besoin que des noms des points
-        nextPoint = self.papa.nextPoint
+        nextPoint = geometry.findClosestSegment(route, (self.papa.x, self.papa.y), points)[1]
 
         point1 = points[route[route.index(nextPoint) - 1]['name']][:2]
         point2 = points[nextPoint['name']][:2]
@@ -285,16 +345,30 @@ class Avion:
         for point in route:
             pointDeux = [points[point['name']][0], points[point['name']][1]]
 
-            pygame.draw.line(win, (25, 25, 170),
+            pygame.draw.line(win, (46, 80, 174),
                              (pointUn[0] * zoom + scroll[0], pointUn[1] * zoom + scroll[1]),
-                             (pointDeux[0] * zoom + scroll[0], pointDeux[1] * zoom + scroll[1]), 2)
+                             (pointDeux[0] * zoom + scroll[0], pointDeux[1] * zoom + scroll[1]), 3)
 
             pointUn = pointDeux  # on passe au prochain point
 
-    def checkEvent(self, event, pilote):
+    def checkClicked(self, event) -> bool:
+        """
+        Renvoies True si un des boutons (avion ou etiquette) correspond à cet event
+        :param event:
+        :return:
+        """
+        if event.ui_element == self.bouton:
+            return True
+        if event.ui_element.ui_container == self.etiquette.container:
+            return True
+        else:
+            return False
+
+    def checkEvent(self, event, pilote, conflitBool):
 
         """
         Vérifie si un bouton associé à l'avion correspond à l'event
+        :param conflitBool: Si ou non, on est en mode création de conflits
         :param event: événement à vérifier
         :param pilote: si l'interface est en mode pilote ou non
         :return:
@@ -302,10 +376,16 @@ class Avion:
 
         # on vérifie que le bouton est bien associé à l'etiquette
         if event.ui_element.ui_container == self.etiquette.container:
+
             self.startPressTime = 0
             if self.drag:
                 self.drag = False
                 return None  # comme on était en train de drag, on ne fait aucune action liée au bouton
+
+            if conflitBool:
+                self.conflitSelected = not self.conflitSelected
+                return None
+
             if event.mouse_button == 2 and not pilote and event.ui_element is not self.etiquette.DCT:
                 # si c'est un clic milieu, alors on surligne ou non le bouton
 
@@ -322,6 +402,11 @@ class Avion:
                 return self.Id, 'HighlightBouton', (indexLigne, index)
 
         if event.ui_element == self.bouton:
+
+            if conflitBool:
+                self.conflitSelected = not self.conflitSelected
+                return None
+
             if event.mouse_button == 2 and not pilote:  # clic milieu
                 return self.Id, 'Warning'
 

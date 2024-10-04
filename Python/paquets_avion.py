@@ -1,6 +1,10 @@
-from geometry import *
-from valeurs_config import *
+
+# Native imports
 import random
+
+# Imports fichiers
+from Python.geometry import *
+from Python.valeurs_config import *
 
 
 class Game:
@@ -69,8 +73,15 @@ class AvionPacket:
 
         self.callsignFreq = 'Austrian'  # TODO ajouter les callsigns
 
-        self.provenance = random.choice(gameMap['aeroports'][route['provenance']])
-        self.destination = random.choice(gameMap['aeroports'][route['destination']])
+        if route['type'] == 'DEPART':
+            self.provenance = route['provenance']
+        else:
+            self.provenance = random.choice(gameMap['aeroports'][route['provenance']])
+
+        if self.arrival:
+            self.destination = route['arrival']['aeroport']
+        else:
+            self.destination = random.choice(gameMap['aeroports'][route['destination']])
 
         # perfo
         self.turnRate = turnRateDefault
@@ -81,12 +92,9 @@ class AvionPacket:
         self.route = route
 
         self.headingMode = False
-        # TODO changer ça pour pouvoir mettre un avion nimporte ou sur la route
-        if calculateDistance(self.x, self.y, gameMap['points'][self.route['points'][0]['name']][0],
-                             gameMap['points'][self.route['points'][0]['name']][1]) <= 4 * self.speedPx:
-            self.nextPoint = self.route['points'][1]
-        else:
-            self.nextPoint = self.route['points'][0]
+
+        self.nextPoint = None
+        self.findNextPoint(gameMap)
 
         self.evolution = 0  # taux de variation/radar refresh
         self.altitudeEvoTxt = '-'
@@ -118,14 +126,14 @@ class AvionPacket:
                 self.XFL = 300
 
             for sortie in self.route['sortie']:
-                print(sortie['min'] < self.PFL < sortie['max'])
                 if sortie['min'] < self.PFL < sortie['max']:
                     self.nextSector = sortie['name']
 
         if not self.nextSector:  # si on n'a pas réussi à mettre un secteur suivant, on met un défaut pour pas crash
             self.nextSector = secteurDefault
 
-        self.nextFrequency = '127.675'  # TODO faire les fréquences automatiques
+        self.nextFrequency = gameMap['secteurs'][self.nextSector]['frequence']
+        self.etranger = gameMap['secteurs'][self.nextSector]['etranger']
 
         self.CFL = None
 
@@ -153,19 +161,23 @@ class AvionPacket:
         self.clearedHeading = None
         self.clearedRate = None
 
-    def changeXFL(self) -> None:
+    def findNextPoint(self, carte):
+
+        self.nextPoint = findClosestSegment(self.route['points'], (self.x, self.y), carte['points'])[1]
+
+    def changeXFL(self, carte) -> None:
         """
         Change le XFL en fonction du PFL. À utliser quand le PFL change
         :return:
         """
-        print(self.PFL)
         if self.PFL > 365 and not self.arrival:
             self.nextSector = "RU"
             self.XFL = 360
         elif not self.arrival:
             self.XFL = self.PFL
+            self.changeSortieSecteur(carte)
 
-    def changeSortieSecteur(self) -> None:
+    def changeSortieSecteur(self, carte) -> None:
         """
         Change le secteur de sortie. À utiliser quand le XFL change
         :return:
@@ -175,6 +187,8 @@ class AvionPacket:
             if sortie['min'] < self.XFL < sortie['max']:
                 self.nextSector = sortie['name']
                 break
+        self.etranger = carte['secteurs'][self.nextSector]['etranger']
+        self.nextFrequency = carte['secteurs'][self.nextSector]['frequence']
 
     def updateEtatFreq(self, nouvelEtat=None) -> None:
         """
@@ -188,6 +202,8 @@ class AvionPacket:
         else:
             i = liste_etat_freq.index(self.etatFrequence)
             if i != len(liste_etat_freq) - 1:  # on vérifie que ce n'est pas le dernier état fréquence
+                if self.etranger and self.etatFrequence == 'nextCoord':
+                    i += 1
                 self.etatFrequence = liste_etat_freq[i + 1]
        
     def updateAlti(self):
@@ -219,6 +235,12 @@ class AvionPacket:
             self.evolution = 0
 
     def move(self, gameMap):
+
+        # frequence update
+        if self.etatFrequence == 'inFreq':
+
+            if self.calculeEstimate(gameMap['points'], self.XPT) <= 60 * valeurCoord:  # si on sort dans moins de 6min
+                self.updateEtatFreq()
         
         # heading update
         if not self.headingMode:  # si l'avion est en direct et pas en cap
@@ -233,9 +255,7 @@ class AvionPacket:
                     ancien = self.nextPoint  # pour la comparaison après
                     self.nextPoint = self.route['points'][self.route['points'].index(self.nextPoint) + 1]
                     if ancien['name'] == self.DCT:  # si le point clairé est celui qu'on passe
-                        self.DCT = self.nextPoint['name']  # alors on passe au point suivant aussi
-
-
+                        self.DCT = self.nextPoint['name']  # alors, on passe au point suivant aussi
 
             self.selectedHeading = calculateHeading(self.x, self.y, gameMap['points'][self.nextPoint['name']][0],
                                                     gameMap['points'][self.nextPoint['name']][1])
@@ -270,7 +290,7 @@ class AvionPacket:
         self.x += self.speedPx * math.cos(self.headingRad)
         self.y += self.speedPx * math.sin(self.headingRad)
 
-    def calculeEstimate(self, points: dict, pointVoulu: str) -> None:
+    def calculeEstimate(self, points: dict, pointVoulu: str) -> float:
         """
         Calcule le temps à un point sur notre route. Pour avoir l'estimée, il faudra rajouter l'heure courante
         :param points: dict des points de la carte

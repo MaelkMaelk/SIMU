@@ -1,17 +1,28 @@
+
+# Native imports
 import socket
+import math
 import sys
+import pickle
 from _thread import *
 from queue import Queue
-from network import MCAST_GRP, MCAST_PORT, port
-from paquets_avion import *
-import pickle
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
 import time
 import struct
 import platform
+from pathlib import Path
 
-SIMU = 'simu.xml'
+# Import fichiers
+from Python.network import MCAST_GRP, MCAST_PORT, port
+from Python.paquets_avion import *
+
+
+dossierXML = Path("").absolute() / 'XML'
+
+carte = 'carteSecteur.xml'
+aircraftFile = 'aircraft.xml'
+simu = 'simu.xml'
 mode_ecriture = True
 
 # On se connecte à internet pour avoir notre adresse IP locale... Oui oui
@@ -50,11 +61,11 @@ playerId = 0
 dictAvion = {}  # dict contenant tous les avions
 requests = []  # liste des requêtes que le serveur doit gérer
 segments = {}
-gameMap = {'points': {}, 'secteurs': [], 'segments': [], 'routes': {}, 'mapScale': 0}
+gameMap = {'points': {}, 'zones': [], 'segments': [], 'routes': {}, 'mapScale': 0}
 
 # XML map loading
 
-tree = ET.parse('XML/mapAPS.xml')
+tree = ET.parse(dossierXML / carte)
 root = tree.getroot()
 mapScale = float(root.find('scale').text)  # conversion nm-px
 
@@ -73,19 +84,32 @@ for point in root.find('points'):  # on parcourt la liste xml de points
 
     gameMap['points'].update({name: (x, y, balise)})
 
-for secteur in root.find('secteurs'):
+for zone in root.find('zones'):
 
     contour = []  # liste des points délimitant le contour du secteur, dans l'ordre de lecture xml
 
-    for limite in secteur.findall('limite'):
+    for limite in zone.findall('limite'):
         x = int(limite.find('x').text)
         y = int(limite.find('y').text)
         contour.append((x, y))
 
-    gameMap['secteurs'].append({'couleur': [int(x) for x in secteur.attrib['color'].split(',')], 'contour': contour})
+    gameMap['zones'].append({'couleur': [int(x) for x in zone.attrib['color'].split(',')], 'contour': contour})
+
+dictSecteurs = {}
+for secteur in root.find('secteurs'):
+
+    nom = secteur.attrib['name']
+    frequence = secteur.find('frequence').text
+    etranger = False
+    if secteur.find('etranger') is not None:
+        if secteur.find('etranger').text == 'True':
+            etranger = True
+
+    dictSecteurs.update({nom: {'frequence': frequence, 'etranger': etranger}})
+
+gameMap.update({'secteurs': dictSecteurs})
 
 listeAeroports = {}
-
 for direction in root.find('Aeroports'):
     liste_de_cette_direction = []
 
@@ -156,8 +180,9 @@ for route in root.find('routes'):  # construction des routes
         y1 = y2
     provenance = 'N'
     destination = 'S'
-
-    if route.find('provenance') is not None:
+    if routeType == 'DEPART':
+        provenance = route.find('AD').text
+    elif route.find('provenance') is not None:
         provenance = route.find('provenance').text
     else:
         print('[Problème] pas de direction de provenance pour la route', nomRoute)
@@ -170,7 +195,7 @@ for route in root.find('routes'):  # construction des routes
         destination = 'S'
 
     if route.find('arrival') is not None:
-        arrival = {'XFL': int(route.find('arrival').text), 'secteur': route.find('arrival').attrib['secteur']}
+        arrival = {'XFL': int(route.find('arrival').text), 'secteur': route.find('arrival').attrib['secteur'], 'aeroport': route.find('arrival').attrib['AD']}
     for sortie in route.findall('sortie'):
         listeSortie.append({'name': sortie.text, 'min': int(sortie.attrib['min']), 'max': int(sortie.attrib['max'])})
     gameMap['routes'].update({nomRoute: {'name': nomRoute,
@@ -186,7 +211,7 @@ for route in root.find('routes'):  # construction des routes
 gameMap.update({'mapScale': mapScale})
 
 aircraftType = {}
-tree = ET.parse('XML/aircrafts.xml')
+tree = ET.parse(dossierXML / aircraftFile)
 root = tree.getroot()
 
 for aircraft in root:
@@ -196,9 +221,10 @@ for aircraft in root:
                                    'ROC': int(aircraft.find('ROC').text),
                                    'ROD': int(aircraft.find('ROD').text)}})
 
-
+planeId = 0
 try:  # on essaye de charger une simu, si elle existe
-    tree = ET.parse('XML/' + SIMU)
+
+    tree = ET.parse(dossierXML / simu)
 
     heure = tree.find('heure').text
     heure = int(heure[0:2]) * 3600 + int(heure[2:]) * 60
@@ -218,7 +244,28 @@ try:  # on essaye de charger une simu, si elle existe
         heureSpawn = avion.attrib['heure']
         heureSpawn = int(heureSpawn[0:2]) * 3600 + int(heureSpawn[2:]) * 60
 
-        avionSpawnListe.append((heureSpawn, avionDict))
+        for route in gameMap['routes']:
+            if route == avionDict['route']:
+                spawnRoute = gameMap['routes'][route]
+                break
+        if 'altitude' in avionDict:
+            spawnFL = round(avionDict['altitude'] / 100)
+        else:
+            spawnFL = None
+        avionPack = AvionPacket(
+            gameMap,
+            planeId,
+            avionDict['indicatif'],
+            avionDict['aircraft'],
+            aircraftType[avionDict['aircraft']],
+            spawnRoute,
+            avionDict['arrival'] == 'True',
+            FL=spawnFL,
+            x=avionDict['x'],
+            y=avionDict['y'])
+        planeId += 1
+
+        avionSpawnListe.append((heureSpawn, avionPack))
 except:  # sinon, on demande juste l'heure de début
 
     heure = input('Heure de début de simu, format: hhmm')
@@ -294,11 +341,9 @@ def threaded_client(conn, caca):
 
             conn.sendall(pickle.dumps(reply))
             nombre = 0
-        except:
-            if nombre >= 200:
-                break
-            else:
-                nombre += 1
+
+        except error:
+            print(error)
 
     print("Lost connection")
     conn.close()
@@ -327,7 +372,6 @@ start_new_thread(threaded_waiting, ())
 start_new_thread(threaded_ping_responder, ())
 temps = time.time()
 STCAtriggered = False
-planeId = 0
 accelerationTemporelle = 1
 Running = True
 while Running:
@@ -357,6 +401,28 @@ while Running:
                                      xEcriture=req[2].x,
                                      yEcriture=req[2].y,
                                      PFLEcriture=req[2].PFL)
+            elif req[1] == 'DelayedAdd':
+
+                avionSpawnListe.append((game.heure + req[2][0], req[2][1]))
+
+                if mode_ecriture:
+
+                    heures = str(round(game.heure + req[2][0] // 3600))
+                    if len(heures) == 1:
+                        heures = '0' + heures
+                    minutes = str(round(game.heure + req[2][0] % 3600 // 60))
+                    if len(minutes) == 1:
+                        minutes = '0' + minutes
+
+                    generateAvionXML(avionsXML,
+                                     heures + minutes,
+                                     req[2][1].indicatif,
+                                     req[2][1].aircraft,
+                                     req[2][1].route['name'],
+                                     req[2][1].altitude,
+                                     xEcriture=req[2][1].x,
+                                     yEcriture=req[2][1].y,
+                                     PFLEcriture=req[2][1].PFL)
 
             elif req[1] == 'Remove':
                 dictAvion.pop(req[0])
@@ -364,8 +430,7 @@ while Running:
                 dictAvion[req[0]].selectedAlti = req[2]
             elif req[1] == 'PFL':
                 dictAvion[req[0]].PFL = req[2]
-                dictAvion[req[0]].changeXFL()
-                dictAvion[req[0]].changeSortieSecteur()
+                dictAvion[req[0]].changeXFL(gameMap)
             elif req[1] == 'CFL':
                 dictAvion[req[0]].CFL = req[2]
             elif req[1] == 'C_IAS':
@@ -380,7 +445,7 @@ while Running:
                     dictAvion[req[0]].clearedRate = None
             elif req[1] == 'XFL':
                 dictAvion[req[0]].XFL = req[2]
-                dictAvion[req[0]].changeSortieSecteur()
+                dictAvion[req[0]].changeSortieSecteur(gameMap)
             elif req[1] == 'XPT':
                 dictAvion[req[0]].XPT = req[2]
             elif req[1] == 'HDG':
@@ -432,25 +497,8 @@ while Running:
     toBeRemovedFromSpawn = []
     for spawn in avionSpawnListe:
         if spawn[0] <= game.heure:
-            for route in gameMap['routes']:
-                if route == spawn[1]['route']:
-                    spawnRoute = gameMap['routes'][route]
-                    break
-            if 'altitude' in spawn[1]:
-                spawnFL = round(spawn[1]['altitude']/100)
-            else:
-                spawnFL = None
-            dictAvion.update({planeId: AvionPacket(
-                gameMap,
-                planeId,
-                spawn[1]['indicatif'],
-                spawn[1]['aircraft'],
-                aircraftType[spawn[1]['aircraft']],
-                spawnRoute,
-                spawn[1]['arrival'],
-                FL=spawnFL)})
             toBeRemovedFromSpawn.append(spawn)
-            planeId += 1
+            dictAvion.update({spawn[1].Id: spawn[1]})
 
     for avion in toBeRemovedFromSpawn:
         avionSpawnListe.remove(avion)
@@ -467,6 +515,7 @@ while Running:
             dictAvion.pop(avion)
         for avion in list(dictAvion.values()):
             # tous les calculs de distances sont ici effectués en pixel, la conversion se fait avec le mapScale
+            # TODO remplacer ce STCA avec le nouveau dans server_def
             STCAtriggered = False
             predictedPos = []
             VspeedOne = avion.evolution

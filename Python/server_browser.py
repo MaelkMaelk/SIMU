@@ -1,6 +1,9 @@
+
+# Native Imports
 import socket
 
-from network import MCAST_GRP, MCAST_PORT
+# Imports fichiers
+from Python.network import MCAST_GRP, MCAST_PORT
 
 def serverBrowser():
     """Lan scan et server browser en une fonction

@@ -24,8 +24,8 @@
          {
              "name": "regular",
              "size": "12",
-             "regular_path": "fonts/LTSuperior-SemiBold.otf",
-             "bold_path": "fonts/LTSuperior-Black.otf"
+             "regular_path": "ressources/fonts/LTSuperior-SemiBold.otf",
+             "bold_path": "ressources/fonts/LTSuperior-Black.otf"
              }
    },
   "@menu":
@@ -38,8 +38,8 @@
         "font": {
           "name": "bold",
           "size": "12",
-          "regular_path": "fonts/LTSuperior-SemiBold.otf",
-          "bold_path": "fonts/LTSuperior-Black.otf"
+          "regular_path": "ressources/fonts/LTSuperior-SemiBold.otf",
+          "bold_path": "ressources/fonts/LTSuperior-Black.otf"
         },
         "colours":
          {
@@ -50,6 +50,35 @@
            "selected_border": "#3E3E3E",
            "active_border": "#3E3E3E"
          }
+      },
+   "menuBleu": {
+        "colours":
+         {
+           "normal_border": "#808080",
+           "hovered_border": "#808080",
+           "disabled_border": "#808080",
+           "selected_border": "#808080",
+           "active_border": "#808080"
+         }
+  },
+  "menuBlanc": {
+        "colours":
+         {
+           "normal_bg": "#C6DADA",
+           "hovered_bg": "#A3B6C4",
+           "active_bg": "#C6DADA"
+         }
+  },
+  "@menuLabel":
+      {
+        "misc": {
+          "border_width": "1",
+          "text_horiz_alignment": "left",
+          "text_horiz_alignment_padding": "0",
+          "text_vert_alignment": "left",
+          "text_vert_alignment_padding": "2",
+          "shadow_width": "0"
+        }
       },
   "@flightDataWindow":
       {
@@ -64,8 +93,8 @@
         "font": {
           "name": "bold",
           "size": "15",
-          "regular_path": "fonts/LTSuperior-SemiBold.otf",
-          "bold_path": "fonts/LTSuperior-Black.otf"
+          "regular_path": "ressources/fonts/LTSuperior-SemiBold.otf",
+          "bold_path": "ressources/fonts/LTSuperior-Black.otf"
         },
         "colours":
          {
@@ -79,6 +108,27 @@
            "hovered_bg": "#3E3E3E",
            "disabled_bg": "#3E3E3E",
            "active_bg": "#3E3E3E"
+         }
+      },
+  "@menuRadar":
+      {
+        "misc": {
+          "border_width": "2",
+          "shadow_width": "0",
+          "enable_title_bar": "0"
+        },
+        "colours":
+         {
+           "normal_border": "#6B7C91",
+           "hovered_border": "#6B7C91",
+           "disabled_border": "#6B7C91",
+           "selected_border": "#6B7C91",
+           "active_border": "#6B7C91",
+           "dark_bg": "#7F94AD",
+           "normal_text": "#000000",
+           "hovered_text": "#505050",
+           "selected_text": "#A0A0A0",
+           "active_bg":"#5A697A"
          }
       },
       "@etiquette":
@@ -103,8 +153,8 @@
          {
              "name": "bold",
              "size": "12",
-             "regular_path": "fonts/LTSuperior-SemiBold.otf",
-             "bold_path": "fonts/LTSuperior-Black.otf"
+             "regular_path": "ressources/fonts/LTSuperior-SemiBold.otf",
+             "bold_path": "ressources/fonts/LTSuperior-Black.otf"
              }
      },
   "@etiquetteBold":
@@ -127,8 +177,8 @@
           "name": "bold",
           "size": "12",
           "bold": "1",
-          "regular_path": "fonts/LTSuperior-SemiBold.otf",
-          "bold_path": "fonts/LTSuperior-Black.otf"
+          "regular_path": "ressources/fonts/LTSuperior-SemiBold.otf",
+          "bold_path": "ressources/fonts/LTSuperior-Black.otf"
         }
       },
   "@etiquetteBoldBlue":
@@ -151,8 +201,8 @@
           "name": "bold",
           "size": "12",
           "bold": "1",
-          "regular_path": "fonts/LTSuperior-SemiBold.otf",
-          "bold_path": "fonts/LTSuperior-Black.otf"
+          "regular_path": "ressources/fonts/LTSuperior-SemiBold.otf",
+          "bold_path": "ressources/fonts/LTSuperior-Black.otf"
         }
       },
   "@etiquetteBlue":
@@ -174,8 +224,8 @@
         "font": {
           "name": "bold",
           "size": "12",
-          "regular_path": "fonts/LTSuperior-SemiBold.otf",
-          "bold_path": "fonts/LTSuperior-Black.otf"
+          "regular_path": "ressources/fonts/LTSuperior-SemiBold.otf",
+          "bold_path": "ressources/fonts/LTSuperior-Black.otf"
         }
       },
   "rose":
