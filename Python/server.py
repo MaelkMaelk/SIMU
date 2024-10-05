@@ -14,6 +14,7 @@ import platform
 from pathlib import Path
 
 # Import fichiers
+import Python.horloge as horloge
 from Python.network import MCAST_GRP, MCAST_PORT, port
 from Python.paquets_avion import *
 
@@ -214,29 +215,39 @@ aircraftType = {}
 tree = ET.parse(dossierXML / aircraftFile)
 root = tree.getroot()
 
-for aircraft in root:
+for aircraft in root.find('aircrafts'):
     aircraftType.update(
         {aircraft.attrib['name']: {'IAS': int(aircraft.find('speed').text),
                                    'plafond': int(aircraft.find('ceiling').text),
                                    'ROC': int(aircraft.find('ROC').text),
                                    'ROD': int(aircraft.find('ROD').text)}})
 
+callsignList = {}
+for callsign in root.find('callsigns'):
+    callsignList.update({callsign.attrib['indicatif']: callsign.text})
+
+gameMap.update({'callsigns': callsignList})
 planeId = 0
+
+simuTree = None
 try:  # on essaye de charger une simu, si elle existe
 
-    tree = ET.parse(dossierXML / simu)
+    simuTree = ET.parse(dossierXML / simu).getroot()
 
-    heure = tree.find('heure').text
+    heure = simuTree.find('heure').text
     heure = int(heure[0:2]) * 3600 + int(heure[2:]) * 60
 
+    game = Game(heure)
+
     avionSpawnListe = []
-    for avion in tree.find('avions'):
+    avionsXML = simuTree.find('avions')
+    for avion in avionsXML:
 
         avionDict = {}
 
         for XMLpoint in avion:
             try:
-                XMLpointValue = int(XMLpoint.text)
+                XMLpointValue = float(XMLpoint.text)
             except:
                 XMLpointValue = XMLpoint.text
             avionDict.update({XMLpoint.tag: XMLpointValue})
@@ -271,16 +282,11 @@ except:  # sinon, on demande juste l'heure de début
     heure = input('Heure de début de simu, format: hhmm')
     heure = int(heure[0:2]) * 3600 + int(heure[2:]) * 60
     avionSpawnListe = []
-
-game = Game(heure)
-
-# XML écriture
-
-SimuTree = ET.Element('simu')
-heureXML = ET.SubElement(SimuTree, 'heure')
-heureXML.text = '1002'
-avionsXML = ET.SubElement(SimuTree, 'avions')
-
+    simuTree = ET.Element('simu')
+    game = Game(heure)
+    heureXML = ET.SubElement(simuTree, 'heure')
+    heureXML.text = horloge.heureXML(game.heure)
+    avionsXML = ET.SubElement(simuTree, 'avions')
 
 def generateAvionXML(parent, heureEcriture, indicatifEcriture, aircraftEcriture, routeEcriture, altitudeEcriture, xEcriture=None, yEcriture=None, headingEcriture=None, PFLEcriture=None):
 
@@ -403,14 +409,17 @@ while Running:
                                      PFLEcriture=req[2].PFL)
             elif req[1] == 'DelayedAdd':
 
+                req[2][1].Id = planeId
+                planeId += 1
+
                 avionSpawnListe.append((game.heure + req[2][0], req[2][1]))
 
                 if mode_ecriture:
 
-                    heures = str(round(game.heure + req[2][0] // 3600))
+                    heures = str(round((game.heure + req[2][0]) // 3600))
                     if len(heures) == 1:
                         heures = '0' + heures
-                    minutes = str(round(game.heure + req[2][0] % 3600 // 60))
+                    minutes = str(round((game.heure + req[2][0]) % 3600 // 60))
                     if len(minutes) == 1:
                         minutes = '0' + minutes
 
@@ -490,7 +499,7 @@ while Running:
                 if accelerationTemporelle > 0.5:
                     accelerationTemporelle -= 0.5
             elif req[1] == 'Save' and mode_ecriture:
-                xmlstr = minidom.parseString(ET.tostring(SimuTree)).toprettyxml(indent="   ")
+                xmlstr = minidom.parseString(ET.tostring(simuTree)).toprettyxml(indent="   ")
                 with open("XML/simu.xml", "w") as f:
                     f.write(xmlstr)
 

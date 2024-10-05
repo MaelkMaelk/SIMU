@@ -6,10 +6,12 @@ import math
 import pygame
 import pygame_gui
 
+import horloge
 # Imports fichiers
 from Python.valeurs_config import *
 import Python.geometry as geometry
 import Python.interface as interface
+import Python.horloge as horloge
 
 
 def positionAffichage(x: int, y: int, zoom: float, scrollX: float, scrollY: float):
@@ -154,7 +156,7 @@ class Avion:
                 img = font.render(lettre, True, (170, 170, 255))
                 window.blit(img, coords)
 
-    def draw(self, win, zoom, scroll, vecteurs, vecteurSetting, points):
+    def draw(self, win, zoom, scroll, vecteurs, vecteurSetting, points, temps):
 
         # updates
 
@@ -165,7 +167,7 @@ class Avion:
         self.bouton.set_position((self.affX, self.affY))
 
         if self.drawRouteBool:
-            self.drawRoute(points, win, zoom, scroll)
+            self.drawRoute(points, win, zoom, scroll, temps)
 
         if self.pointDessinDirect:
             self.drawDirect(points, self.pointDessinDirect, win, zoom, scroll)
@@ -323,13 +325,14 @@ class Avion:
             distance -= legDistance  # on enlève la distance de la branche parcourue à la distance à parcourir
             pointUn = pointDeux  # on passe au prochain point
 
-    def drawRoute(self, points, win, zoom, scroll):
+    def drawRoute(self, points: dict, win, zoom: float, scroll: tuple[float, float] | list[float, float], temps: float):
         """
         Dessine la route future de l'avion avec les estimées en temps
         :param points: la liste des points récupérer les coords
         :param win: l'écran pygame
         :param zoom: le niveau de zoom
         :param scroll: le scroll format [x, y]
+        :param temps: l'heure de la partie
         :return:
         """
 
@@ -339,15 +342,22 @@ class Avion:
         point1 = points[route[route.index(nextPoint) - 1]['name']][:2]
         point2 = points[nextPoint['name']][:2]
         pointUn = geometry.calculateShortestPoint(point1, point2, [self.papa.x, self.papa.y])
-        # TODO heure de passage pour chaque point
         route = route[route.index(nextPoint):]  # on ne considère que la route devant l'avion
 
+        font = pygame.font.SysFont('arial', 15)
+
         for point in route:
+
             pointDeux = [points[point['name']][0], points[point['name']][1]]
+            temps += geometry.calculateDistance(pointUn[0], pointUn[1], pointDeux[0], pointDeux[1]) / self.papa.speedPx * radarRefresh
 
             pygame.draw.line(win, (46, 80, 174),
                              (pointUn[0] * zoom + scroll[0], pointUn[1] * zoom + scroll[1]),
                              (pointDeux[0] * zoom + scroll[0], pointDeux[1] * zoom + scroll[1]), 3)
+
+            img = font.render(horloge.affichageHeure(temps), True, (170, 170, 255))
+            coords = (pointDeux[0] * zoom - 5 + scroll[0], pointDeux[1] * zoom - 20 + scroll[1])
+            win.blit(img, coords)
 
             pointUn = pointDeux  # on passe au prochain point
 

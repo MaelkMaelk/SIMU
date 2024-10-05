@@ -1,16 +1,414 @@
 <?xml version="1.0" ?>
 <simu>
-   <heure>1002</heure>
+   
+   
+   <heure>1100</heure>
+   
+   
    <avions>
-      <avion heure="1002">
-         <indicatif>FCACA</indicatif>
-         <aircraft>DH8D</aircraft>
-         <route>ABISA-BERNI</route>
+      
+      
+      <avion heure="1100">
+         
+         
+         <indicatif>AZA2310</indicatif>
+         
+         
+         <aircraft>A320</aircraft>
+         
+         
+         <route>GAI-JUVEN</route>
+         
+         
+         <altitude>34000</altitude>
+         
+         
+         <arrival>False</arrival>
+         
+         
+         <x>1135.3324760807482</x>
+         
+         
+         <y>1228.8072431366452</y>
+         
+         
+         <PFL>340</PFL>
+         
+      
+      </avion>
+      
+      
+      <avion heure="1100">
+         
+         
+         <indicatif>RYR1463</indicatif>
+         
+         
+         <aircraft>B738</aircraft>
+         
+         
+         <route>ATN-SAMOS</route>
+         
+         
+         <altitude>31000</altitude>
+         
+         
+         <arrival>False</arrival>
+         
+         
+         <x>1391.831528809085</x>
+         
+         
+         <y>679.2623145312475</y>
+         
+         
+         <PFL>310</PFL>
+         
+      
+      </avion>
+      
+      
+      <avion heure="1100">
+         
+         
+         <indicatif>BAW2356</indicatif>
+         
+         
+         <aircraft>A320</aircraft>
+         
+         
+         <route>ATN-VAREK</route>
+         
+         
+         <altitude>33000</altitude>
+         
+         
+         <arrival>False</arrival>
+         
+         
+         <x>1273</x>
+         
+         
+         <y>446</y>
+         
+         
+         <PFL>330</PFL>
+         
+      
+      </avion>
+      
+      
+      <avion heure="1100">
+         
+         
+         <indicatif>TAP1423</indicatif>
+         
+         
+         <aircraft>B738</aircraft>
+         
+         
+         <route>FRI-GAI</route>
+         
+         
+         <altitude>33000</altitude>
+         
+         
+         <arrival>False</arrival>
+         
+         
+         <x>1817.5277008612927</x>
+         
+         
+         <y>522.2153916966897</y>
+         
+         
+         <PFL>330</PFL>
+         
+      
+      </avion>
+      
+      
+      <avion heure="1108">
+         
+         
+         <indicatif>IBE1223</indicatif>
+         
+         
+         <aircraft>B738</aircraft>
+         
+         
+         <route>Depart LIML</route>
+         
+         
+         <altitude>2000</altitude>
+         
+         
+         <arrival>False</arrival>
+         
+         
+         <x>2229</x>
+         
+         
+         <y>944</y>
+         
+         
+         <PFL>370</PFL>
+         
+      
+      </avion>
+      
+      
+      <avion heure="1100">
+         
+         
+         <indicatif>HOP1203</indicatif>
+         
+         
+         <aircraft>AT72</aircraft>
+         
+         
+         <route>ABISA-NEV</route>
+         
+         
+         <altitude>32000</altitude>
+         
+         
+         <arrival>False</arrival>
+         
+         
+         <x>1283.213204244729</x>
+         
+         
+         <y>1062.0078521348714</y>
+         
+         
+         <PFL>320</PFL>
+         
+      
+      </avion>
+      
+      
+      <avion heure="1100">
+         
+         
+         <indicatif>SWR1203</indicatif>
+         
+         
+         <aircraft>A320</aircraft>
+         
+         
+         <route>GAI-RAPID</route>
+         
+         
+         <altitude>34000</altitude>
+         
+         
+         <arrival>True</arrival>
+         
+         
+         <x>699</x>
+         
+         
+         <y>1341</y>
+         
+         
+         <PFL>340</PFL>
+         
+      
+      </avion>
+      
+      
+      <avion heure="1100">
+         
+         
+         <indicatif>TAP2356</indicatif>
+         
+         
+         <aircraft>B738</aircraft>
+         
+         
+         <route>FRI-GAI</route>
+         
+         
+         <altitude>33000</altitude>
+         
+         
+         <arrival>False</arrival>
+         
+         
+         <x>1347.300142085819</x>
+         
+         
+         <y>862.4423715769826</y>
+         
+         
+         <PFL>330</PFL>
+         
+      
+      </avion>
+      
+      
+      <avion heure="1100">
+         
+         
+         <indicatif>SWR3104</indicatif>
+         
+         
+         <aircraft>A320</aircraft>
+         
+         
+         <route>GAI-RAPID</route>
+         
+         
+         <altitude>32000</altitude>
+         
+         
+         <arrival>True</arrival>
+         
+         
+         <x>706.5181602549122</x>
+         
+         
+         <y>1339.095399402089</y>
+         
+         
+         <PFL>320</PFL>
+         
+      
+      </avion>
+      
+      
+      <avion heure="1100">
+         
+         
+         <indicatif>BAW1203</indicatif>
+         
+         
+         <aircraft>A320</aircraft>
+         
+         
+         <route>MIROS-DIRMO</route>
+         
+         
+         <altitude>36000</altitude>
+         
+         
+         <arrival>False</arrival>
+         
+         
+         <x>1947</x>
+         
+         
+         <y>1538</y>
+         
+         
+         <PFL>360</PFL>
+         
+      
+      </avion>
+      
+   
+      <avion heure="1106">
+         <indicatif>BAW123C</indicatif>
+         <aircraft>B738</aircraft>
+         <route>MIROS-DIRMO</route>
          <altitude>30000</altitude>
          <arrival>False</arrival>
-         <x>1400</x>
-         <y>1300</y>
+         <x>1947</x>
+         <y>1538</y>
          <PFL>300</PFL>
       </avion>
+      <avion heure="1106">
+         <indicatif>EJU1245</indicatif>
+         <aircraft>A320</aircraft>
+         <route>Depart RETNO SAMOS</route>
+         <altitude>2000</altitude>
+         <arrival>False</arrival>
+         <x>1390.5612858047484</x>
+         <y>761.8281404330812</y>
+         <PFL>330</PFL>
+      </avion>
+      <avion heure="1112">
+         <indicatif>DLH1230</indicatif>
+         <aircraft>B738</aircraft>
+         <route>ABISA-RAPID</route>
+         <altitude>30000</altitude>
+         <arrival>False</arrival>
+         <x>1375</x>
+         <y>1644</y>
+         <PFL>300</PFL>
+      </avion>
+      <avion heure="1111">
+         <indicatif>AFR1203</indicatif>
+         <aircraft>A320</aircraft>
+         <route>ATN-VAREK</route>
+         <altitude>30000</altitude>
+         <arrival>False</arrival>
+         <x>1273</x>
+         <y>446</y>
+         <PFL>300</PFL>
+      </avion>
+      <avion heure="1116">
+         <indicatif>EWG1542</indicatif>
+         <aircraft>A320</aircraft>
+         <route>FRI-GAI</route>
+         <altitude>29000</altitude>
+         <arrival>False</arrival>
+         <x>1901</x>
+         <y>463</y>
+         <PFL>290</PFL>
+      </avion>
+      <avion heure="1130">
+         <indicatif>EZY1299</indicatif>
+         <aircraft>B738</aircraft>
+         <route>Depart MEN</route>
+         <altitude>2000</altitude>
+         <arrival>False</arrival>
+         <x>1384</x>
+         <y>759</y>
+         <PFL>310</PFL>
+      </avion>
+      <avion heure="1127">
+         <indicatif>AZA142M</indicatif>
+         <aircraft>B738</aircraft>
+         <route>GAI-JUVEN</route>
+         <altitude>38000</altitude>
+         <arrival>False</arrival>
+         <x>699</x>
+         <y>1341</y>
+         <PFL>300</PFL>
+      </avion>
+      <avion heure="1134">
+         <indicatif>TVF1236</indicatif>
+         <aircraft>B738</aircraft>
+         <route>ATN-SAMOS</route>
+         <altitude>31000</altitude>
+         <arrival>False</arrival>
+         <x>1273</x>
+         <y>446</y>
+         <PFL>310</PFL>
+      </avion>
+      <avion heure="1139">
+         <indicatif>DAH1278</indicatif>
+         <aircraft>A320</aircraft>
+         <route>ABISA-RAPID</route>
+         <altitude>32000</altitude>
+         <arrival>True</arrival>
+         <x>1375</x>
+         <y>1644</y>
+         <PFL>320</PFL>
+      </avion>
+      <avion heure="1139">
+         <indicatif>SWR1244</indicatif>
+         <aircraft>B738</aircraft>
+         <route>ABISA-RAPID</route>
+         <altitude>34000</altitude>
+         <arrival>True</arrival>
+         <x>1375</x>
+         <y>1644</y>
+         <PFL>340</PFL>
+      </avion>
    </avions>
+   
+
 </simu>

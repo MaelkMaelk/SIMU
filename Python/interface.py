@@ -199,7 +199,10 @@ class nouvelAvionWindow:
                 self.returnValues.update({'PFL': int(event.text)})
 
             except:  # si l'utilisateur rentre n'importe quoi, on remet à la valeur du FL
-                self.returnValues.update({'PFL': self.returnValues['FL']})
+                if 'FL' in self.returnValues:
+                    self.returnValues.update({'PFL': self.returnValues['FL']})
+                else:
+                    self.returnValues.update({'PFL': 310})
 
         # on vérifie l'indicatif
         elif event.ui_element == self.indicatifinput:
@@ -782,7 +785,7 @@ class menuValeurs:
         self.listeDroite = None
         objectID = None
 
-        if valeur == 'DCT':  # TODO boutons directs en blanc
+        if valeur == 'DCT':
             self.liste = [point['name'] for point in self.avion.papa.route['points']]
             self.listeAff = self.liste[self.liste.index(avion.papa.nextPoint['name']):]
             objectID = pygame_gui.core.ObjectID('@menuLabel', 'menuBlanc')

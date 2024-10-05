@@ -26,7 +26,11 @@ def serverBrowser():
         serverList.update({data: address})
     sock.close()
     if len(serverList) <= 1:
-        return list(serverList.values())[0][0]
+        try:
+            return list(serverList.values())[0][0]
+        except IndexError:
+            print('Aucun serveur trouvé')
+            return None
     print('Liste des serveurs actifs:')
     for i in range(len(list(serverList.keys()))):
         print(i, ' - ', list(serverList.keys())[i], '\n')

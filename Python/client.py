@@ -16,14 +16,21 @@ import Python.outils_radar as outils_radar
 
 # recherche de tous les serveurs sur le réseau
 address = server_browser.serverBrowser()
-print(address)
+if address:
+    print(address)
+else:
+    time.sleep(20)
+    exit()
 
 # fenêtre Pygame, mettre en 1920, 1080 pour plein écran
 pygame.init()
 width = 1000
 height = 1000
-
 win = pygame.display.set_mode((width, height))
+
+# win = pygame.display.set_mode()
+# width, height = pygame.display.get_surface().get_size()
+
 path = Path(os.getcwd())
 manager = pygame_gui.UIManager((width, height), path / 'ressources' / 'theme.json')
 
@@ -511,7 +518,7 @@ def main(server_ip: str):
                 avion.drawEstimatedRoute(carte['points'], conflitGen.temps, color, win, zoom, scroll)
 
         for avion in dictAvionsAff.values():
-            avion.draw(win, zoom, scroll, vecteurs, vecteurSetting, carte['points'])
+            avion.draw(win, zoom, scroll, vecteurs, vecteurSetting, carte['points'], game.heure)
 
         # on affiche les boutons
         manager.update(time_delta)

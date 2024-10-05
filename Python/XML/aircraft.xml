@@ -1,48 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<aircrafts>
+<data>
+    <aircrafts>
 
     <aircraft name="B738">
-        <speed>330</speed>
+        <speed>280</speed>
         <ceiling>410</ceiling>
         <ROC>2000</ROC>
         <ROD>3000</ROD>
     </aircraft>
     <aircraft name="AT72">
-        <speed>220</speed>
+        <speed>200</speed>
         <ceiling>450</ceiling>
         <ROC>1500</ROC>
         <ROD>2000</ROD>
     </aircraft>
-    <aircraft name="BE9L">
-        <speed>200</speed>
-        <ceiling>430</ceiling>
-        <ROC>1000</ROC>
-        <ROD>1500</ROD>
-    </aircraft>
     <aircraft name="A320">
-        <speed>330</speed>
+        <speed>280</speed>
         <ceiling>410</ceiling>
         <ROC>2000</ROC>
         <ROD>2500</ROD>
-    </aircraft>
-    <aircraft name="BE20">
-        <speed>200</speed>
-        <ceiling>450</ceiling>
-        <ROC>1000</ROC>
-        <ROD>1500</ROD>
-    </aircraft>
-    <aircraft name="TB10">
-        <speed>330</speed>
-        <ceiling>450</ceiling>
-        <ROC>500</ROC>
-        <ROD>1000</ROD>
-    </aircraft>
-    <aircraft name="DA42">
-        <speed>160</speed>
-        <ceiling>370</ceiling>
-        <ROC>1000</ROC>
-        <ROD>1500</ROD>
     </aircraft>
     <aircraft name="TBM7">
         <speed>240</speed>
@@ -57,7 +34,7 @@
         <ROD>3000</ROD>
     </aircraft>
     <aircraft name="FA50">
-        <speed>400</speed>
+        <speed>310</speed>
         <ceiling>550</ceiling>
         <ROC>2000</ROC>
         <ROD>2500</ROD>
@@ -69,16 +46,76 @@
         <ROD>2500</ROD>
     </aircraft>
     <aircraft name="E145">
-        <speed>330</speed>
+        <speed>280</speed>
         <ceiling>550</ceiling>
         <ROC>1500</ROC>
         <ROD>2000</ROD>
     </aircraft>
     <aircraft name="E195">
-        <speed>330</speed>
+        <speed>280</speed>
         <ceiling>550</ceiling>
         <ROC>2500</ROC>
         <ROD>3000</ROD>
     </aircraft>
 
 </aircrafts>
+
+    <callsigns>
+        <compagnie indicatif="AAF">AIGLE AZUR</compagnie>
+        <compagnie indicatif="AAL">AMERICAN</compagnie>
+        <compagnie indicatif="ACA">AIR Canada</compagnie>
+        <compagnie indicatif="AF">AIR FRANCE</compagnie>
+        <compagnie indicatif="AFL">AEROFLOT</compagnie>
+        <compagnie indicatif="AFR">AIR FRANCE</compagnie>
+        <compagnie indicatif="AIB">AIRBUS INDUSTRIE</compagnie>
+        <compagnie indicatif="AMC">AIR MALTA</compagnie>
+        <compagnie indicatif="AMX">AEROMEXICO</compagnie>
+        <compagnie indicatif="ARG">ARGENTINA</compagnie>
+        <compagnie indicatif="AUA">AUSTRIAN</compagnie>
+        <compagnie indicatif="AUI">UKRAINE INTERNATIONAL</compagnie>
+        <compagnie indicatif="AZA">ALITALIA</compagnie>
+        <compagnie indicatif="BAW">SPEEDBIRD</compagnie>
+        <compagnie indicatif="BEL">BEE-LINE</compagnie>
+        <compagnie indicatif="BER">AIR BERLIN</compagnie>
+        <compagnie indicatif="CFG">CONDOR</compagnie>
+        <compagnie indicatif="COA">CONTINENTAL</compagnie>
+        <compagnie indicatif="CSA">C.S.A.</compagnie>
+        <compagnie indicatif="DAH">AIR ALGERIE</compagnie>
+        <compagnie indicatif="DLH">LUFTHANSA</compagnie>
+        <compagnie indicatif="EIN">SHAMROCK</compagnie>
+        <compagnie indicatif="EWG">EUROWINGS</compagnie>
+        <compagnie indicatif="EZY">EASY</compagnie>
+        <compagnie indicatif="EJU">ALPINE</compagnie>
+        <compagnie indicatif="FIN">FINNAIR</compagnie>
+        <compagnie indicatif="FPO">FRENCH POST</compagnie>
+        <compagnie indicatif="HOP">HOP AIR</compagnie>
+        <compagnie indicatif="IBE">IBERIA</compagnie>
+        <compagnie indicatif="JKK">SPANAIR</compagnie>
+        <compagnie indicatif="KLM">KLM</compagnie>
+        <compagnie indicatif="KQA">KENIYA</compagnie>
+        <compagnie indicatif="LAA">LIBAIR</compagnie>
+        <compagnie indicatif="LOT">LOT</compagnie>
+        <compagnie indicatif="MAH">MALEV</compagnie>
+        <compagnie indicatif="MEA">CEDAR JET</compagnie>
+        <compagnie indicatif="MSR">EGYPTAIR</compagnie>
+        <compagnie indicatif="OAL">OLYMPIC</compagnie>
+        <compagnie indicatif="RAM">ROYAL AIR MAROC</compagnie>
+        <compagnie indicatif="RAM">ROYAL AIR MAROC</compagnie>
+        <compagnie indicatif="RJA">JORDANIAN</compagnie>
+        <compagnie indicatif="ROT">TAROM</compagnie>
+        <compagnie indicatif="RYR">RYANAIR</compagnie>
+        <compagnie indicatif="SAA">SPRINGBOCK</compagnie>
+        <compagnie indicatif="SAS">SCANDINAVIAN</compagnie>
+        <compagnie indicatif="SVA">SAUDIA</compagnie>
+        <compagnie indicatif="SWR">SWISS</compagnie>
+        <compagnie indicatif="SYR">SYRIANAIR</compagnie>
+        <compagnie indicatif="TAP">AIR Portugal</compagnie>
+        <compagnie indicatif="TAR">TUNAIR</compagnie>
+        <compagnie indicatif="TCW">THOMAS COOK</compagnie>
+        <compagnie indicatif="THY">TURKAIR</compagnie>
+        <compagnie indicatif="TRA">TRANSAVIA</compagnie>
+        <compagnie indicatif="TVF">FRANCE SOLEIL</compagnie>
+        <compagnie indicatif="UAE">EMIRATES</compagnie>
+        <compagnie indicatif="VIR">VIRGIN</compagnie>
+    </callsigns>
+</data>

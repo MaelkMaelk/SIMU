@@ -71,7 +71,12 @@ class AvionPacket:
         else:
             self.medevac = ''
 
-        self.callsignFreq = 'Austrian'  # TODO ajouter les callsigns
+        if indicatif[:2] in gameMap['callsigns']:
+            self.callsignFreq = gameMap['callsigns'][indicatif[:2]]
+        elif indicatif[:3] in gameMap['callsigns']:
+            self.callsignFreq = gameMap['callsigns'][indicatif[:3]]
+        else:
+            self.callsignFreq = 'caca'
 
         if route['type'] == 'DEPART':
             self.provenance = route['provenance']
@@ -164,6 +169,7 @@ class AvionPacket:
     def findNextPoint(self, carte):
 
         self.nextPoint = findClosestSegment(self.route['points'], (self.x, self.y), carte['points'])[1]
+        self.DCT = self.nextPoint['name']
 
     def changeXFL(self, carte) -> None:
         """
