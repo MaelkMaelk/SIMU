@@ -435,8 +435,8 @@ while Running:
 
             elif req[1] == 'Remove':
                 dictAvion.pop(req[0])
-            elif req[1] == 'Altitude':
-                dictAvion[req[0]].selectedAlti = req[2]
+            elif req[1] == 'FL':
+                dictAvion[req[0]].selectedAlti = req[2] * 100
             elif req[1] == 'PFL':
                 dictAvion[req[0]].PFL = req[2]
                 dictAvion[req[0]].changeXFL(gameMap)
@@ -452,18 +452,27 @@ while Running:
                     dictAvion[req[0]].clearedRate = req[2]
                 else:
                     dictAvion[req[0]].clearedRate = None
+            elif req[1] == 'Rate':
+                signe = (dictAvion[req[0]].evolution * req[2]) / abs(dictAvion[req[0]].evolution * req[2])
+                dictAvion[req[0]].evolution = signe * req[2]
             elif req[1] == 'XFL':
                 dictAvion[req[0]].XFL = req[2]
                 dictAvion[req[0]].changeSortieSecteur(gameMap)
             elif req[1] == 'XPT':
                 dictAvion[req[0]].XPT = req[2]
-            elif req[1] == 'HDG':
+            elif req[1] == 'C_HDG':
                 dictAvion[req[0]].clearedHeading = req[2]
-            elif req[1] == 'Heading':
+            elif req[1] == 'HDG':
+                if type(req[2]) in [float, int]:
+                    newHeading = req[2]
+                elif req[2][0] == '-':
+                    newHeading = dictAvion[req[0]].selectedHeading - int(req[2][1:])
+                elif req[2][0] == '+':
+                    newHeading = dictAvion[req[0]].selectedHeading + int(req[2][1:])
                 dictAvion[req[0]].headingMode = True
                 dictAvion[req[0]].selectedHeading = req[2]
             elif req[1] == 'IAS':
-                dictAvion[req[0]].selectedIAS = req[2]
+                dictAvion[req[0]].selectedIAS = req[2] * 10
             elif req[1] == 'DCT':
                 dictAvion[req[0]].clearedHeading = None
                 dictAvion[req[0]].DCT = req[2]

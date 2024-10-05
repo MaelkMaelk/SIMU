@@ -6,7 +6,6 @@ import math
 import pygame
 import pygame_gui
 
-import horloge
 # Imports fichiers
 from Python.valeurs_config import *
 import Python.geometry as geometry
@@ -430,15 +429,11 @@ class Avion:
             if event.mouse_button == 3 and pilote:
                 return self.Id, 'EtatFreq', None
 
-            if event.mouse_button == 1 and pilote:
-                return 'menuPIL'
-
-            elif event.mouse_button == 1:
+            elif event.mouse_button == 1 and pilote:
                 return 'menuATC'
 
             elif event.mouse_button == 3 and self.papa.integreOrganique and (
-                    self.etiquette.indicatif.get_object_ids()[1] in ['@etiquetteBold', '@etiquetteBoldBlue']
-                    or pilote):  # clic droit
+                    self.etiquette.indicatif.get_object_ids()[1] in ['@etiquetteBold', '@etiquetteBoldBlue']):
 
                 self.unBold()
 
@@ -449,28 +444,31 @@ class Avion:
         elif event.ui_element == self.etiquette.XPT and event.mouse_button == 3 and not pilote:
             self.drawRouteBool = not self.drawRouteBool
 
-        elif event.ui_element == self.etiquette.XPT and event.mouse_button == 1 and not pilote:
+        elif event.ui_element == self.etiquette.XPT and event.mouse_button == 1:
             return 'XPT'
 
-        elif event.ui_element == self.etiquette.DCT and event.mouse_button == 1 and not pilote:
+        elif event.ui_element == self.etiquette.DCT and event.mouse_button == 1:
             return 'DCT'
 
-        elif event.ui_element == self.etiquette.DCT and event.mouse_button == 2 and not pilote:
-            return 'HDG'
+        elif event.ui_element == self.etiquette.DCT and event.mouse_button == 2:
+            return 'C_HDG'
 
-        elif event.ui_element == self.etiquette.XFL and event.mouse_button == 1 and not pilote:
+        elif event.ui_element == self.etiquette.XFL and event.mouse_button == 1:
             return 'XFL'
 
-        elif event.ui_element == self.etiquette.PFL and event.mouse_button == 1 and not pilote:
+        elif event.ui_element == self.etiquette.PFL and event.mouse_button == 1:
             return 'PFL'
 
-        elif event.ui_element == self.etiquette.CFL and event.mouse_button == 1 and not pilote:
+        elif event.ui_element == self.etiquette.CFL and event.mouse_button == 1:
             return 'CFL'
 
-        elif event.ui_element == self.etiquette.clearedSpeed and event.mouse_button == 1 and not pilote:
+        elif event.ui_element == self.etiquette.AFL and event.mouse_button == 1 and pilote:
+            return 'FL'
+
+        elif event.ui_element == self.etiquette.clearedSpeed and event.mouse_button == 1:
             return 'C_IAS'
 
-        elif event.ui_element == self.etiquette.rate and event.mouse_button == 1 and not pilote:
+        elif event.ui_element == self.etiquette.rate and event.mouse_button == 1:
             return 'C_Rate'
 
     def checkEtiquetteOnHover(self):
