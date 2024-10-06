@@ -240,8 +240,8 @@ def main(server_ip: str):
                     if action:
                         if type(action) in [list, tuple]:  # si c'est un tuple alors cela correspond à une requête
                             localRequests.append(action)
-                        elif action in ['HDG', 'DCT']:
-                            menuValeurs = interface.menuValeurs(menuValeurs.avion, pygame.mouse.get_pos(), action)
+                        elif action in ['C_HDG', 'DCT']:
+                            menuValeurs = interface.menuValeurs(menuValeurs.avion, pygame.mouse.get_pos(), action, pilote)
 
                 if curseur_aliSep:
                     for sep in sepDict:

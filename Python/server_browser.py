@@ -5,6 +5,7 @@ import socket
 # Imports fichiers
 from Python.network import MCAST_GRP, MCAST_PORT
 
+
 def serverBrowser():
     """Lan scan et server browser en une fonction
     renvoie une adresse IP en str"""

@@ -429,7 +429,7 @@ class Avion:
             if event.mouse_button == 3 and pilote:
                 return self.Id, 'EtatFreq', None
 
-            elif event.mouse_button == 1 and pilote:
+            elif event.mouse_button == 1 and not pilote:
                 return 'menuATC'
 
             elif event.mouse_button == 3 and self.papa.integreOrganique and (
