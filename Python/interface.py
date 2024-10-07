@@ -611,6 +611,17 @@ class menuValeurs:
                 indexDeVitesse = self.liste.index(round(avion.papa.speedIAS / 10))
             self.listeAff = self.liste[indexDeVitesse - 4: indexDeVitesse + 5]
 
+        elif valeur == 'C_Mach':
+            self.liste = [*range(30, 99)]
+            self.liste.reverse()
+
+            for i in range(len(self.liste)):
+                self.liste[i] = self.liste[i] / 100
+
+            indexDeVitesse = self.liste.index(round(avion.papa.mach, 2))
+
+            self.listeAff = self.liste[indexDeVitesse - 4: indexDeVitesse + 5]
+
         elif valeur == 'C_Rate':
             self.liste = [*range(500, 6000, 500)]
             self.liste.reverse()
@@ -649,7 +660,7 @@ class menuValeurs:
         self.plusBouton = None
         self.moinsBouton = None
 
-        if valeur == 'C_IAS':
+        if valeur in ['C_IAS', 'C_Mach']:
             self.noeud = pygame_gui.elements.UIButton(
                 pygame.Rect((0, 0), (width / 2, -1)),
                 container=self.topContainer,
@@ -822,6 +833,11 @@ class menuValeurs:
             (width,
              height))
 
+        if self.valeur == 'C_IAS':
+            self.noeud.select()
+        elif self.valeur == 'C_Mach':
+            self.mach.select()
+
         if pilote:
             if self.valeur == 'DCT':
                 self.valeur = 'Direct'
@@ -829,6 +845,8 @@ class menuValeurs:
                 self.valeur = 'Rate'
             elif self.valeur == 'C_IAS':
                 self.valeur = 'IAS'
+            elif self.valeur == 'C_Mach':
+                self.valeur = 'Mach'
             elif self.valeur == 'C_HDG':
                 self.valeur = 'HDG'
 
@@ -883,6 +901,16 @@ class menuValeurs:
                 self.moinsBouton.select()
                 self.plusBouton.unselect()
 
+        elif event.ui_element == self.noeud:
+            if self.mach.is_selected:
+                self.kill()
+                return 'C_IAS'
+
+        elif event.ui_element == self.mach:
+            if self.noeud.is_selected:
+                self.kill()
+                return 'C_Mach'
+
         elif event.ui_element == self.resume:
             self.kill()
             if self.valeur in ['DCT', 'C_HDG']:  # si c'est un cap, alors on veut continuer au cap
@@ -917,6 +945,7 @@ class menuValeurs:
                 else:
                     heading = round(self.avion.papa.selectedHeading + int(event.ui_element.text[1:]))
                 return self.avion.Id, self.valeur, heading
+
 
     def checkScrolled(self, event):
         """

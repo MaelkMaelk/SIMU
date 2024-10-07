@@ -771,7 +771,7 @@
             <destination>S</destination>
             <point>
                 <name>BST</name>
-                <FL>20</FL>
+                <FL>50</FL>
             </point>
             <point>
                 <name>LSE</name>
@@ -802,7 +802,7 @@
             <destination>SE</destination>
             <point>
                 <name>BST</name>
-                <FL>20</FL>
+                <FL>50</FL>
             </point>
             <point>
                 <name>LSE</name>
@@ -836,7 +836,7 @@
             <destination>SE</destination>
             <point>
                 <name>BST</name>
-                <FL>20</FL>
+                <FL>50</FL>
             </point>
             <point>
                 <name>LSE</name>
@@ -867,7 +867,7 @@
             <destination>SO</destination>
             <point>
                 <name>BST</name>
-                <FL>20</FL>
+                <FL>50</FL>
             </point>
             <point>
                 <name>LSE</name>

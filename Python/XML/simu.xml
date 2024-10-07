@@ -2,34 +2,14 @@
 <simu>
 	<heure>100200</heure>
 	<avions>
-		<avion heure="100208">
+		<avion heure="100200">
 			<indicatif>FCACA</indicatif>
-			<aircraft>E195</aircraft>
+			<aircraft>B738</aircraft>
 			<route>FRI-GAI</route>
-			<altitude>30000</altitude>
+			<altitude>26000</altitude>
 			<arrival>False</arrival>
 			<x>1901</x>
 			<y>463</y>
-			<PFL>300</PFL>
-		</avion>
-		<avion heure="100216">
-			<indicatif>FCACA</indicatif>
-			<aircraft>B738</aircraft>
-			<route>MIROS-DIRMO</route>
-			<altitude>30000</altitude>
-			<arrival>False</arrival>
-			<x>1848.27707757998</x>
-			<y>1472.4922664315754</y>
-			<PFL>300</PFL>
-		</avion>
-		<avion heure="100228">
-			<indicatif>FCACA</indicatif>
-			<aircraft>E195</aircraft>
-			<route>ABISA-RAPID</route>
-			<altitude>30000</altitude>
-			<arrival>False</arrival>
-			<x>1375</x>
-			<y>1644</y>
 			<PFL>300</PFL>
 		</avion>
 	</avions>

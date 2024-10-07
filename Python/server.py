@@ -217,11 +217,17 @@ tree = ET.parse(dossierXML / aircraftFile)
 root = tree.getroot()
 
 for aircraft in root.find('aircrafts'):
+
+    aircraftPerf = {}
+    for XMLpoint in aircraft:
+        try:
+            XMLpointValue = float(XMLpoint.text)
+        except:
+            XMLpointValue = XMLpoint.text
+        aircraftPerf.update({XMLpoint.tag: XMLpointValue})
+
     aircraftType.update(
-        {aircraft.attrib['name']: {'IAS': int(aircraft.find('speed').text),
-                                   'plafond': int(aircraft.find('ceiling').text),
-                                   'ROC': int(aircraft.find('ROC').text),
-                                   'ROD': int(aircraft.find('ROD').text)}})
+        {aircraft.attrib['name']: aircraftPerf})
 
 callsignList = {}
 for callsign in root.find('callsigns'):

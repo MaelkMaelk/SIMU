@@ -5,33 +5,7 @@ import random
 # Imports fichiers
 from Python.geometry import *
 from Python.valeurs_config import *
-
-
-def densite_de_l_air(altitude: float) -> float:
-    """
-    Cacule la densité de l'air à cette altitude
-    :param altitude: en ft
-    :return:
-    """
-
-    altitude = 0.3048 * altitude
-    densite = 352.995 * (1 - 0.0000225577 * altitude) ** 5.25516 / (288.15 - 0.0065 * altitude)
-
-    return densite
-
-
-def trueAirSpeed(IAS: float, densite: float) -> float:
-
-    return IAS * math.sqrt(densite_air_surface / densite)
-
-
-def machNumber(TAS, altitude):
-
-    temperature = 15 - altitude / 500 + 273.15
-    if temperature <= 217.15:
-        temperature = 217.15
-
-    return TAS / math.sqrt(TAS_to_mach_yR * temperature)
+import Python.vitesses as vitesses
 
 
 class Game:
@@ -79,13 +53,8 @@ class AvionPacket:
         else:
             self.altitude = altiDefault
 
-        self.speedIAS = perfos['IAS']
-        densite = densite_de_l_air(self.altitude)
-        self.TAS = trueAirSpeed(self.speedIAS, densite)
-        self.mach = machNumber(self.TAS, self.altitude)
-        print(self.mach)
-        self.speedGS = self.speedIAS + self.altitude / 200  # la GS dépends de l'alti
-        self.speedPx = self.speedGS / gameMap['mapScale'] * heureEnRefresh
+        self.evolution = 0  # taux de variation/radar refresh
+        self.altitudeEvoTxt = '-'
 
         # RADAR display
         self.warning = False
@@ -119,11 +88,6 @@ class AvionPacket:
         else:
             self.destination = random.choice(gameMap['aeroports'][route['destination']])
 
-        # perfo
-        self.turnRate = turnRateDefault
-        self.maxROC = perfos['ROC']
-        self.maxROD = perfos['ROD']
-
         # format route {nomRoute, routeType, listeRoutePoints, sortie} points : {caractéristiques eg : nom alti IAS}
         self.route = route
 
@@ -132,8 +96,6 @@ class AvionPacket:
         self.nextPoint = None
         self.findNextPoint(gameMap)
 
-        self.evolution = 0  # taux de variation/radar refresh
-        self.altitudeEvoTxt = '-'
         if PFL is not None:
             self.PFL = PFL
         elif gameMap['floor'] < self.altitude/100 < gameMap['ceiling']:
@@ -187,14 +149,35 @@ class AvionPacket:
                                             gameMap['points'][self.nextPoint['name']][1])
         self.headingRad = (self.heading - 90) / 180 * math.pi
 
-        # selected 
+        # perfo
+        self.turnRate = turnRateDefault
+        self.perfos = perfos
+        self.forcedSpeed = False
+        self.forcedEvo = False
+        self.machMode = False
+        self.changeSpeed()
+
+        # selected + vitesses
+        if self.machMode:
+            self.speedIAS = self.perfos['descentIAS']
+            self.selectedIAS = self.perfos['descentIAS']
+            self.mach = self.selectedMach
+        else:
+            self.speedIAS = self.selectedIAS
+            self.mach = vitesses.IAS_to_Mach(self.speedIAS, self.altitude)
+
+        self.speedTAS = vitesses.mach_to_TAS(self.mach, self.altitude)
+        self.speedGS = self.speedTAS
+
         self.selectedAlti = self.CFL * 100
         self.selectedHeading = self.heading
-        self.selectedIAS = self.speedIAS
+        self.selectedMach = self.mach
         self.clearedIAS = None
         self.clearedMach = None
         self.clearedHeading = None
         self.clearedRate = None
+
+        self.speedPx = self.speedGS / gameMap['mapScale'] * heureEnRefresh
 
     def findNextPoint(self, carte):
 
@@ -247,7 +230,6 @@ class AvionPacket:
         if self.altitude != self.selectedAlti:  # on regarde s'il faut évoluer
             
             if self.altitude - self.selectedAlti > 0:
-                self.evolution = - self.maxROD
 
                 # on arrive dans moins d'un refresh ?
                 if abs(self.altitude - self.selectedAlti) <= abs(self.evolution / 60 * radarRefresh):
@@ -257,8 +239,6 @@ class AvionPacket:
                     self.altitudeEvoTxt = '↓'
                     
             else:
-                self.evolution = self.maxROC
-
                 # on arrive dans moins d'un refresh ?
                 if abs(self.altitude - self.selectedAlti) <= abs(self.evolution / 60 * radarRefresh):
                     self.altitude = self.selectedAlti  # alors, on met le niveau cible
@@ -269,6 +249,42 @@ class AvionPacket:
         else:  # si on n'évolue pas, on met ce texte
             self.altitudeEvoTxt = '-'
             self.evolution = 0
+
+    def changeEvolution(self) -> None:
+        """
+        Sélectionne la vitesse en fonction de la phase de vol
+        :return:
+        """
+
+        if self.forcedEvo:
+            return None
+
+        if self.altitude >= altitude_conversion:
+            # ici, on prend les perfos en croisière
+
+            if self.selectedAlti < self.altitude:
+                self.evolution = - self.perfos['cruiseROD']
+
+            else:
+                self.evolution = self.perfos['cruiseROC']
+
+        elif self.altitude >= altitude_cruise:
+            # ici, on regarde si on est en montée/descente ou alors, si on approche du niveau de croisière
+
+            if self.selectedAlti < self.altitude:
+                self.evolution = - self.perfos['cruiseROD']
+
+            else:
+                self.evolution = self.perfos['climbROC']
+
+        else:
+            # ici, on est dans les basses couches donc on prend les perfos en basse alti
+
+            if self.selectedAlti < self.altitude:
+                self.evolution = - self.perfos['descentROD']
+
+            else:
+                self.evolution = self.perfos['initialClimbROC']
 
     def move(self, gameMap):
 
@@ -313,18 +329,86 @@ class AvionPacket:
             self.comete = self.comete[1:9]
         self.comete.append((self.x, self.y))
 
+        self.changeEvolution()
         self.updateAlti()  # on change le niveau de l'avion si on est en evolution
 
-        if self.speedIAS != self.selectedIAS:  # s'il faut accélérer ou ralentir
-            # on change la vitesse par un pas d'accél/deccel défaut
-            self.speedIAS += (self.selectedIAS - self.speedIAS)/abs(self.selectedIAS - self.speedIAS) * acceldefault
+        self.changeSpeed()
+        self.computeSpeed()
 
-        self.speedGS = self.speedIAS + self.altitude / 200
         self.speedPx = self.speedGS / gameMap['mapScale'] * heureEnRefresh  # on convertit les kt en px/refresh
 
         # mouvement 
         self.x += self.speedPx * math.cos(self.headingRad)
         self.y += self.speedPx * math.sin(self.headingRad)
+
+    def computeSpeed(self):
+
+        """
+        Fait évoluer la vitesse si on a besoin
+        :return:
+        """
+        if not self.machMode:
+            if self.speedIAS != self.selectedIAS:  # s'il faut accélérer ou ralentir
+                # on change la vitesse par un pas d'accél/deccel défaut
+                if abs(self.selectedIAS - self.speedIAS) <= acceldefault:
+                    self.speedIAS = self.selectedIAS
+                else:
+                    self.speedIAS += (self.selectedIAS - self.speedIAS)/abs(self.selectedIAS - self.speedIAS) * acceldefault
+
+            self.mach = vitesses.IAS_to_Mach(self.speedIAS, self.altitude)
+        else:
+            if self.mach != self.selectedMach:
+                # on change la vitesse par un pas d'accél/deccel défaut
+                if abs(self.selectedMach - self.mach) <= acceldefaultMach:
+                    self.mach = self.selectedMach
+                else:
+                    self.mach += (self.selectedMach - self.mach) / abs(self.selectedMach - self.mach) * acceldefaultMach
+
+        self.speedTAS = vitesses.mach_to_TAS(self.mach, self.altitude)
+        self.speedGS = self.speedTAS
+
+    def changeSpeed(self) -> None:
+        """
+        Sélectionne la vitesse en fonction de la phase de vol
+        :return:
+        """
+
+        self.machMode = False
+
+        if self.forcedSpeed:
+            return None
+
+        if self.altitude >= altitude_conversion:  # au-dessus de l'alti de conversion tout se fera en mach
+
+            self.machMode = True
+
+            if self.evolution == 0:
+                self.selectedMach = self.perfos['cruiseMach']
+
+            elif self.evolution < 0:
+                self.selectedMach = self.perfos['descentMach']
+
+            else:
+                self.selectedMach = self.perfos['climbMach']
+
+        elif self.altitude >= altitude_cruise:  # en-dessous de l'alti de conversion tout se fera en IAS
+            # ici, on regarde si on est en montée/descente initiale ou alors, si on approche du niveau de croisière
+
+            if self.evolution <= 0:  # on prend les perfs de descente pour la croisière (pas trouvé de perfo IAS cruise)
+                self.selectedIAS = self.perfos['descentIAS']
+
+            else:
+                self.selectedIAS = self.perfos['climbIAS']
+
+        else:
+            # ici, on est dans les basses couches donc on prend les perfos en basse alti
+
+            if self.evolution <= 0:
+                self.selectedIAS = self.perfos['descentIAS']
+                # les perfos sont les mêmes pendant la majorité de la descente d'où le manque de 240
+
+            else:
+                self.selectedIAS = self.perfos['initialClimbIAS']
 
     def calculeEstimate(self, points: dict, pointVoulu: str) -> float:
         """
