@@ -231,63 +231,53 @@ gameMap.update({'callsigns': callsignList})
 planeId = 0
 
 simuTree = None
-try:  # on essaye de charger une simu, si elle existe
 
-    simuTree = ET.parse(dossierXML / simu).getroot()
 
-    heure = simuTree.find('heure').text
-    heure = int(heure[0:2]) * 3600 + int(heure[2:4]) * 60 + int(heure[4:])
+simuTree = ET.parse(dossierXML / simu).getroot()
 
-    game = Game(heure)
+heure = simuTree.find('heure').text
+heure = int(heure[0:2]) * 3600 + int(heure[2:4]) * 60 + int(heure[4:])
 
-    avionSpawnListe = []
-    avionsXML = simuTree.find('avions')
-    for avion in avionsXML:
+game = Game(heure)
 
-        avionDict = {}
+avionSpawnListe = []
+avionsXML = simuTree.find('avions')
+for avion in avionsXML:
 
-        for XMLpoint in avion:
-            try:
-                XMLpointValue = float(XMLpoint.text)
-            except:
-                XMLpointValue = XMLpoint.text
-            avionDict.update({XMLpoint.tag: XMLpointValue})
+    avionDict = {}
 
-        heureSpawn = avion.attrib['heure']
-        heureSpawn = int(heureSpawn[0:2]) * 3600 + int(heureSpawn[2:4]) * 60 + int(heureSpawn[4:])
+    for XMLpoint in avion:
+        try:
+            XMLpointValue = float(XMLpoint.text)
+        except:
+            XMLpointValue = XMLpoint.text
+        avionDict.update({XMLpoint.tag: XMLpointValue})
 
-        for route in gameMap['routes']:
-            if route == avionDict['route']:
-                spawnRoute = gameMap['routes'][route]
-                break
-        if 'altitude' in avionDict:
-            spawnFL = round(avionDict['altitude'] / 100)
-        else:
-            spawnFL = None
-        avionPack = AvionPacket(
-            gameMap,
-            planeId,
-            avionDict['indicatif'],
-            avionDict['aircraft'],
-            aircraftType[avionDict['aircraft']],
-            spawnRoute,
-            avionDict['arrival'] == 'True',
-            FL=spawnFL,
-            x=avionDict['x'],
-            y=avionDict['y'])
-        planeId += 1
+    heureSpawn = avion.attrib['heure']
+    heureSpawn = int(heureSpawn[0:2]) * 3600 + int(heureSpawn[2:4]) * 60 + int(heureSpawn[4:])
 
-        avionSpawnListe.append((heureSpawn, avionPack))
-except:  # sinon, on demande juste l'heure de début
+    for route in gameMap['routes']:
+        if route == avionDict['route']:
+            spawnRoute = gameMap['routes'][route]
+            break
+    if 'altitude' in avionDict:
+        spawnFL = round(avionDict['altitude'] / 100)
+    else:
+        spawnFL = None
+    avionPack = AvionPacket(
+        gameMap,
+        planeId,
+        avionDict['indicatif'],
+        avionDict['aircraft'],
+        aircraftType[avionDict['aircraft']],
+        spawnRoute,
+        avionDict['arrival'] == 'True',
+        FL=spawnFL,
+        x=avionDict['x'],
+        y=avionDict['y'])
+    planeId += 1
 
-    heure = input('Heure de début de simu, format: hhmm')
-    heure = int(heure[0:2]) * 3600 + int(heure[2:]) * 60
-    avionSpawnListe = []
-    simuTree = ET.Element('simu')
-    game = Game(heure)
-    heureXML = ET.SubElement(simuTree, 'heure')
-    heureXML.text = horloge.heureXML(game.heure)
-    avionsXML = ET.SubElement(simuTree, 'avions')
+    avionSpawnListe.append((heureSpawn, avionPack))
 
 
 def threaded_client(conn, caca):

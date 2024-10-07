@@ -11,3 +11,5 @@ plotSize = 5  # taille des plots avions
 dragDelay = 150  # on utilise cette valeur seuil pour déterminer si on doit cliquer sur un bouton ou drag l'etiquette
 offsettEtiquetteDefault = 30  # de combien les etiquettes sont décalées en px à quand on les dessine la 1ere fois
 temps_disparition_menus = 300  # en combien de milli sec les menus disparaissent après ne plus être survolé
+TAS_to_mach_yR = 287.052874 * 1.4
+densite_air_surface = 1.225

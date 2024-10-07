@@ -1,10 +1,37 @@
-
+import math
 # Native imports
 import random
 
 # Imports fichiers
 from Python.geometry import *
 from Python.valeurs_config import *
+
+
+def densite_de_l_air(altitude: float) -> float:
+    """
+    Cacule la densité de l'air à cette altitude
+    :param altitude: en ft
+    :return:
+    """
+
+    altitude = 0.3048 * altitude
+    densite = 352.995 * (1 - 0.0000225577 * altitude) ** 5.25516 / (288.15 - 0.0065 * altitude)
+
+    return densite
+
+
+def trueAirSpeed(IAS: float, densite: float) -> float:
+
+    return IAS * math.sqrt(densite_air_surface / densite)
+
+
+def machNumber(TAS, altitude):
+
+    temperature = 15 - altitude / 500 + 273.15
+    if temperature <= 217.15:
+        temperature = 217.15
+
+    return TAS / math.sqrt(TAS_to_mach_yR * temperature)
 
 
 class Game:
@@ -53,6 +80,10 @@ class AvionPacket:
             self.altitude = altiDefault
 
         self.speedIAS = perfos['IAS']
+        densite = densite_de_l_air(self.altitude)
+        self.TAS = trueAirSpeed(self.speedIAS, densite)
+        self.mach = machNumber(self.TAS, self.altitude)
+        print(self.mach)
         self.speedGS = self.speedIAS + self.altitude / 200  # la GS dépends de l'alti
         self.speedPx = self.speedGS / gameMap['mapScale'] * heureEnRefresh
 
@@ -160,7 +191,6 @@ class AvionPacket:
         self.selectedAlti = self.CFL * 100
         self.selectedHeading = self.heading
         self.selectedIAS = self.speedIAS
-        self.mach = self.speedIAS
         self.clearedIAS = None
         self.clearedMach = None
         self.clearedHeading = None
