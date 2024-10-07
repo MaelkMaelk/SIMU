@@ -381,33 +381,54 @@ while Running:
 
             elif reqType == 'Remove':
                 dictAvion.pop(reqId)
+
             elif reqType == 'FL':
                 dictAvion[reqId].selectedAlti = reqContent * 100
+
             elif reqType == 'PFL':
                 dictAvion[reqId].PFL = reqContent
                 dictAvion[reqId].changeXFL(gameMap)
+
             elif reqType == 'CFL':
                 dictAvion[reqId].CFL = reqContent
+
             elif reqType == 'C_IAS':
                 if len(req) == 3:
                     dictAvion[reqId].clearedIAS = reqContent
                 else:
                     dictAvion[reqId].clearedIAS = None
+
+            elif reqType == 'C_Mach':
+                print(req)
+                if reqContent:
+                    dictAvion[reqId].clearedMach = reqContent
+                else:
+                    dictAvion[reqId].clearedMach = None
+
             elif reqType == 'C_Rate':
                 if len(req) == 3:
                     dictAvion[reqId].clearedRate = reqContent
                 else:
                     dictAvion[reqId].clearedRate = None
+
             elif reqType == 'Rate':
-                signe = (dictAvion[reqId].evolution * reqContent) / abs(dictAvion[reqId].evolution * reqContent)
-                dictAvion[reqId].evolution = signe * reqContent
+                if reqContent:
+                    dictAvion[reqId].forcedEvo = True
+                    signe = (dictAvion[reqId].evolution * reqContent) / abs(dictAvion[reqId].evolution * reqContent)
+                    dictAvion[reqId].evolution = signe * reqContent
+                else:
+                    dictAvion[reqId].forcedEvo = True
+
             elif reqType == 'XFL':
                 dictAvion[reqId].XFL = reqContent
                 dictAvion[reqId].changeSortieSecteur(gameMap)
+
             elif reqType == 'XPT':
                 dictAvion[reqId].XPT = reqContent
+
             elif reqType == 'C_HDG':
                 dictAvion[reqId].clearedHeading = reqContent
+
             elif reqType == 'HDG':
                 if type(reqContent) in [float, int]:
                     newHeading = reqContent
@@ -417,42 +438,69 @@ while Running:
                     newHeading = dictAvion[reqId].selectedHeading + int(reqContent[1:])
                 dictAvion[reqId].headingMode = True
                 dictAvion[reqId].selectedHeading = reqContent
+
             elif reqType == 'IAS':
-                dictAvion[reqId].selectedIAS = reqContent * 10
+                if reqContent:
+                    dictAvion[reqId].forcedSpeed = True
+                    dictAvion[reqId].machMode = False
+                    dictAvion[reqId].selectedIAS = reqContent * 10
+                else:
+                    dictAvion[reqId].forcedSpeed = False
+
+            elif reqType == 'Mach':
+                if reqContent:
+                    dictAvion[reqId].forcedSpeed = True
+                    dictAvion[reqId].machMode = True
+                    dictAvion[reqId].selectedMach = float(reqContent)
+                else:
+                    dictAvion[reqId].forcedSpeed = False
+
             elif reqType == 'DCT':
                 dictAvion[reqId].clearedHeading = None
                 dictAvion[reqId].DCT = reqContent
+
             elif reqType == 'Warning':
                 dictAvion[reqId].warning = not dictAvion[reqId].warning
+
             elif reqType == 'Integre':
                 dictAvion[reqId].integreOrganique = True
+
             elif reqType == 'Direct':
                 dictAvion[reqId].headingMode = False
                 for point in dictAvion[reqId].route['points']:
                     if point['name'] == reqContent:
                         dictAvion[reqId].nextPoint = point
                         break
+
             elif reqType == 'Route':
                 dictAvion[reqId].nextRoute = reqContent
                 dictAvion[reqId].changeRoute(gameMap)
+
             elif reqType == 'HighlightBouton':
                 if reqContent in dictAvion[reqId].boutonsHighlight:  # si le bouton est déjà highlight alors:
                     dictAvion[reqId].boutonsHighlight.remove(reqContent)
                 else:
                     dictAvion[reqId].boutonsHighlight.append(reqContent)
+
             elif reqType == 'Montrer':
                 dictAvion[reqId].montrer = not dictAvion[reqId].montrer
+
             elif reqType == 'EtatFreq':
                 dictAvion[reqId].updateEtatFreq(reqContent)
+
             elif reqType == 'FL?':
                 dictAvion[reqId].FLInterro = not dictAvion[reqId].FLInterro
+
             elif reqType == 'Pause':
                 game.paused = not game.paused
+
             elif reqType == 'Faster':
                 accelerationTemporelle += 0.5
+
             elif reqType == 'Slower':
                 if accelerationTemporelle > 0.5:
                     accelerationTemporelle -= 0.5
+
             elif reqType == 'Save' and mode_ecriture:
                 xmlstr = server_def.prettyPrint(minidom.parseString(ET.tostring(simuTree)))
                 with open("XML/simu.xml", "w") as f:

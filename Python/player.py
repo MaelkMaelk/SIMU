@@ -465,6 +465,9 @@ class Avion:
         elif event.ui_element == self.etiquette.AFL and event.mouse_button == 1 and pilote:
             return 'FL'
 
+        elif event.ui_element == self.etiquette.clearedSpeed and event.mouse_button == 1 and self.papa.machMode:
+            return 'C_Mach'
+
         elif event.ui_element == self.etiquette.clearedSpeed and event.mouse_button == 1:
             return 'C_IAS'
 

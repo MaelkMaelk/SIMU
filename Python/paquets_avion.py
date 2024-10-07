@@ -159,14 +159,15 @@ class AvionPacket:
 
         # selected + vitesses
         if self.machMode:
-            self.speedIAS = self.perfos['descentIAS']
             self.selectedIAS = self.perfos['descentIAS']
             self.mach = self.selectedMach
+            self.speedTAS = vitesses.mach_to_TAS(self.mach, self.altitude)
+            self.speedIAS = vitesses.TAS_to_IAS(self.speedTAS, self.altitude)
         else:
             self.speedIAS = self.selectedIAS
             self.mach = vitesses.IAS_to_Mach(self.speedIAS, self.altitude)
+            self.speedTAS = vitesses.mach_to_TAS(self.mach, self.altitude)
 
-        self.speedTAS = vitesses.mach_to_TAS(self.mach, self.altitude)
         self.speedGS = self.speedTAS
 
         self.selectedAlti = self.CFL * 100
@@ -347,6 +348,7 @@ class AvionPacket:
         Fait évoluer la vitesse si on a besoin
         :return:
         """
+
         if not self.machMode:
             if self.speedIAS != self.selectedIAS:  # s'il faut accélérer ou ralentir
                 # on change la vitesse par un pas d'accél/deccel défaut
@@ -364,6 +366,8 @@ class AvionPacket:
                 else:
                     self.mach += (self.selectedMach - self.mach) / abs(self.selectedMach - self.mach) * acceldefaultMach
 
+            self.speedIAS = vitesses.TAS_to_IAS(self.speedTAS, self.altitude)
+
         self.speedTAS = vitesses.mach_to_TAS(self.mach, self.altitude)
         self.speedGS = self.speedTAS
 
@@ -373,11 +377,10 @@ class AvionPacket:
         :return:
         """
 
-        self.machMode = False
-
         if self.forcedSpeed:
             return None
 
+        self.machMode = False
         if self.altitude >= altitude_conversion:  # au-dessus de l'alti de conversion tout se fera en mach
 
             self.machMode = True

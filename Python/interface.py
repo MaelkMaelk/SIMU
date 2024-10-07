@@ -371,7 +371,7 @@ class etiquette:
         if avion.papa.clearedIAS and self.extended:
             self.clearedSpeed.set_text("k" + avion.papa.clearedIAS)
         elif avion.papa.clearedMach and self.extended:
-            self.clearedSpeed.set_text("k" + avion.papa.clearedMach)
+            self.clearedSpeed.set_text("m" + avion.papa.clearedMach)
         else:
             self.clearedSpeed.set_text("S")
 

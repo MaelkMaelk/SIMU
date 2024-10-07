@@ -92,3 +92,12 @@ def mach_to_TAS(M, alti):
     alti = alti / feet_per_metre
     return lss(alti) * M / ms_per_kt
 
+
+def TAS_to_IAS(TAS, alti):
+    """
+    Convertit une TAS en IAS, de façon très grossière
+    :return:
+    """
+
+    return TAS - alti / 185
+
