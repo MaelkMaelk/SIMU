@@ -375,7 +375,7 @@
 
         <route>
             <Type>TRANSIT</Type>
-            <destination>E-SE</destination>
+            <destination>E_SE</destination>
             <provenance>N</provenance>
             <point>
                 <name>ATN</name>
@@ -960,13 +960,13 @@
             <AD>DTTA</AD>
         </SE>
 
-        <E-SE>
+        <E_SE>
             <AD>LGAT</AD>
             <AD>LGAV</AD>
             <AD>LGIR</AD>
             <AD>LIMF</AD>
             <AD>LIPZ</AD>
-        </E-SE>
+        </E_SE>
 
         <E>
             <AD>LOWW</AD>

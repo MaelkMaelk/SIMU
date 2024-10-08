@@ -1,0 +1,96 @@
+<?xml version="1.0" ?>
+<simu>
+	<heure>100300</heure>
+	<avions>
+		<avion heure="100300">
+			<indicatif>CTM7812</indicatif>
+			<aircraft>TBM7</aircraft>
+			<route>FRI-GAI</route>
+			<altitude>25000</altitude>
+			<arrival>False</arrival>
+			<x>1901</x>
+			<y>463</y>
+			<PFL>250</PFL>
+		</avion>
+		<avion heure="100300">
+			<indicatif>BAW7832</indicatif>
+			<aircraft>A321</aircraft>
+			<route>MIROS-DIRMO</route>
+			<altitude>34000</altitude>
+			<arrival>False</arrival>
+			<x>1947</x>
+			<y>1538</y>
+			<PFL>340</PFL>
+		</avion>
+		<avion heure="100826">
+			<indicatif>DAH1245</indicatif>
+			<aircraft>A321</aircraft>
+			<route>ABISA-RAPID</route>
+			<altitude>34000</altitude>
+			<arrival>False</arrival>
+			<x>1375</x>
+			<y>1644</y>
+			<PFL>340</PFL>
+		</avion>
+		<avion heure="100312">
+			<indicatif>AZA6491</indicatif>
+			<aircraft>B738</aircraft>
+			<route>GAI-JUVEN</route>
+			<altitude>34000</altitude>
+			<arrival>False</arrival>
+			<x>699</x>
+			<y>1341</y>
+			<PFL>340</PFL>
+		</avion>
+		<avion heure="100300">
+			<indicatif>BAW7398</indicatif>
+			<aircraft>A20N</aircraft>
+			<route>ATN-SAMOS</route>
+			<altitude>33000</altitude>
+			<arrival>False</arrival>
+			<x>1622.5830208757</x>
+			<y>1055.6288271445846</y>
+			<PFL>330</PFL>
+		</avion>
+		<avion heure="100300">
+			<indicatif>EWG5493</indicatif>
+			<aircraft>B738</aircraft>
+			<route>FRI-GAI</route>
+			<altitude>31000</altitude>
+			<arrival>False</arrival>
+			<x>1413.9194419853623</x>
+			<y>807.2598613597643</y>
+			<PFL>310</PFL>
+		</avion>
+		<avion heure="100300">
+			<indicatif>IBE8761</indicatif>
+			<aircraft>A321</aircraft>
+			<route>FRI-GAI</route>
+			<altitude>29000</altitude>
+			<arrival>False</arrival>
+			<x>1437.6613854255002</x>
+			<y>787.5937880381051</y>
+			<PFL>290</PFL>
+		</avion>
+		<avion heure="100300">
+			<indicatif>AZA913C</indicatif>
+			<aircraft>A339</aircraft>
+			<route>BIELA-GAI</route>
+			<altitude>36000</altitude>
+			<arrival>False</arrival>
+			<x>1346.995368262264</x>
+			<y>1173.1064820362462</y>
+			<PFL>360</PFL>
+		</avion>
+		<avion heure="100755">
+			<indicatif>TAP8531</indicatif>
+			<aircraft>A320</aircraft>
+			<route>GAI-JUVEN</route>
+			<altitude>32000</altitude>
+			<arrival>True</arrival>
+			<x>699</x>
+			<y>1341</y>
+			<PFL>320</PFL>
+		</avion>
+	</avions>
+</simu>

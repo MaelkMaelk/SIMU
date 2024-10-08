@@ -11,7 +11,7 @@ import Python.vitesses as vitesses
 class Game:
     def __init__(self, heure):
         self.ready = False
-        self.paused = True
+        self.paused = False  # on commence avec la situation en pause
         self.heure = heure
 
 
@@ -33,7 +33,7 @@ class AvionPacket:
         self.Id = Id
         self.indicatif = indicatif
         self.aircraft = aircraft
-        self.arrival = arrival and route['arrival']
+        self.arrival = arrival and (route['arrival'] != False)
         
         if x is not None:  # si on a défini un point de spawn pendant le setup
             self.x = x

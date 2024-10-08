@@ -25,12 +25,12 @@ else:
 
 # fenêtre Pygame, mettre en 1920, 1080 pour plein écran
 pygame.init()
-width = 1000
-height = 1000
-win = pygame.display.set_mode((width, height))
+# width = 1000
+# height = 1000
+# win = pygame.display.set_mode((width, height))
 
-# win = pygame.display.set_mode()
-# width, height = pygame.display.get_surface().get_size()
+win = pygame.display.set_mode()
+width, height = pygame.display.get_surface().get_size()
 
 path = Path(os.getcwd())
 manager = pygame_gui.UIManager((width, height), path / 'ressources' / 'theme.json')
@@ -530,18 +530,17 @@ def main(server_ip: str):
             capture.saveScreenshot(win, dossierScreen / (horloge.heureXML(game.heure) + '.png'))
             dernierScreen = pygame.time.get_ticks()
 
-        # envoi des packets
-        # on fait avec un try and except au cas où un paquet se perde
+        # Envoi des packets.
+        # On fait avec un try and except au cas où un paquet se perde
 
         try:
             if localRequests is not []:
                 packetId = (packetId + 1) % 100  # l'Id du paquet permet au serveur de mettre en ordre les données
                 packet = Packet(packetId, game=game, requests=localRequests)
-            else:
+            else:#
                 packet = Packet(game)
                 packetId = packet.Id
             packet = n.send(packet)
-
         except:  # dans le cas où l'on perd un paquet, on garde les données précédentes
             print('Paquet perdu')
             packet = tempoPacket

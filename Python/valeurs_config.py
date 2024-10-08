@@ -16,4 +16,4 @@ altitude_conversion = 27900
 altitude_cruise = 25000
 
 delaiScreen = 6900
-replayMode = False
+replayMode = True

@@ -368,7 +368,6 @@ while Running:
 
             if len(req) == 3:
                 reqContent = req[2]
-            print(req)
 
             if reqType == 'Add':
 
@@ -387,8 +386,8 @@ while Running:
                 planeId += 1
 
                 if mode_ecriture:
-                    heure = horloge.heureXML(game.heure)
-                    server_def.generateAvionXML(avionsXML, reqContent, heure)
+                    heure = horloge.heureXML(game.heure + reqContent[0])
+                    server_def.generateAvionXML(avionsXML, reqContent[1], heure)
 
             elif reqType == 'Remove':
                 dictAvion.pop(reqId)
@@ -528,8 +527,9 @@ while Running:
 
     for avion in toBeRemovedFromSpawn:
         avionSpawnListe.remove(avion)
-
-    if time.time() - temps >= radarRefresh/accelerationTemporelle and game.paused:
+    if not game.paused:
+        temps = time.time()  # si la game est sur pause alors on avance pas le temps
+    elif time.time() - temps >= radarRefresh/accelerationTemporelle:
         game.heure += (time.time() - temps) * accelerationTemporelle
         temps = time.time()
         suppListe = []
