@@ -14,8 +14,10 @@ import platform
 from pathlib import Path
 
 # Import fichiers
+import Python.horloge as horloge
 from Python.network import MCAST_GRP, MCAST_PORT, port
 from Python.paquets_avion import *
+import Python.server_def as server_def
 
 
 dossierXML = Path("").absolute() / 'XML'
@@ -214,35 +216,51 @@ aircraftType = {}
 tree = ET.parse(dossierXML / aircraftFile)
 root = tree.getroot()
 
-for aircraft in root:
+for aircraft in root.find('aircrafts'):
+
+    aircraftPerf = {}
+    for XMLpoint in aircraft:
+        try:
+            XMLpointValue = float(XMLpoint.text)
+        except:
+            XMLpointValue = XMLpoint.text
+        aircraftPerf.update({XMLpoint.tag: XMLpointValue})
+
     aircraftType.update(
-        {aircraft.attrib['name']: {'IAS': int(aircraft.find('speed').text),
-                                   'plafond': int(aircraft.find('ceiling').text),
-                                   'ROC': int(aircraft.find('ROC').text),
-                                   'ROD': int(aircraft.find('ROD').text)}})
+        {aircraft.attrib['name']: aircraftPerf})
 
+callsignList = {}
+for callsign in root.find('callsigns'):
+    callsignList.update({callsign.attrib['indicatif']: callsign.text})
+
+gameMap.update({'callsigns': callsignList})
 planeId = 0
-try:  # on essaye de charger une simu, si elle existe
 
-    tree = ET.parse(dossierXML / simu)
+simuTree = None
 
-    heure = tree.find('heure').text
-    heure = int(heure[0:2]) * 3600 + int(heure[2:]) * 60
+try:
+    simuTree = ET.parse(dossierXML / simu).getroot()
+
+    heure = simuTree.find('heure').text
+    heure = int(heure[0:2]) * 3600 + int(heure[2:4]) * 60 + int(heure[4:])
+
+    game = Game(heure)
 
     avionSpawnListe = []
-    for avion in tree.find('avions'):
+    avionsXML = simuTree.find('avions')
+    for avion in avionsXML:
 
         avionDict = {}
 
         for XMLpoint in avion:
             try:
-                XMLpointValue = int(XMLpoint.text)
+                XMLpointValue = float(XMLpoint.text)
             except:
                 XMLpointValue = XMLpoint.text
             avionDict.update({XMLpoint.tag: XMLpointValue})
 
         heureSpawn = avion.attrib['heure']
-        heureSpawn = int(heureSpawn[0:2]) * 3600 + int(heureSpawn[2:]) * 60
+        heureSpawn = int(heureSpawn[0:2]) * 3600 + int(heureSpawn[2:4]) * 60 + int(heureSpawn[4:])
 
         for route in gameMap['routes']:
             if route == avionDict['route']:
@@ -266,51 +284,16 @@ try:  # on essaye de charger une simu, si elle existe
         planeId += 1
 
         avionSpawnListe.append((heureSpawn, avionPack))
-except:  # sinon, on demande juste l'heure de début
+except:
 
     heure = input('Heure de début de simu, format: hhmm')
     heure = int(heure[0:2]) * 3600 + int(heure[2:]) * 60
     avionSpawnListe = []
-
-game = Game(heure)
-
-# XML écriture
-
-SimuTree = ET.Element('simu')
-heureXML = ET.SubElement(SimuTree, 'heure')
-heureXML.text = '1002'
-avionsXML = ET.SubElement(SimuTree, 'avions')
-
-
-def generateAvionXML(parent, heureEcriture, indicatifEcriture, aircraftEcriture, routeEcriture, altitudeEcriture, xEcriture=None, yEcriture=None, headingEcriture=None, PFLEcriture=None):
-
-    avionXML = ET.SubElement(parent, 'avion')
-    avionXML.set('heure', str(heureEcriture))
-
-    node = ET.SubElement(avionXML, 'indicatif')
-    node.text = str(indicatifEcriture)
-    node = ET.SubElement(avionXML, 'aircraft')
-    node.text = str(aircraftEcriture)
-    node = ET.SubElement(avionXML, 'route')
-    node.text = str(routeEcriture)
-    node = ET.SubElement(avionXML, 'altitude')
-    node.text = str(altitudeEcriture)
-    node = ET.SubElement(avionXML, 'arrival')
-    node.text = str(arrival)
-
-    if xEcriture is not None:
-        node = ET.SubElement(avionXML, 'x')
-        node.text = str(xEcriture)
-        node = ET.SubElement(avionXML, 'y')
-        node.text = str(yEcriture)
-
-    if headingEcriture is not None:
-        node = ET.SubElement(avionXML, 'heading')
-        node.text = str(headingEcriture)
-
-    if PFLEcriture is not None:
-        node = ET.SubElement(avionXML, 'PFL')
-        node.text = str(PFLEcriture)
+    simuTree = ET.Element('simu')
+    game = Game(heure)
+    heureXML = ET.SubElement(simuTree, 'heure')
+    heureXML.text = horloge.heureXML(game.heure)
+    avionsXML = ET.SubElement(simuTree, 'avions')
 
 
 def threaded_client(conn, caca):
@@ -379,118 +362,161 @@ while Running:
     requests.append(inReq)
     for reqSublist in requests:
         for req in reqSublist:  # format requêtes : [Id avion, type requête, data]
-            if req[1] == 'Add':
-                req[2].Id = planeId
-                dictAvion.update({planeId: req[2]})
+            reqType = req[1]
+            reqId = req[0]
+            reqContent = None
+
+            if len(req) == 3:
+                reqContent = req[2]
+            print(req)
+
+            if reqType == 'Add':
+
+                reqContent.Id = planeId
+                dictAvion.update({planeId: reqContent})
                 planeId += 1
-                if mode_ecriture:
-
-                    heures = str(round(game.heure // 3600))
-                    if len(heures) == 1:
-                        heures = '0' + heures
-                    minutes = str(round(game.heure % 3600 // 60))
-                    if len(minutes) == 1:
-                        minutes = '0' + minutes
-
-                    generateAvionXML(avionsXML,
-                                     heures + minutes,
-                                     req[2].indicatif,
-                                     req[2].aircraft,
-                                     req[2].route['name'],
-                                     req[2].altitude,
-                                     xEcriture=req[2].x,
-                                     yEcriture=req[2].y,
-                                     PFLEcriture=req[2].PFL)
-            elif req[1] == 'DelayedAdd':
-
-                avionSpawnListe.append((game.heure + req[2][0], req[2][1]))
 
                 if mode_ecriture:
+                    heure = horloge.heureXML(game.heure)
+                    server_def.generateAvionXML(avionsXML, reqContent, heure)
 
-                    heures = str(round(game.heure + req[2][0] // 3600))
-                    if len(heures) == 1:
-                        heures = '0' + heures
-                    minutes = str(round(game.heure + req[2][0] % 3600 // 60))
-                    if len(minutes) == 1:
-                        minutes = '0' + minutes
+            elif reqType == 'DelayedAdd':
 
-                    generateAvionXML(avionsXML,
-                                     heures + minutes,
-                                     req[2][1].indicatif,
-                                     req[2][1].aircraft,
-                                     req[2][1].route['name'],
-                                     req[2][1].altitude,
-                                     xEcriture=req[2][1].x,
-                                     yEcriture=req[2][1].y,
-                                     PFLEcriture=req[2][1].PFL)
+                reqContent[1].Id = planeId
+                avionSpawnListe.append((game.heure + reqContent[0], reqContent[1]))
+                planeId += 1
 
-            elif req[1] == 'Remove':
-                dictAvion.pop(req[0])
-            elif req[1] == 'Altitude':
-                dictAvion[req[0]].selectedAlti = req[2]
-            elif req[1] == 'PFL':
-                dictAvion[req[0]].PFL = req[2]
-                dictAvion[req[0]].changeXFL(gameMap)
-            elif req[1] == 'CFL':
-                dictAvion[req[0]].CFL = req[2]
-            elif req[1] == 'C_IAS':
-                if len(req) == 3:
-                    dictAvion[req[0]].clearedIAS = req[2]
+                if mode_ecriture:
+                    heure = horloge.heureXML(game.heure)
+                    server_def.generateAvionXML(avionsXML, reqContent, heure)
+
+            elif reqType == 'Remove':
+                dictAvion.pop(reqId)
+
+            elif reqType == 'FL':
+                dictAvion[reqId].selectedAlti = reqContent * 100
+
+            elif reqType == 'PFL':
+                dictAvion[reqId].PFL = reqContent
+                dictAvion[reqId].changeXFL(gameMap)
+
+            elif reqType == 'CFL':
+                dictAvion[reqId].CFL = reqContent
+
+            elif reqType == 'C_IAS':
+                if reqContent:
+                    dictAvion[reqId].clearedIAS = reqContent
+                    dictAvion[reqId].clearedMach = None
                 else:
-                    dictAvion[req[0]].clearedIAS = None
-            elif req[1] == 'C_Rate':
-                if len(req) == 3:
-                    dictAvion[req[0]].clearedRate = req[2]
+                    dictAvion[reqId].clearedMach = None
+                    dictAvion[reqId].clearedIAS = None
+
+            elif reqType == 'C_Mach':
+                if reqContent:
+                    dictAvion[reqId].clearedMach = reqContent
+                    dictAvion[reqId].clearedIAS = None
                 else:
-                    dictAvion[req[0]].clearedRate = None
-            elif req[1] == 'XFL':
-                dictAvion[req[0]].XFL = req[2]
-                dictAvion[req[0]].changeSortieSecteur(gameMap)
-            elif req[1] == 'XPT':
-                dictAvion[req[0]].XPT = req[2]
-            elif req[1] == 'HDG':
-                dictAvion[req[0]].clearedHeading = req[2]
-            elif req[1] == 'Heading':
-                dictAvion[req[0]].headingMode = True
-                dictAvion[req[0]].selectedHeading = req[2]
-            elif req[1] == 'IAS':
-                dictAvion[req[0]].selectedIAS = req[2]
-            elif req[1] == 'DCT':
-                dictAvion[req[0]].clearedHeading = None
-                dictAvion[req[0]].DCT = req[2]
-            elif req[1] == 'Warning':
-                dictAvion[req[0]].warning = not dictAvion[req[0]].warning
-            elif req[1] == 'Integre':
-                dictAvion[req[0]].integreOrganique = True
-            elif req[1] == 'Direct':
-                dictAvion[req[0]].headingMode = False
-                for point in dictAvion[req[0]].route['points']:
-                    if point['name'] == req[2]:
-                        dictAvion[req[0]].nextPoint = point
+                    dictAvion[reqId].clearedMach = None
+                    dictAvion[reqId].clearedIAS = None
+
+            elif reqType == 'C_Rate':
+                if reqContent:
+                    dictAvion[reqId].clearedRate = reqContent
+                else:
+                    dictAvion[reqId].clearedRate = None
+
+            elif reqType == 'Rate':
+                if reqContent:
+                    dictAvion[reqId].forcedEvo = True
+                    signe = (dictAvion[reqId].evolution * reqContent) / abs(dictAvion[reqId].evolution * reqContent)
+                    dictAvion[reqId].evolution = signe * reqContent
+                else:
+                    dictAvion[reqId].forcedEvo = False
+
+            elif reqType == 'XFL':
+                dictAvion[reqId].XFL = reqContent
+                dictAvion[reqId].changeSortieSecteur(gameMap)
+
+            elif reqType == 'XPT':
+                dictAvion[reqId].XPT = reqContent
+
+            elif reqType == 'C_HDG':
+                dictAvion[reqId].clearedHeading = reqContent
+
+            elif reqType == 'HDG':
+                if type(reqContent) in [float, int]:
+                    newHeading = reqContent
+                elif reqContent[0] == '-':
+                    newHeading = dictAvion[reqId].selectedHeading - int(reqContent[1:])
+                elif reqContent[0] == '+':
+                    newHeading = dictAvion[reqId].selectedHeading + int(reqContent[1:])
+                dictAvion[reqId].headingMode = True
+                dictAvion[reqId].selectedHeading = reqContent
+
+            elif reqType == 'IAS':
+                if reqContent:
+                    dictAvion[reqId].forcedSpeed = True
+                    dictAvion[reqId].machMode = False
+                    dictAvion[reqId].selectedIAS = reqContent * 10
+                else:
+                    dictAvion[reqId].forcedSpeed = False
+
+            elif reqType == 'Mach':
+                if reqContent:
+                    dictAvion[reqId].forcedSpeed = True
+                    dictAvion[reqId].machMode = True
+                    dictAvion[reqId].selectedMach = float(reqContent)
+                else:
+                    dictAvion[reqId].forcedSpeed = False
+
+            elif reqType == 'DCT':
+                dictAvion[reqId].clearedHeading = None
+                dictAvion[reqId].DCT = reqContent
+
+            elif reqType == 'Warning':
+                dictAvion[reqId].warning = not dictAvion[reqId].warning
+
+            elif reqType == 'Integre':
+                dictAvion[reqId].integreOrganique = True
+
+            elif reqType == 'Direct':
+                dictAvion[reqId].headingMode = False
+                for point in dictAvion[reqId].route['points']:
+                    if point['name'] == reqContent:
+                        dictAvion[reqId].nextPoint = point
                         break
-            elif req[1] == 'Route':
-                dictAvion[req[0]].nextRoute = req[2]
-                dictAvion[req[0]].changeRoute(gameMap)
-            elif req[1] == 'HighlightBouton':
-                if req[2] in dictAvion[req[0]].boutonsHighlight:  # si le bouton est déjà highlight alors:
-                    dictAvion[req[0]].boutonsHighlight.remove(req[2])
+
+            elif reqType == 'Route':
+                dictAvion[reqId].nextRoute = reqContent
+                dictAvion[reqId].changeRoute(gameMap)
+
+            elif reqType == 'HighlightBouton':
+                if reqContent in dictAvion[reqId].boutonsHighlight:  # si le bouton est déjà highlight alors:
+                    dictAvion[reqId].boutonsHighlight.remove(reqContent)
                 else:
-                    dictAvion[req[0]].boutonsHighlight.append(req[2])
-            elif req[1] == 'Montrer':
-                dictAvion[req[0]].montrer = not dictAvion[req[0]].montrer
-            elif req[1] == 'EtatFreq':
-                dictAvion[req[0]].updateEtatFreq(req[2])
-            elif req[1] == 'FL?':
-                dictAvion[req[0]].FLInterro = not dictAvion[req[0]].FLInterro
-            elif req[1] == 'Pause':
+                    dictAvion[reqId].boutonsHighlight.append(reqContent)
+
+            elif reqType == 'Montrer':
+                dictAvion[reqId].montrer = not dictAvion[reqId].montrer
+
+            elif reqType == 'EtatFreq':
+                dictAvion[reqId].updateEtatFreq(reqContent)
+
+            elif reqType == 'FL?':
+                dictAvion[reqId].FLInterro = not dictAvion[reqId].FLInterro
+
+            elif reqType == 'Pause':
                 game.paused = not game.paused
-            elif req[1] == 'Faster':
+
+            elif reqType == 'Faster':
                 accelerationTemporelle += 0.5
-            elif req[1] == 'Slower':
+
+            elif reqType == 'Slower':
                 if accelerationTemporelle > 0.5:
                     accelerationTemporelle -= 0.5
-            elif req[1] == 'Save' and mode_ecriture:
-                xmlstr = minidom.parseString(ET.tostring(SimuTree)).toprettyxml(indent="   ")
+
+            elif reqType == 'Save' and mode_ecriture:
+                xmlstr = server_def.prettyPrint(minidom.parseString(ET.tostring(simuTree)))
                 with open("XML/simu.xml", "w") as f:
                     f.write(xmlstr)
 

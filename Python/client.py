@@ -13,17 +13,25 @@ from Python.player import *
 import Python.interface as interface
 from Python.paquets_avion import *
 import Python.outils_radar as outils_radar
+import Python.capture as capture
 
 # recherche de tous les serveurs sur le réseau
 address = server_browser.serverBrowser()
-print(address)
+if address:
+    print(address)
+else:
+    time.sleep(20)
+    exit()
 
 # fenêtre Pygame, mettre en 1920, 1080 pour plein écran
 pygame.init()
 width = 1000
 height = 1000
-
 win = pygame.display.set_mode((width, height))
+
+# win = pygame.display.set_mode()
+# width, height = pygame.display.get_surface().get_size()
+
 path = Path(os.getcwd())
 manager = pygame_gui.UIManager((width, height), path / 'ressources' / 'theme.json')
 
@@ -31,6 +39,11 @@ pygame.display.set_caption("Client")
 temps = pygame.time.get_ticks()
 clock = pygame.time.Clock()
 font = pygame.font.SysFont('arial', 18)
+
+if replayMode:
+    dossierScreen = Path('replay') / (str(time.localtime()[1]) + '_' + str(time.localtime()[2]) + '_' +
+                                      str(time.localtime()[3]) + 'h' + str(time.localtime()[4]))
+    dossierScreen.mkdir()
 
 
 def main(server_ip: str):
@@ -43,11 +56,13 @@ def main(server_ip: str):
     # menus
     conflitBool = False
     conflitGen = None
-    menuAvion = None
     menuATC = None
     menuValeurs = None
     flightDataWindow = None
     menuRadar = interface.menuRadar()
+
+    # screenshots replays
+    dernierScreen = pygame.time.get_ticks()
 
     # on se connecte au serveur
     n = Network(server_ip)
@@ -206,21 +221,6 @@ def main(server_ip: str):
                             curseur_cercles = True
                             pygame.mouse.set_cursor(pygame.cursors.broken_x)
 
-                # on regarde si notre menu pour le pilote est actif
-                if menuAvion is not None:
-
-                    # si on valide les modifs, alors la fonction checkEvent retourne les modifs
-                    modifications = menuAvion.checkEvent(event)
-                    if modifications:
-
-                        # on applique alors les modifs
-                        avionId = modifications[0]
-                        modifications = modifications[1]
-
-                        # pour chaque modif, on prépare une requête au serveur
-                        for changement, valeur in modifications.items():
-                            localRequests.append((avionId, changement, valeur))
-
                 if menuATC is not None:
 
                     # si on valide les modifs, alors la fonction checkEvent retourne les modifs
@@ -249,8 +249,8 @@ def main(server_ip: str):
                     if action:
                         if type(action) in [list, tuple]:  # si c'est un tuple alors cela correspond à une requête
                             localRequests.append(action)
-                        elif action in ['HDG', 'DCT']:
-                            menuValeurs = interface.menuValeurs(menuValeurs.avion, pygame.mouse.get_pos(), action)
+                        elif type(action) is str:
+                            menuValeurs = interface.menuValeurs(menuValeurs.avion, pygame.mouse.get_pos(), action, pilote)
 
                 if curseur_aliSep:
                     for sep in sepDict:
@@ -271,15 +271,12 @@ def main(server_ip: str):
                         if type(action) in [list, tuple]:  # si c'est un tuple alors cela correspond à une requête
                             localRequests.append(action)
 
-                        elif action == 'menuPIL' and menuAvion is None:  # si c'est menu alors, on vérifie qu'on peut menu
-                            menuAvion = interface.menuAvion(avion)
-
                         elif action == 'menuATC' and menuATC is None:
                             menuATC = interface.menuATC(avion, pygame.mouse.get_pos())
 
                         elif menuValeurs is None and action is not None:
                             # si on a renvoyé autre chose alors c'est une valeur pour ouvrir un menu
-                            menuValeurs = interface.menuValeurs(avion, pygame.mouse.get_pos(), action)
+                            menuValeurs = interface.menuValeurs(avion, pygame.mouse.get_pos(), action, pilote)
 
                     # Menu de selection nouvel avion
                     # si notre menu est ouvert
@@ -318,7 +315,7 @@ def main(server_ip: str):
             elif event.type == pygame_gui.UI_TEXT_ENTRY_CHANGED:
                 nouvelAvionWin.checkFields(event)
 
-            if menuAvion or nouvelAvionWin:
+            if nouvelAvionWin:
                 pass
 
             # zoom géré ici
@@ -368,9 +365,6 @@ def main(server_ip: str):
                 conflitGen.computeSpawn(((mouse[0] - scroll[0]) / zoom, (mouse[1] - scroll[1]) / zoom), carte)
 
             manager.process_events(event)
-
-        if menuAvion is not None:
-            menuAvion.checkSliders()
 
         if conflitGen is not None:
             conflitGen.checkScrollBar(carte)
@@ -436,10 +430,6 @@ def main(server_ip: str):
             pressing = False
 
         # on se débarrasse des menus inutils
-        if menuAvion is not None:
-            if not menuAvion.checkAlive():
-                menuAvion = None
-
         if menuATC is not None:
             if not menuATC.checkAlive():
                 menuATC = None
@@ -511,7 +501,7 @@ def main(server_ip: str):
                 avion.drawEstimatedRoute(carte['points'], conflitGen.temps, color, win, zoom, scroll)
 
         for avion in dictAvionsAff.values():
-            avion.draw(win, zoom, scroll, vecteurs, vecteurSetting, carte['points'])
+            avion.draw(win, zoom, scroll, vecteurs, vecteurSetting, carte['points'], game.heure)
 
         # on affiche les boutons
         manager.update(time_delta)
@@ -534,6 +524,11 @@ def main(server_ip: str):
                                        (alidadPos[1] - pygame.mouse.get_pos()[1]) ** 2) / zoom * mapScale, 1)
             img = font.render(str(distance), True, (255, 105, 180))
             win.blit(img, (pygame.mouse.get_pos()[0] + 20, pygame.mouse.get_pos()[1]))
+
+        # prise des screenshots
+        if pygame.time.get_ticks() >= dernierScreen + delaiScreen and replayMode and not pilote:
+            capture.saveScreenshot(win, dossierScreen / (horloge.heureXML(game.heure) + '.png'))
+            dernierScreen = pygame.time.get_ticks()
 
         # envoi des packets
         # on fait avec un try and except au cas où un paquet se perde
