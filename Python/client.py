@@ -13,6 +13,7 @@ from Python.player import *
 import Python.interface as interface
 from Python.paquets_avion import *
 import Python.outils_radar as outils_radar
+import Python.capture as capture
 
 # recherche de tous les serveurs sur le réseau
 address = server_browser.serverBrowser()
@@ -39,6 +40,11 @@ temps = pygame.time.get_ticks()
 clock = pygame.time.Clock()
 font = pygame.font.SysFont('arial', 18)
 
+if replayMode:
+    dossierScreen = Path('replay') / (str(time.localtime()[1]) + '_' + str(time.localtime()[2]) + '_' +
+                                      str(time.localtime()[3]) + 'h' + str(time.localtime()[4]))
+    dossierScreen.mkdir()
+
 
 def main(server_ip: str):
     global temps
@@ -54,6 +60,9 @@ def main(server_ip: str):
     menuValeurs = None
     flightDataWindow = None
     menuRadar = interface.menuRadar()
+
+    # screenshots replays
+    dernierScreen = pygame.time.get_ticks()
 
     # on se connecte au serveur
     n = Network(server_ip)
@@ -515,6 +524,11 @@ def main(server_ip: str):
                                        (alidadPos[1] - pygame.mouse.get_pos()[1]) ** 2) / zoom * mapScale, 1)
             img = font.render(str(distance), True, (255, 105, 180))
             win.blit(img, (pygame.mouse.get_pos()[0] + 20, pygame.mouse.get_pos()[1]))
+
+        # prise des screenshots
+        if pygame.time.get_ticks() >= dernierScreen + delaiScreen and replayMode and not pilote:
+            capture.saveScreenshot(win, dossierScreen / (horloge.heureXML(game.heure) + '.png'))
+            dernierScreen = pygame.time.get_ticks()
 
         # envoi des packets
         # on fait avec un try and except au cas où un paquet se perde

@@ -177,6 +177,8 @@ class AvionPacket:
         self.clearedMach = None
         self.clearedHeading = None
         self.clearedRate = None
+        self.clearedMachMode = False
+        self.clearedIASMode = False
 
         self.speedPx = self.speedGS / gameMap['mapScale'] * heureEnRefresh
 

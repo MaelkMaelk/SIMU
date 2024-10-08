@@ -238,52 +238,62 @@ planeId = 0
 
 simuTree = None
 
+try:
+    simuTree = ET.parse(dossierXML / simu).getroot()
 
-simuTree = ET.parse(dossierXML / simu).getroot()
+    heure = simuTree.find('heure').text
+    heure = int(heure[0:2]) * 3600 + int(heure[2:4]) * 60 + int(heure[4:])
 
-heure = simuTree.find('heure').text
-heure = int(heure[0:2]) * 3600 + int(heure[2:4]) * 60 + int(heure[4:])
+    game = Game(heure)
 
-game = Game(heure)
+    avionSpawnListe = []
+    avionsXML = simuTree.find('avions')
+    for avion in avionsXML:
 
-avionSpawnListe = []
-avionsXML = simuTree.find('avions')
-for avion in avionsXML:
+        avionDict = {}
 
-    avionDict = {}
+        for XMLpoint in avion:
+            try:
+                XMLpointValue = float(XMLpoint.text)
+            except:
+                XMLpointValue = XMLpoint.text
+            avionDict.update({XMLpoint.tag: XMLpointValue})
 
-    for XMLpoint in avion:
-        try:
-            XMLpointValue = float(XMLpoint.text)
-        except:
-            XMLpointValue = XMLpoint.text
-        avionDict.update({XMLpoint.tag: XMLpointValue})
+        heureSpawn = avion.attrib['heure']
+        heureSpawn = int(heureSpawn[0:2]) * 3600 + int(heureSpawn[2:4]) * 60 + int(heureSpawn[4:])
 
-    heureSpawn = avion.attrib['heure']
-    heureSpawn = int(heureSpawn[0:2]) * 3600 + int(heureSpawn[2:4]) * 60 + int(heureSpawn[4:])
+        for route in gameMap['routes']:
+            if route == avionDict['route']:
+                spawnRoute = gameMap['routes'][route]
+                break
+        if 'altitude' in avionDict:
+            spawnFL = round(avionDict['altitude'] / 100)
+        else:
+            spawnFL = None
+        avionPack = AvionPacket(
+            gameMap,
+            planeId,
+            avionDict['indicatif'],
+            avionDict['aircraft'],
+            aircraftType[avionDict['aircraft']],
+            spawnRoute,
+            avionDict['arrival'] == 'True',
+            FL=spawnFL,
+            x=avionDict['x'],
+            y=avionDict['y'])
+        planeId += 1
 
-    for route in gameMap['routes']:
-        if route == avionDict['route']:
-            spawnRoute = gameMap['routes'][route]
-            break
-    if 'altitude' in avionDict:
-        spawnFL = round(avionDict['altitude'] / 100)
-    else:
-        spawnFL = None
-    avionPack = AvionPacket(
-        gameMap,
-        planeId,
-        avionDict['indicatif'],
-        avionDict['aircraft'],
-        aircraftType[avionDict['aircraft']],
-        spawnRoute,
-        avionDict['arrival'] == 'True',
-        FL=spawnFL,
-        x=avionDict['x'],
-        y=avionDict['y'])
-    planeId += 1
+        avionSpawnListe.append((heureSpawn, avionPack))
+except:
 
-    avionSpawnListe.append((heureSpawn, avionPack))
+    heure = input('Heure de début de simu, format: hhmm')
+    heure = int(heure[0:2]) * 3600 + int(heure[2:]) * 60
+    avionSpawnListe = []
+    simuTree = ET.Element('simu')
+    game = Game(heure)
+    heureXML = ET.SubElement(simuTree, 'heure')
+    heureXML.text = horloge.heureXML(game.heure)
+    avionsXML = ET.SubElement(simuTree, 'avions')
 
 
 def threaded_client(conn, caca):
@@ -358,6 +368,7 @@ while Running:
 
             if len(req) == 3:
                 reqContent = req[2]
+            print(req)
 
             if reqType == 'Add':
 
@@ -393,20 +404,23 @@ while Running:
                 dictAvion[reqId].CFL = reqContent
 
             elif reqType == 'C_IAS':
-                if len(req) == 3:
+                if reqContent:
                     dictAvion[reqId].clearedIAS = reqContent
+                    dictAvion[reqId].clearedMach = None
                 else:
+                    dictAvion[reqId].clearedMach = None
                     dictAvion[reqId].clearedIAS = None
 
             elif reqType == 'C_Mach':
-                print(req)
                 if reqContent:
                     dictAvion[reqId].clearedMach = reqContent
+                    dictAvion[reqId].clearedIAS = None
                 else:
                     dictAvion[reqId].clearedMach = None
+                    dictAvion[reqId].clearedIAS = None
 
             elif reqType == 'C_Rate':
-                if len(req) == 3:
+                if reqContent:
                     dictAvion[reqId].clearedRate = reqContent
                 else:
                     dictAvion[reqId].clearedRate = None
@@ -417,7 +431,7 @@ while Running:
                     signe = (dictAvion[reqId].evolution * reqContent) / abs(dictAvion[reqId].evolution * reqContent)
                     dictAvion[reqId].evolution = signe * reqContent
                 else:
-                    dictAvion[reqId].forcedEvo = True
+                    dictAvion[reqId].forcedEvo = False
 
             elif reqType == 'XFL':
                 dictAvion[reqId].XFL = reqContent

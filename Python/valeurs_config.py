@@ -14,3 +14,6 @@ offsettEtiquetteDefault = 30  # de combien les etiquettes sont décalées en px 
 temps_disparition_menus = 300  # en combien de milli sec les menus disparaissent après ne plus être survolé
 altitude_conversion = 27900
 altitude_cruise = 25000
+
+delaiScreen = 6900
+replayMode = False
