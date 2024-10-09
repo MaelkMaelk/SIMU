@@ -373,6 +373,15 @@ class Avion:
         else:
             return False
 
+    def checkScrolled(self, event):
+
+        if self.etiquette.extended:
+            if event.y <= 0:
+                self.etiquette.downlink = True
+            else:
+                self.etiquette.downlink = False
+            return True
+
     def checkEvent(self, event, pilote, conflitBool):
 
         """
@@ -399,11 +408,11 @@ class Avion:
                 # si c'est un clic milieu, alors on surligne ou non le bouton
 
                 liste = [[self.etiquette.speedGS], self.etiquette.ligneDeux,
-                              self.etiquette.ligneTrois, self.etiquette.ligneQuatre]
+                         self.etiquette.ligneTrois, self.etiquette.ligneQuatre, self.etiquette.ligneCinq]
                 indexLigne = 0
                 index = 0
                 # on trouve l'index du bouton
-                for indexLigne in range(4):
+                for indexLigne in range(5):
                     ligne = liste[indexLigne]
                     if event.ui_element in ligne:
                         index = ligne.index(event.ui_element)
@@ -498,6 +507,7 @@ class Avion:
 
         if not (rect[0] <= mouse[0] <= rect[0] + rect[2] and rect[1] <= mouse[1] <= rect[1] + rect[3]):
             self.etiquetteExtended = False
+            self.etiquette.downlink = False
 
     def extendEtiquette(self, force=False):
         """
@@ -547,10 +557,27 @@ class Avion:
             if self.etiquette.PFL.get_object_ids()[1][-4:] != 'Blue':
                 self.etiquette.PFL.hide()
 
+        if self.etiquette.downlink:
+
+            self.etiquette.selectedAlti.show()
+            self.etiquette.selectedHeading.show()
+            self.etiquette.selectedSpeed.show()
+
+        else:
+
+            if self.etiquette.selectedAlti.get_object_ids()[1][-4:] != 'Blue':
+                self.etiquette.selectedAlti.hide()
+
+            if self.etiquette.selectedSpeed.get_object_ids()[1][-4:] != 'Blue':
+                self.etiquette.selectedSpeed.hide()
+
+            if self.etiquette.selectedHeading.get_object_ids()[1][-4:] != 'Blue':
+                self.etiquette.selectedHeading.hide()
+
     def checkHighlight(self, papa):
 
         liste = [[self.etiquette.speedGS], self.etiquette.ligneDeux,
-                 self.etiquette.ligneTrois, self.etiquette.ligneQuatre]
+                 self.etiquette.ligneTrois, self.etiquette.ligneQuatre, self.etiquette.ligneCinq]
 
         # dans cette boucle, on surligne les nouveaux et on prépare la boucle suivante
         for boutonTuple in papa.boutonsHighlight:

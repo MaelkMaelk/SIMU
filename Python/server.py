@@ -455,7 +455,6 @@ while Running:
             elif reqType == 'IAS':
                 if reqContent:
                     dictAvion[reqId].forcedSpeed = True
-                    dictAvion[reqId].machMode = False
                     dictAvion[reqId].selectedIAS = reqContent * 10
                 else:
                     dictAvion[reqId].forcedSpeed = False
@@ -463,7 +462,6 @@ while Running:
             elif reqType == 'Mach':
                 if reqContent:
                     dictAvion[reqId].forcedSpeed = True
-                    dictAvion[reqId].machMode = True
                     dictAvion[reqId].selectedMach = float(reqContent)
                 else:
                     dictAvion[reqId].forcedSpeed = False

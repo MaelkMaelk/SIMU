@@ -379,10 +379,13 @@ class AvionPacket:
         :return:
         """
 
+        self.machMode = False
         if self.forcedSpeed:
+            if self.altitude >= altitude_conversion:  # au-dessus de l'alti de conversion tout se fera en mach
+
+                self.machMode = True
             return None
 
-        self.machMode = False
         if self.altitude >= altitude_conversion:  # au-dessus de l'alti de conversion tout se fera en mach
 
             self.machMode = True

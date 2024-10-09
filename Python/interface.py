@@ -222,6 +222,7 @@ class etiquette:
         clicks = frozenset([pygame.BUTTON_LEFT, pygame.BUTTON_RIGHT, pygame.BUTTON_MIDDLE])
 
         self.extended = True  # relate de si l'étiquette est étendue ou non
+        self.downlink = False
         self.centre = (0, 0)
 
         self.container = pygame_gui.elements.UIAutoResizingContainer(
@@ -323,9 +324,34 @@ class etiquette:
             anchors={'top': 'top', 'top_target': self.AFL},
             container=self.container)
 
+        self.selectedHeading = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((0, 0), (-1, -1)),
+            text=str(round(avion.papa.selectedHeading)),
+            generate_click_events_from=clicks,
+            object_id=pygame_gui.core.ObjectID('@etiquetteBold', 'rose'),
+            anchors={'top': 'top', 'top_target': self.AFL},
+            container=self.container)
+
+        self.selectedAlti = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((0, 0), (-1, -1)),
+            text=avion.papa.nextSector,
+            generate_click_events_from=clicks,
+            object_id=pygame_gui.core.ObjectID('@etiquetteBold', 'rose'),
+            anchors={'top': 'top', 'top_target': self.AFL},
+            container=self.container)
+
+        self.selectedSpeed = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((0, 0), (-1, -1)),
+            text="45",
+            generate_click_events_from=clicks,
+            object_id=pygame_gui.core.ObjectID('@etiquetteBold', 'rose'),
+            anchors={'top': 'top', 'top_target': self.AFL},
+            container=self.container)
+
         self.ligneDeux = [self.indicatif, self.type_dest]
         self.ligneTrois = [self.AFL, self.CFL, self.DCT, self.clearedSpeed, self.rate]
         self.ligneQuatre = [self.XPT, self.XFL, self.PFL, self.nextSector]
+        self.ligneCinq = [self.selectedHeading, self.selectedAlti, self.selectedSpeed]
         self.rect = self.container.get_abs_rect()
 
     def update(self, avion):
@@ -368,6 +394,8 @@ class etiquette:
         self.PFL.set_text("p" + str(avion.papa.PFL)[:2])
 
         self.XFL.set_text("x" + str(avion.papa.XFL)[:2])
+
+        # vitesse
         if avion.papa.clearedIAS and self.extended:
             self.clearedSpeed.set_text("k" + avion.papa.clearedIAS)
         elif avion.papa.clearedMach and self.extended:
@@ -380,7 +408,16 @@ class etiquette:
         else:
             self.rate.set_text("R")
 
-        self.boutonAgauche()  # TODO utiliser cette fonction que quand c'est nécessaire
+        # paramètres descendants
+        if avion.papa.machMode:
+            self.selectedSpeed.set_text("@" + str(round(avion.papa.selectedMach, 2)))
+        else:
+            self.selectedSpeed.set_text("@k" + str(round(avion.papa.selectedIAS)))
+
+        self.selectedHeading.set_text("@" + str(round(avion.papa.selectedHeading)))
+        self.selectedAlti.set_text("@" + str(avion.papa.selectedAlti)[:2])
+
+        self.boutonAgauche()
 
         # container
         self.container.set_position((avion.etiquetteX, avion.etiquetteY))
@@ -394,15 +431,20 @@ class etiquette:
         Méthode qui met les boutons le plus à gauche possible de l'étiquette en fonction des boutons visibles
         """
 
-        for ligne in [self.ligneDeux, self.ligneTrois, self.ligneQuatre]:  # on le fait pour chaque ligne
+        for ligne in [self.ligneDeux, self.ligneTrois, self.ligneQuatre, self.ligneCinq]:  # on fait pour chaque ligne
             for numBouton in range(len(ligne)):  # on fait avec un range pour pouvoir tronquer la liste
 
                 bouton = ligne[numBouton]  # on récupère le bouton
                 if bouton.visible:
                     distance = updateDistanceGauche(ligne[:numBouton])
+                    if bouton in self.ligneCinq:
+                        y = bouton.get_abs_rect()[3]
+                    else:
+                        y = 0
                 else:
                     distance = 0
-                bouton.set_relative_position((distance, 0))
+                    y = 0
+                bouton.set_relative_position((distance, y))
 
     def kill(self):
         self.container.kill()
@@ -946,7 +988,6 @@ class menuValeurs:
                     heading = round(self.avion.papa.selectedHeading + int(event.ui_element.text[1:]))
                 return self.avion.Id, self.valeur, heading
 
-
     def checkScrolled(self, event):
         """
         Vérifie si le menu est en train d'être scrollé
@@ -957,7 +998,7 @@ class menuValeurs:
         rect = self.window.get_abs_rect()
 
         if not rect[0] <= mouse[0] <= rect[0] + rect[2] and rect[1] <= mouse[1] <= rect[1] + rect[3]:
-            return True
+            return False
 
         indexDebut = self.liste.index(self.listeAff[0])
 
@@ -969,6 +1010,7 @@ class menuValeurs:
         self.listeAff = [self.liste[(newIndex + i) % len(self.liste)] for i in range(len(self.listeAff))]
 
         self.scrollUpdate()
+        return True
 
     def scrollUpdate(self) -> None:
         """
@@ -1101,7 +1143,7 @@ class flightDataWindow:
             label.change_object_id(objectID)
 
         text = (str(avion.papa.indicatif) + '       ' + str(avion.papa.aircraft)
-                + '          ' + avion.papa.modeA + '       | N' + str(avion.papa.speedIAS) + ' Ok8  OkR  OkW')
+                + '          ' + avion.papa.modeA + '       | N' + str(round(avion.papa.speedIAS)) + ' Ok8  OkR  OkW')
         self.ligneUn.set_text(text)
 
         text = avion.papa.callsignFreq + '                                           ' + avion.papa.medevac

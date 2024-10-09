@@ -25,12 +25,12 @@ else:
 
 # fenêtre Pygame, mettre en 1920, 1080 pour plein écran
 pygame.init()
-# width = 1000
-# height = 1000
-# win = pygame.display.set_mode((width, height))
+width = 1000
+height = 1000
+win = pygame.display.set_mode((width, height))
 
-win = pygame.display.set_mode()
-width, height = pygame.display.get_surface().get_size()
+# win = pygame.display.set_mode()
+# width, height = pygame.display.get_surface().get_size()
 
 path = Path(os.getcwd())
 manager = pygame_gui.UIManager((width, height), path / 'ressources' / 'theme.json')
@@ -320,11 +320,17 @@ def main(server_ip: str):
 
             # zoom géré ici
             elif event.type == pygame.MOUSEWHEEL:
-                cacaAuPipi = True
+                trucScroller = False
                 if menuValeurs is not None:
-                    cacaAuPipi = menuValeurs.checkScrolled(event)
+                    trucScroller = menuValeurs.checkScrolled(event)
 
-                if cacaAuPipi:  # on ne zoom que si on ne se sert pas de la molette dans le menu au-dessus
+                if not trucScroller:
+                    for avion in dictAvionsAff.values():
+                        trucScroller = avion.checkScrolled(event)
+                        if trucScroller:
+                            break
+
+                if not trucScroller:  # on ne zoom que si on ne se sert pas de la molette dans le menu au-dessus
                     before_x_pos = (width/2 - scroll[0]) / zoom
                     before_y_pos = (height/2 - scroll[1]) / zoom
 
@@ -363,6 +369,9 @@ def main(server_ip: str):
             elif event.type == pygame.MOUSEBUTTONUP and event.button == 2 and not empecherDragging and conflitGen:
                 mouse = pygame.mouse.get_pos()
                 conflitGen.computeSpawn(((mouse[0] - scroll[0]) / zoom, (mouse[1] - scroll[1]) / zoom), carte)
+
+            elif event.type == pygame.MOUSEBUTTONUP and event.button == 1 and empecherDragging:
+                empecherDragging = False
 
             manager.process_events(event)
 
