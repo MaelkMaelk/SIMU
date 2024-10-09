@@ -1,7 +1,6 @@
 
 # Native imports
 import socket
-import math
 import sys
 import pickle
 from _thread import *
@@ -63,7 +62,7 @@ playerId = 0
 dictAvion = {}  # dict contenant tous les avions
 requests = []  # liste des requêtes que le serveur doit gérer
 segments = {}
-gameMap = {'points': {}, 'zones': [], 'segments': [], 'routes': {}, 'mapScale': 0}
+gameMap = {'points': {}, 'zones': {}, 'segments': [], 'routes': {}, 'mapScale': 0}
 
 # XML map loading
 
@@ -89,13 +88,20 @@ for point in root.find('points'):  # on parcourt la liste xml de points
 for zone in root.find('zones'):
 
     contour = []  # liste des points délimitant le contour du secteur, dans l'ordre de lecture xml
-
+    nom = zone.attrib['name']
+    active = False
     for limite in zone.findall('limite'):
         x = int(limite.find('x').text)
         y = int(limite.find('y').text)
         contour.append((x, y))
 
-    gameMap['zones'].append({'couleur': [int(x) for x in zone.attrib['color'].split(',')], 'contour': contour})
+    if nom == 'SECTOR':
+        active = True
+
+    gameMap['zones'].update({nom: {
+        'active': active,
+        'couleur': [int(x) for x in zone.attrib['color'].split(',')],
+        'contour': contour}})
 
 dictSecteurs = {}
 for secteur in root.find('secteurs'):
@@ -237,7 +243,8 @@ gameMap.update({'callsigns': callsignList})
 planeId = 0
 
 simuTree = None
-
+activiteZone = []
+avionSpawnListe = []
 try:
     simuTree = ET.parse(dossierXML / simu).getroot()
 
@@ -246,8 +253,17 @@ try:
 
     game = Game(heure)
 
-    avionSpawnListe = []
     avionsXML = simuTree.find('avions')
+    for zone in simuTree.find('zones'):
+        heureDebut = zone.find('debut').text
+        heureDebut = int(heureDebut[0:2]) * 3600 + int(heureDebut[2:4]) * 60 + int(heureDebut[4:])
+        heureFin = zone.find('fin').text
+        heureFin = int(heureFin[0:2]) * 3600 + int(heureFin[2:4]) * 60 + int(heureFin[4:])
+        activiteZone.append({
+            'debut': heureDebut,
+            'fin': heureFin,
+            'nom': zone.find('nom').text
+        })
     for avion in avionsXML:
 
         avionDict = {}
@@ -288,7 +304,6 @@ except:
 
     heure = input('Heure de début de simu, format: hhmm')
     heure = int(heure[0:2]) * 3600 + int(heure[2:]) * 60
-    avionSpawnListe = []
     simuTree = ET.Element('simu')
     game = Game(heure)
     heureXML = ET.SubElement(simuTree, 'heure')
@@ -320,7 +335,7 @@ def threaded_client(conn, caca):
                 print("Disconnected")
                 break
             else:
-                reply = Packet(packetId, game=game, dictAvions=dictAvion)
+                reply = Packet(packetId, game=game, dictAvions=dictAvion, carte=gameMap)
 
             conn.sendall(pickle.dumps(reply))
             nombre = 0
@@ -525,6 +540,18 @@ while Running:
 
     for avion in toBeRemovedFromSpawn:
         avionSpawnListe.remove(avion)
+
+    toBeRemovedFromActivite = []
+    for activite in activiteZone:
+        if activite['debut'] <= game.heure:
+            gameMap['zones'][activite['nom']]['active'] = True
+        if activite['fin'] <= game.heure:
+            gameMap['zones'][activite['nom']]['active'] = False
+            toBeRemovedFromActivite.append(activite)
+
+    for activite in toBeRemovedFromActivite:
+        activiteZone.remove(activite)
+
     if not game.paused:
         temps = time.time()  # si la game est sur pause alors on avance pas le temps
     elif time.time() - temps >= radarRefresh/accelerationTemporelle:
@@ -551,7 +578,6 @@ while Running:
                         avion1.STCA = True
                         avion2.STCA = True
             if not STCAtriggered:
-                print(avion1.indicatif)
                 avion1.STCA = False
 
     requests = []

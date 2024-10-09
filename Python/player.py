@@ -379,7 +379,7 @@ class Avion:
                              (pointUn[0] * zoom + scroll[0], pointUn[1] * zoom + scroll[1]),
                              (pointDeux[0] * zoom + scroll[0], pointDeux[1] * zoom + scroll[1]), 3)
 
-            img = font.render(horloge.affichageHeure(temps), True, (170, 170, 255))
+            img = font.render(horloge.affichageHeure(temps), True, (70, 140, 240))
             coords = (pointDeux[0] * zoom - 5 + scroll[0], pointDeux[1] * zoom - 20 + scroll[1])
             win.blit(img, coords)
 

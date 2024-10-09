@@ -1,6 +1,13 @@
 <?xml version="1.0" ?>
 <simu>
 	<heure>100200</heure>
+	<zones>
+		<zone>
+			<nom>TSA14</nom>
+			<debut>100200</debut>
+			<fin>100400</fin>
+		</zone>
+	</zones>
 	<avions>
 		<avion heure="100200">
 			<indicatif>FCACA</indicatif>

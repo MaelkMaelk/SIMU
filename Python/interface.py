@@ -1267,7 +1267,7 @@ class menuRadar:
             self.window.hide()
             return 'Cercles'
 
-    def checkMenuHovered(self) -> None:
+    def checkMenuHovered(self) -> bool:
         """
         Commence le compteur si n'est plus survolé
         :return:
@@ -1276,8 +1276,7 @@ class menuRadar:
         mouse = pygame.mouse.get_pos()
 
         if rect[0] <= mouse[0] <= rect[0] + rect[2] and rect[1] <= mouse[1] <= rect[1] + rect[3]:
-            self.lastHovered = pygame.time.get_ticks()
+            return True
+        return False
 
-        elif pygame.time.get_ticks() - self.lastHovered > temps_disparition_menus:
-            self.window.hide()
 

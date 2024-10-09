@@ -236,7 +236,7 @@
     </points>
 
     <zones>
-        <zone color="75,75,75">
+        <zone name="SECTOR" color="90,90,90">
             <limite>
                 <x>1109</x>
                 <y>915</y>
@@ -292,6 +292,36 @@
             <limite>
                 <x>1107</x>
                 <y>1266</y>
+            </limite>
+        </zone>
+        <zone name="TSA14" color="69,69,69">
+            <limite>
+                <x>1091</x>
+                <y>1178</y>
+            </limite>
+            <limite>
+                <x>1299</x>
+                <y>1189</y>
+            </limite>
+            <limite>
+                <x>1351</x>
+                <y>1238</y>
+            </limite>
+            <limite>
+                <x>1351</x>
+                <y>1531</y>
+            </limite>
+            <limite>
+                <x>1296</x>
+                <y>1578</y>
+            </limite>
+            <limite>
+                <x>994</x>
+                <y>1447</y>
+            </limite>
+            <limite>
+                <x>1024</x>
+                <y>1230</y>
             </limite>
         </zone>
     </zones>

@@ -60,6 +60,7 @@ def main(server_ip: str):
     menuValeurs = None
     flightDataWindow = None
     menuRadar = interface.menuRadar()
+    menuRadarTimer = 0
 
     # screenshots replays
     dernierScreen = pygame.time.get_ticks()
@@ -104,7 +105,6 @@ def main(server_ip: str):
     zoom = zoomDef
     scroll = scrollDef
     drag = [0, 0]
-    dragging_delay = 350  # il y a un délai avant de pouvoir drag (pour pouvoir ouvrir les menus notamment)
     mouseDownTime = 0
     empecherDragging = False
 
@@ -148,6 +148,7 @@ def main(server_ip: str):
                 # 2em boucle pour supprimer, car on ne peut pas delete en pleine iteration
                 dictAvionsAff[avionId].kill()
                 dictAvionsAff.pop(avionId)
+        carte = packet.map
         game = packet.game
         dictAvions = packet.dictAvions
 
@@ -351,6 +352,10 @@ def main(server_ip: str):
                 elif curseur_cercles:
                     souris = pygame.mouse.get_pos()
                     cerclePos = ((souris[0] - scroll[0]) / zoom, (souris[1] - scroll[1]) / zoom)
+                if menuRadar.checkActive():
+                    if not menuRadar.checkMenuHovered():
+                        menuRadar.window.hide()
+                        menuRadarTimer = pygame.time.get_ticks()
 
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 3 and (curseur_alidad or curseur_cercles or curseur_aliSep):
                 alidad = False
@@ -360,10 +365,10 @@ def main(server_ip: str):
                 pygame.mouse.set_cursor(pygame.cursors.arrow)
 
             elif (event.type == pygame.MOUSEBUTTONUP and event.button == 1 and not empecherDragging
-                  and not (curseur_aliSep or curseur_alidad) and mouseDownTime + 150 >= pygame.time.get_ticks()):
+                  and not (curseur_aliSep or curseur_alidad) and mouseDownTime + dragDelay >= pygame.time.get_ticks()):
                 if curseur_cercles:
                     curseur_cercles = False
-                else:
+                elif menuRadarTimer + dragDelay <= pygame.time.get_ticks():
                     menuRadar.show()
 
             elif event.type == pygame.MOUSEBUTTONUP and event.button == 2 and not empecherDragging and conflitGen:
@@ -381,7 +386,7 @@ def main(server_ip: str):
         """Dragging"""
 
         if (pygame.mouse.get_pressed()[0] and not empecherDragging and
-                dragging_delay + mouseDownTime <= pygame.time.get_ticks()):
+                dragDelay + mouseDownTime <= pygame.time.get_ticks()):
             pygame.mouse.set_cursor(pygame.cursors.ball)
 
             scroll[0] += pygame.mouse.get_pos()[0] - drag[0]
@@ -434,7 +439,7 @@ def main(server_ip: str):
                 localRequests.append((0, 'Save'))
                 delaiPressage = pygame.time.get_ticks()
 
-        elif True not in pygame.key.ScancodeWrapper() and pygame.time.get_ticks() - delaiPressage >= 150:
+        elif True not in pygame.key.ScancodeWrapper() and pygame.time.get_ticks() - delaiPressage >= dragDelay:
             # on vérifie que plus aucune touche n'est pressée et on remet la variable à son état initial
             pressing = False
 
@@ -461,15 +466,16 @@ def main(server_ip: str):
         '''partie affichage'''
 
         # on remplit d'abord avec une couleur
-        win.fill((90, 90, 90))
+        win.fill((105, 105, 105))
 
         # on dessine les secteurs
-        for zone in carte['zones']:
+        for zone in carte['zones'].values():
             liste_affichage_secteurs = []
-            for point in zone['contour']:
-                pos = positionAffichage(point[0], point[1], zoom, scroll[0], scroll[1])
-                liste_affichage_secteurs.append((pos[0], pos[1]))
-            pygame.draw.polygon(win, zone['couleur'], liste_affichage_secteurs)
+            if zone['active']:
+                for point in zone['contour']:
+                    pos = positionAffichage(point[0], point[1], zoom, scroll[0], scroll[1])
+                    liste_affichage_secteurs.append((pos[0], pos[1]))
+                pygame.draw.polygon(win, zone['couleur'], liste_affichage_secteurs)
 
         # on dessine les routes
         for segment in carte['segments']['TRANSIT']:
@@ -546,7 +552,7 @@ def main(server_ip: str):
             if localRequests is not []:
                 packetId = (packetId + 1) % 100  # l'Id du paquet permet au serveur de mettre en ordre les données
                 packet = Packet(packetId, game=game, requests=localRequests)
-            else:#
+            else:
                 packet = Packet(game)
                 packetId = packet.Id
             packet = n.send(packet)
