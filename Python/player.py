@@ -63,6 +63,8 @@ class Avion:
         self.drawRouteBool = False
         self.locWarning = False
         self.sep = False
+        self.couleurSTCA = 'rouge'
+        self.temps_cligno_stca = 0
         self.sepSetting = {}  # [temps à dessiner, distance minie en nm]
         self.etiquetteExtended = False
         self.lastHoveredTime = 0
@@ -156,11 +158,18 @@ class Avion:
                 window.blit(img, coords)
 
     def drawSTCA(self):
+        gras = self.etiquette.indicatif.get_object_ids()[1]
         if self.papa.STCA:
-            gras = self.etiquette.indicatif.get_object_ids()[1]
-            couleur = 'rouge'
+            couleur = self.couleurSTCA
+            if self.couleurSTCA == 'jaune' and pygame.time.get_ticks() >= self.temps_cligno_stca + 500:
+                couleur = 'rouge'
+                self.temps_cligno_stca = pygame.time.get_ticks()
+            elif pygame.time.get_ticks() >= self.temps_cligno_stca + 500:
+                couleur = 'jaune'
+                self.temps_cligno_stca = pygame.time.get_ticks()
+            self.couleurSTCA = couleur
         else:
-            gras = self.etiquette.indicatif.get_object_ids()[1]
+
             if self.papa.etatFrequence == "previousFreq":
                 couleur = 'rose'
             elif self.papa.etatFrequence in ['previousShoot', 'inFreq', 'nextCoord']:

@@ -259,6 +259,14 @@
             "hovered_text": "#FF0000",
             "normal_text": "#FF0000"
           }
+        },
+  "jaune":
+  {
+          "colours": {
+            "selected_text": "#E7F00D",
+            "hovered_text": "#E7F00D",
+            "normal_text": "#E7F00D"
+          }
         }
 
 }
