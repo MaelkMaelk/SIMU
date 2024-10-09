@@ -155,6 +155,20 @@ class Avion:
                 img = font.render(lettre, True, (170, 170, 255))
                 window.blit(img, coords)
 
+    def drawSTCA(self):
+        if self.papa.STCA:
+            gras = self.etiquette.indicatif.get_object_ids()[1]
+            couleur = 'rouge'
+        else:
+            gras = self.etiquette.indicatif.get_object_ids()[1]
+            if self.papa.etatFrequence == "previousFreq":
+                couleur = 'rose'
+            elif self.papa.etatFrequence in ['previousShoot', 'inFreq', 'nextCoord']:
+                couleur = 'blanc'
+            else:
+                couleur = 'marron'
+        self.etiquette.indicatif.change_object_id(pygame_gui.core.ObjectID(gras, couleur))
+
     def draw(self, win, zoom, scroll, vecteurs, vecteurSetting, points, temps):
 
         # updates
@@ -184,6 +198,8 @@ class Avion:
         self.extendEtiquette()
         self.etiquette.update(self)  # on update via la fonction de l'étiquette
         width = 1
+
+        self.drawSTCA()
 
         # Dessin
         if not self.visible:

@@ -251,6 +251,14 @@
             "hovered_text": "#9E8C5B",
             "normal_text": "#9E8C5B"
           }
+        },
+  "rouge":
+  {
+          "colours": {
+            "selected_text": "#FF0000",
+            "hovered_text": "#FF0000",
+            "normal_text": "#FF0000"
+          }
         }
 
 }

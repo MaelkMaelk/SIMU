@@ -531,41 +531,28 @@ while Running:
         game.heure += (time.time() - temps) * accelerationTemporelle
         temps = time.time()
         suppListe = []
+
         for avion in list(dictAvion.values()):
             # si jamais l'avion doit etre supp, il le renvoie à la fin du move, sinon None
+
             if avion.move(gameMap):
                 suppListe.append(avion.Id)
+
         for avion in suppListe:
             dictAvion.pop(avion)
-        for avion in list(dictAvion.values()):
-            # tous les calculs de distances sont ici effectués en pixel, la conversion se fait avec le mapScale
-            # TODO remplacer ce STCA avec le nouveau dans server_def
+
+        for avion1 in dictAvion.values():
             STCAtriggered = False
-            predictedPos = []
-            VspeedOne = avion.evolution
-            AltitudeOne = avion.altitude
-            for i in range(12):
-                predictedPos.append((avion.x + avion.speedGS * 15 / radarRefresh * (i + 1) * math.cos(avion.headingRad),
-                                     avion.y + avion.speedGS * 15 / radarRefresh * (i + 1) * math.sin(avion.headingRad),
-                                     AltitudeOne + VspeedOne * (i + 1) * 15 / radarRefresh))
-            for avion2 in list(dictAvion.values()):
-                if avion != avion2:
-                    VspeedTwo = avion.evolution
-                    AltitudeTwo = avion2.altitude
-                    for i in range(12):
-                        if math.sqrt((predictedPos[i][0] - (
-                                avion2.x + avion2.speedGS * 15 / radarRefresh * (i + 1) * math.cos(
-                                avion2.headingRad))) ** 2 +
-                                     (predictedPos[i][1] - (
-                                             avion2.y + avion2.speedGS * 15 / radarRefresh * (i + 1) * math.sin(
-                                         avion2.headingRad))) ** 2) <= 5 / mapScale and abs(
-                            predictedPos[i][2] - AltitudeTwo - VspeedTwo * (i + 1) * 15 / radarRefresh) < float(
-                                1000) and abs(avion.altitude - avion2.altitude) <= 2500:
-                            STCAtriggered = True
-                            avion.STCA = True
-                            avion2.STCA = True
+            for avion2 in dictAvion.values():
+                if avion1 != avion2:
+                    STCAtriggered = server_def.STCA(avion1, avion2, gameMap)
+
+                    if STCAtriggered:
+                        avion1.STCA = True
+                        avion2.STCA = True
             if not STCAtriggered:
-                avion.STCA = False
+                print(avion1.indicatif)
+                avion1.STCA = False
 
     requests = []
 
