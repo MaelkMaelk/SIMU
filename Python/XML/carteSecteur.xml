@@ -347,11 +347,8 @@
                 <name>MINDI</name>
             </point>
             <point>
-                <name>LANZA</name>
-                <XPT>True</XPT>
-            </point>
-            <point>
                 <name>MEN</name>
+                <XPT>True</XPT>
             </point>
             <point>
                 <name>LOBOS</name>
@@ -387,10 +384,7 @@
                 <name>MINDI</name>
             </point>
             <point>
-                <name>LANZA</name>
                 <XPT>True</XPT>
-            </point>
-            <point>
                 <name>MEN</name>
             </point>
             <point>
@@ -492,19 +486,7 @@
             <point>
                 <name>MTL</name>
             </point>
-            <point>
-                <name>SPIDY</name>
-                <XPT>True</XPT>
-            </point>
-            <point>
-                <name>ETORI</name>
-            </point>
-            <point>
-                <name>ONGHI</name>
-            </point>
-            <point>
-                <name>GAI</name>
-            </point>
+            <segment place="5">MTL-GAI</segment>
             <sortie min="245" max="285">OM</sortie>
             <sortie min="285" max="365">OS</sortie>
         </route>
@@ -518,6 +500,9 @@
                 <FL>20</FL>
             </point>
             <point>
+                <name>JUVEN</name>
+            </point>
+            <point>
                 <name>BOSUA</name>
                 <EPT>True</EPT>
                 <EFL>250</EFL>
@@ -528,19 +513,7 @@
             <point>
                 <name>MTL</name>
             </point>
-            <point>
-                <name>SPIDY</name>
-                <XPT>True</XPT>
-            </point>
-            <point>
-                <name>ETORI</name>
-            </point>
-            <point>
-                <name>ONGHI</name>
-            </point>
-            <point>
-                <name>GAI</name>
-            </point>
+            <segment place ="5">MTL-GAI</segment>
             <sortie min="245" max="285">OM</sortie>
             <sortie min="285" max="365">OS</sortie>
         </route>
@@ -549,19 +522,7 @@
             <Type>TRANSIT</Type>
             <provenance>SO</provenance>
             <destination>SE</destination>
-            <point>
-                <name>GAI</name>
-            </point>
-            <point>
-                <name>ONGHI</name>
-            </point>
-            <point>
-                <name>ETORI</name>
-            </point>
-            <point>
-                <name>SPIDY</name>
-                <EPT>True</EPT>
-            </point>
+            <segment place="0">GAI-MTL</segment>
             <point>
                 <name>MTL</name>
             </point>
@@ -583,19 +544,7 @@
             <Type>TRANSIT</Type>
             <provenance>SO</provenance>
             <destination>NE</destination>
-            <point>
-                <name>GAI</name>
-            </point>
-            <point>
-                <name>ONGHI</name>
-            </point>
-            <point>
-                <name>ETORI</name>
-            </point>
-            <point>
-                <name>SPIDY</name>
-                <EPT>True</EPT>
-            </point>
+            <segment place="0">GAI-MTL</segment>
             <point>
                 <name>MTL</name>
             </point>
@@ -906,11 +855,8 @@
                 <name>MINDI</name>
             </point>
             <point>
-                <name>LANZA</name>
-                <XPT>True</XPT>
-            </point>
-            <point>
                 <name>MEN</name>
+                <XPT>True</XPT>
                 <EFL>240</EFL>
             </point>
             <point>
@@ -923,6 +869,92 @@
             <sortie min="285" max="365">OS</sortie>
         </route>
     </routes>
+
+    <segments>
+        <segment>
+            <nom>GAI-MTL</nom>
+            <repli>GAI-MEN-MTL</repli>
+            <condition>
+                <zone>TSA14</zone>
+                <active>False</active>
+            </condition>
+            <point>
+                <name>GAI</name>
+            </point>
+            <point>
+                <name>ONGHI</name>
+            </point>
+            <point>
+                <name>ETORI</name>
+            </point>
+            <point>
+                <name>SPIDY</name>
+                <EPT>True</EPT>
+            </point>
+            <point>
+                <name>MTL</name>
+            </point>
+        </segment>
+
+        <segment>
+            <nom>GAI-MEN-MTL</nom>
+            <point>
+                <name>GAI</name>
+            </point>
+            <point>
+                <name>LOBOS</name>
+            </point>
+            <point>
+                <name>MEN</name>
+            </point>
+            <point>
+                <name>MTL</name>
+                <EPT>True</EPT>
+            </point>
+        </segment>
+
+        <segment>
+            <nom>MTL-GAI</nom>
+            <repli>MTL-MEN-GAI</repli>
+            <condition>
+                <zone>TSA14</zone>
+                <active>False</active>
+            </condition>
+            <point>
+                <name>MTL</name>
+            </point>
+            <point>
+                <name>SPIDY</name>
+                <XPT>True</XPT>
+            </point>
+            <point>
+                <name>ETORI</name>
+            </point>
+            <point>
+                <name>ONGHI</name>
+            </point>
+            <point>
+                <name>GAI</name>
+            </point>
+        </segment>
+
+        <segment>
+            <nom>MTL-MEN-GAI</nom>
+            <point>
+                <name>MTL</name>
+            </point>
+            <point>
+                <name>MEN</name>
+                <XPT>True</XPT>
+            </point>
+            <point>
+                <name>LOBOS</name>
+            </point>
+            <point>
+                <name>GAI</name>
+            </point>
+        </segment>
+    </segments>
 
     <Aeroports>
         <NE>
@@ -966,6 +998,7 @@
             <AD>DRRN</AD>
             <AD>DTTA</AD>
             <AD>GCTS</AD>
+            <AD>DOAA</AD>
         </S>
 
         <SO>

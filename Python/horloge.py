@@ -32,3 +32,17 @@ def heureXML(heure: float) -> str:
         secondes = '0' + secondes
 
     return heures + minutes + secondes
+
+
+def heureFloat(heure: str) -> float:
+
+    """
+    Prends une heure str en format hhmm ou hhmmss et renvoie le nombre de secondes
+    :param heure:
+    :return:
+    """
+    if len(heure) == 6:
+        return int(heure[0:2]) * 3600 + int(heure[2:4]) * 60 + int(heure[4:])
+
+    return int(heure[0:2]) * 3600 + int(heure[2:]) * 60
+

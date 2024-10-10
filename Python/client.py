@@ -1,12 +1,10 @@
 
 # Native import
 import time
-import math
 from pathlib import Path
 import os
 
 # fichiers
-import Python.horloge as horloge
 from Python.network import Network
 import Python.server_browser as server_browser
 from Python.player import *
@@ -14,6 +12,7 @@ import Python.interface as interface
 from Python.paquets_avion import *
 import Python.outils_radar as outils_radar
 import Python.capture as capture
+import Python.carte_defs as carte_defs
 
 # recherche de tous les serveurs sur le réseau
 address = server_browser.serverBrowser()
@@ -304,6 +303,7 @@ def main(server_ip: str):
                                 perfos[newPlaneData['avion']],  # on va chercher les perfos complètes
                                 carte['routes'][newPlaneData['route']],  # on va chercher la route en entier dans la map
                                 newPlaneData['arrival'],
+                                game.heure,
                                 FL=FL,
                                 PFL=PFL)
 
@@ -471,14 +471,14 @@ def main(server_ip: str):
         # on dessine les secteurs
         for zone in carte['zones'].values():
             liste_affichage_secteurs = []
-            if zone['active']:
+            if carte_defs.check_is_zone_active(zone, game.heure):
                 for point in zone['contour']:
                     pos = positionAffichage(point[0], point[1], zoom, scroll[0], scroll[1])
                     liste_affichage_secteurs.append((pos[0], pos[1]))
                 pygame.draw.polygon(win, zone['couleur'], liste_affichage_secteurs)
 
         # on dessine les routes
-        for segment in carte['segments']['TRANSIT']:
+        for segment in carte['lignes']['TRANSIT']:
             pygame.draw.line(win, (150, 150, 150), (segment[0][0]*zoom + scroll[0], segment[0][1]*zoom + scroll[1]),
                              (segment[1][0]*zoom + scroll[0], segment[1][1]*zoom + scroll[1]), 1)
 

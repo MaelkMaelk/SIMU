@@ -1,33 +1,23 @@
 <?xml version="1.0" ?>
 <simu>
-	<heure>100200</heure>
+	<heure>100300</heure>
 	<zones>
 		<zone>
 			<nom>TSA14</nom>
-			<debut>100200</debut>
-			<fin>100400</fin>
+			<debut>102000</debut>
+			<fin>105000</fin>
 		</zone>
 	</zones>
 	<avions>
-		<avion heure="100200">
-			<indicatif>FCACA</indicatif>
-			<aircraft>A19N</aircraft>
-			<route>GAI-JUVEN</route>
-			<altitude>30000</altitude>
+		<avion heure="100300">
+			<indicatif>CTM7812</indicatif>
+			<aircraft>TBM7</aircraft>
+			<route>FRI-GAI</route>
+			<altitude>25000</altitude>
 			<arrival>False</arrival>
-			<x>1287.667770543358</x>
-			<y>1188.719007751748</y>
-			<PFL>300</PFL>
-		</avion>
-		<avion heure="100200">
-			<indicatif>FCACA</indicatif>
-			<aircraft>A19N</aircraft>
-			<route>ABISA-NEV</route>
-			<altitude>30000</altitude>
-			<arrival>False</arrival>
-			<x>1374.3891431004427</x>
-			<y>1253.168054499175</y>
-			<PFL>300</PFL>
+			<x>1901</x>
+			<y>463</y>
+			<PFL>250</PFL>
 		</avion>
 	</avions>
 </simu>

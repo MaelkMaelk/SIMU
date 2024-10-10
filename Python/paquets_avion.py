@@ -6,6 +6,7 @@ import random
 from Python.geometry import *
 from Python.valeurs_config import *
 import Python.vitesses as vitesses
+import Python.carte_defs as carte_defs
 
 
 class Game:
@@ -27,14 +28,41 @@ class Packet:
 
 class AvionPacket:
 
-    def __init__(self, gameMap, Id, indicatif, aircraft, perfos, route, arrival, FL=None, x=None, y=None, heading=None,
+    def __init__(self, gameMap, Id, indicatif, aircraft, perfos, route, arrival, heure, FL=None, x=None, y=None,
+                 heading=None,
                  PFL=None, medevac=False):
 
         self.Id = Id
         self.indicatif = indicatif
         self.aircraft = aircraft
         self.arrival = arrival and (route['arrival'] != False)
-        
+        self.route = dict(route)
+
+        ratio = 0.8 / perfos['cruiseMach']
+
+        for index in range(len(route['points'])):
+            point = route['points'][index]
+
+            if type(point) is str:  # si c'est un str alors c'est le nom d'un segment
+                segment = gameMap['segments'][point]  # on va chercher le segment pour modifier ensuite
+
+                if "condition" in segment:
+                    zone = gameMap['zones'][segment['condition'][0]]
+
+                    if (carte_defs.check_is_zone_active(zone, heure + 200 * ratio) == segment['condition'][1] and
+                        carte_defs.check_is_zone_active(zone, heure + 600 + 500 * ratio) == segment['condition'][1]):
+
+                        self.route['points'].remove(point)
+                        for i in range(len(segment['points'])):
+                            self.route['points'].insert(i + index, segment['points'][i])
+
+                    else:
+
+                        segment = gameMap['segments'][segment['repli']]
+                        self.route['points'].remove(point)
+                        for i in range(len(segment['points'])):
+                            self.route['points'].insert(i + index, segment['points'][i])
+
         if x is not None:  # si on a défini un point de spawn pendant le setup
             self.x = x
             self.y = y
@@ -87,9 +115,6 @@ class AvionPacket:
             self.destination = route['arrival']['aeroport']
         else:
             self.destination = random.choice(gameMap['aeroports'][route['destination']])
-
-        # format route {nomRoute, routeType, listeRoutePoints, sortie} points : {caractéristiques eg : nom alti IAS}
-        self.route = route
 
         self.headingMode = False
 
@@ -308,7 +333,13 @@ class AvionPacket:
                 else:
                     # on passe au point suivant dans la liste
                     ancien = self.nextPoint  # pour la comparaison après
-                    self.nextPoint = self.route['points'][self.route['points'].index(self.nextPoint) + 1]
+                    index = self.route['points'].index(self.nextPoint)
+
+                    if self.route['points'][index] == self.route['points'][index + 1]:
+                        # si le même point est présent 2 fois d'affilée
+                        index += 1
+
+                    self.nextPoint = self.route['points'][index + 1]
                     if ancien['name'] == self.DCT:  # si le point clairé est celui qu'on passe
                         self.DCT = self.nextPoint['name']  # alors, on passe au point suivant aussi
 

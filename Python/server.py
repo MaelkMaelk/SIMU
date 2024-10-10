@@ -14,6 +14,7 @@ from pathlib import Path
 
 # Import fichiers
 import Python.horloge as horloge
+import loadXML
 from Python.network import MCAST_GRP, MCAST_PORT, port
 from Python.paquets_avion import *
 import Python.server_def as server_def
@@ -61,8 +62,8 @@ s.listen(2)
 playerId = 0
 dictAvion = {}  # dict contenant tous les avions
 requests = []  # liste des requêtes que le serveur doit gérer
-segments = {}
-gameMap = {'points': {}, 'zones': {}, 'segments': [], 'routes': {}, 'mapScale': 0}
+lignes = {}
+gameMap = {'points': {}, 'zones': {}, 'lignes': [], 'routes': {}, 'mapScale': 0}
 
 # XML map loading
 
@@ -89,14 +90,14 @@ for zone in root.find('zones'):
 
     contour = []  # liste des points délimitant le contour du secteur, dans l'ordre de lecture xml
     nom = zone.attrib['name']
-    active = False
+    active : list[tuple] = [(0, 0)]
     for limite in zone.findall('limite'):
         x = int(limite.find('x').text)
         y = int(limite.find('y').text)
         contour.append((x, y))
 
     if nom == 'SECTOR':
-        active = True
+        active = [(0, time.time() * 2)]
 
     gameMap['zones'].update({nom: {
         'active': active,
@@ -131,19 +132,18 @@ for direction in root.find('Aeroports'):
 
 gameMap.update({'aeroports': listeAeroports})
 
-# parsing des routes pour conaître tous les types de routes, pour l'affichage des segments
+# parsing des routes pour conaître tous les types de routes, pour l'affichage des lignes
 
 for route in root.find('routes'):
-    if route.find('Type').text not in segments:
-        segments.update({route.find('Type').text: []})
+    if route.find('Type').text not in lignes:
+        lignes.update({route.find('Type').text: []})
 
-gameMap['segments'] = segments  # liste des segments de route pour les dessiner qu'une seule fois
+gameMap['lignes'] = lignes  # liste des lignes de route pour les dessiner qu'une seule fois
+
+gameMap.update({'segments': loadXML.loadSegmentsXML(root)})
 
 for route in root.find('routes'):  # construction des routes
-    if 'name' in route.attrib:
-        nomRoute = route.attrib['name']
-    else:
-        nomRoute = route.findall('point')[0].find('name').text + "-" + route.findall('point')[-1].find('name').text
+
     routeType = route.find('Type').text
     listeSortie = []
     listeRoutePoints = []
@@ -182,10 +182,26 @@ for route in root.find('routes'):  # construction des routes
 
         y2 = gameMap['points'][point.find('name').text][1]
         x2 = gameMap['points'][point.find('name').text][0]
-        if ((x1, y1), (x2, y2)) not in gameMap['segments'][routeType] and x1 != x2 and y1 != y2:
-            gameMap['segments'][routeType].append(((x1, y1), (x2, y2)))
+        if ((x1, y1), (x2, y2)) not in gameMap['lignes'][routeType] and x1 != x2 and y1 != y2:
+            gameMap['lignes'][routeType].append(((x1, y1), (x2, y2)))
         x1 = x2
         y1 = y2
+
+    for segment in route.findall('segment'):
+        listeRoutePoints.insert(int(segment.attrib['place']), segment.text)
+
+    if 'name' in route.attrib:
+        nomRoute = route.attrib['name']
+    else:
+        if type(listeRoutePoints[0]) is str:
+            debut = listeRoutePoints[0].split('-')[0]
+        else:
+            debut = listeRoutePoints[0]['name']
+        if type(listeRoutePoints[-1]) is str:
+            fin = listeRoutePoints[-1].split('-')[-1]
+        else:
+            fin = listeRoutePoints[-1]['name']
+        nomRoute = debut + '-' + fin
     provenance = 'N'
     destination = 'S'
     if routeType == 'DEPART':
@@ -249,21 +265,26 @@ try:
     simuTree = ET.parse(dossierXML / simu).getroot()
 
     heure = simuTree.find('heure').text
-    heure = int(heure[0:2]) * 3600 + int(heure[2:4]) * 60 + int(heure[4:])
+    heure = horloge.heureFloat(heure)
 
     game = Game(heure)
 
     avionsXML = simuTree.find('avions')
-    for zone in simuTree.find('zones'):
-        heureDebut = zone.find('debut').text
-        heureDebut = int(heureDebut[0:2]) * 3600 + int(heureDebut[2:4]) * 60 + int(heureDebut[4:])
-        heureFin = zone.find('fin').text
-        heureFin = int(heureFin[0:2]) * 3600 + int(heureFin[2:4]) * 60 + int(heureFin[4:])
-        activiteZone.append({
-            'debut': heureDebut,
-            'fin': heureFin,
-            'nom': zone.find('nom').text
-        })
+    if simuTree.find('zones') is not None:
+        for zone in simuTree.find('zones'):
+            heureDebut = zone.find('debut').text
+            heureDebut = horloge.heureFloat(heureDebut)
+            heureFin = zone.find('fin').text
+            heureFin = horloge.heureFloat(heureFin)
+            activiteZone.append({
+                'debut': heureDebut,
+                'fin': heureFin,
+                'nom': zone.find('nom').text
+            })
+
+    for activite in activiteZone:
+        gameMap['zones'][activite['nom']]['active'].append((activite['debut'], activite['fin']))
+
     for avion in avionsXML:
 
         avionDict = {}
@@ -294,6 +315,7 @@ try:
             aircraftType[avionDict['aircraft']],
             spawnRoute,
             avionDict['arrival'] == 'True',
+            game.heure,
             FL=spawnFL,
             x=avionDict['x'],
             y=avionDict['y'])
@@ -542,12 +564,6 @@ while Running:
         avionSpawnListe.remove(avion)
 
     toBeRemovedFromActivite = []
-    for activite in activiteZone:
-        if activite['debut'] <= game.heure:
-            gameMap['zones'][activite['nom']]['active'] = True
-        if activite['fin'] <= game.heure:
-            gameMap['zones'][activite['nom']]['active'] = False
-            toBeRemovedFromActivite.append(activite)
 
     for activite in toBeRemovedFromActivite:
         activiteZone.remove(activite)
