@@ -46,22 +46,21 @@ class AvionPacket:
             if type(point) is str:  # si c'est un str alors c'est le nom d'un segment
                 segment = gameMap['segments'][point]  # on va chercher le segment pour modifier ensuite
 
-                if "condition" in segment:
-                    zone = gameMap['zones'][segment['condition'][0]]
+                if (carte_defs.check_is_segment_active(segment, heure + 200 * ratio, gameMap['zones']) and
+                    carte_defs.check_is_segment_active(segment, heure + 600 + 500 * ratio, gameMap['zones'])):
 
-                    if (carte_defs.check_is_zone_active(zone, heure + 200 * ratio) == segment['condition'][1] and
-                        carte_defs.check_is_zone_active(zone, heure + 600 + 500 * ratio) == segment['condition'][1]):
+                    # si le segment est actif pendant
 
-                        self.route['points'].remove(point)
-                        for i in range(len(segment['points'])):
-                            self.route['points'].insert(i + index, segment['points'][i])
+                    self.route['points'].remove(point)
+                    for i in range(len(segment['points'])):
+                        self.route['points'].insert(i + index, segment['points'][i])
 
-                    else:
+                else:
 
-                        segment = gameMap['segments'][segment['repli']]
-                        self.route['points'].remove(point)
-                        for i in range(len(segment['points'])):
-                            self.route['points'].insert(i + index, segment['points'][i])
+                    segment = gameMap['segments'][segment['repli']]
+                    self.route['points'].remove(point)
+                    for i in range(len(segment['points'])):
+                        self.route['points'].insert(i + index, segment['points'][i])
 
         if x is not None:  # si on a défini un point de spawn pendant le setup
             self.x = x

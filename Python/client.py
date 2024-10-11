@@ -482,6 +482,18 @@ def main(server_ip: str):
             pygame.draw.line(win, (150, 150, 150), (segment[0][0]*zoom + scroll[0], segment[0][1]*zoom + scroll[1]),
                              (segment[1][0]*zoom + scroll[0], segment[1][1]*zoom + scroll[1]), 1)
 
+        for nom_segment, segment in carte['segments'].items():
+
+            if carte_defs.check_is_segment_active(carte['segments'][nom_segment], game.heure, carte['zones']):
+                point1 = carte['points'][segment['points'][0]['name']]
+
+                for point in segment['points']:
+                    point2 = carte['points'][point['name']]
+                    pygame.draw.line(win, (150, 150, 150),
+                                     (point1[0] * zoom + scroll[0], point1[1] * zoom + scroll[1]),
+                                     (point2[0] * zoom + scroll[0], point2[1] * zoom + scroll[1]), 1)
+                    point1 = point2
+
         # dessin des cercles concentriques
         if cerclePos is not None:
 

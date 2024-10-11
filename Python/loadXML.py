@@ -22,7 +22,7 @@ def loadSegmentsXML(tree):
 
         if segment.find('condition') is not None:
             zone = segment.find('condition').find('zone').text
-            actif = segment.find('condition').find('zone').text == 'True'
+            actif = segment.find('condition').find('active').text == 'True'
 
             condition = (zone, actif)
 

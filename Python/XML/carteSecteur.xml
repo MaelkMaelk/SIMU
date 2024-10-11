@@ -898,6 +898,10 @@
 
         <segment>
             <nom>GAI-MEN-MTL</nom>
+            <condition>
+                <zone>TSA14</zone>
+                <active>True</active>
+            </condition>
             <point>
                 <name>GAI</name>
             </point>
@@ -940,6 +944,10 @@
 
         <segment>
             <nom>MTL-MEN-GAI</nom>
+            <condition>
+                <zone>TSA14</zone>
+                <active>True</active>
+            </condition>
             <point>
                 <name>MTL</name>
             </point>
