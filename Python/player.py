@@ -59,6 +59,8 @@ class Avion:
 
         # Radar display
         self.visible = True
+        self.boldXFL = True
+        self.boldXPT = True
         self.predictionPoint = None  # point pour la prédiction de route
         self.drawRouteBool = False
         self.locWarning = False
@@ -429,20 +431,26 @@ class Avion:
                 self.conflitSelected = not self.conflitSelected
                 return None
 
-            if event.mouse_button == 2 and not pilote and event.ui_element is not self.etiquette.DCT:
+            if event.mouse_button == 2 and not pilote:
                 # si c'est un clic milieu, alors on surligne ou non le bouton
 
-                liste = [[self.etiquette.speedGS], self.etiquette.ligneDeux,
-                         self.etiquette.ligneTrois, self.etiquette.ligneQuatre, self.etiquette.ligneCinq]
-                indexLigne = 0
-                index = 0
-                # on trouve l'index du bouton
-                for indexLigne in range(5):
-                    ligne = liste[indexLigne]
-                    if event.ui_element in ligne:
-                        index = ligne.index(event.ui_element)
-                        break
-                return self.Id, 'HighlightBouton', (indexLigne, index)
+                if event.ui_element in self.etiquette.surlignagePos:
+                    # si c'est un surlignage commun
+                    liste = [[self.etiquette.speedGS], self.etiquette.ligneDeux,
+                             self.etiquette.ligneTrois, self.etiquette.ligneQuatre, self.etiquette.ligneCinq]
+                    indexLigne = 0
+                    index = 0
+                    # on trouve l'index du bouton
+                    for indexLigne in range(5):
+                        ligne = liste[indexLigne]
+                        if event.ui_element in ligne:
+                            index = ligne.index(event.ui_element)
+                            break
+                    return self.Id, 'HighlightBouton', (indexLigne, index)
+
+                elif event.ui_element in self.etiquette.surlignageLoc:
+                    # si c'est un surlignage local (que sur mon écran)
+                    toggle_surlignage(event.ui_element)
 
         if event.ui_element == self.bouton:
 
@@ -655,6 +663,27 @@ class Avion:
                     nouvelObjID = '@etiquette'
                 bouton.change_object_id(pygame_gui.core.ObjectID(nouvelObjID, couleur))
 
+    def regraissage_methodique(self, papa):
+        """
+        Véridie si des valeurs boutons ont changé et les regraisse si tel est le cas
+        :return:
+        """
+
+        if self.papa.XPT != papa.XPT:
+            print(self.boldXPT)
+            if self.boldXPT:
+                bold(self.etiquette.XPT)
+                bold(self.etiquette.indicatif)
+            else:
+                self.boldXPT = True
+
+        if self.papa.XFL != papa.XFL:
+            if self.boldXFL:
+                bold(self.etiquette.XFL)
+                bold(self.etiquette.indicatif)
+            else:
+                self.boldXFL = True
+
     def updateEtatFrequence(self, etat) -> None:
 
         """
@@ -697,6 +726,24 @@ class Avion:
                     gras = bouton.get_object_ids()[1]  # on regarde si le bouton est en gras ou non
                     bouton.change_object_id(pygame_gui.core.ObjectID(gras, 'marron'))
 
+        self.update_theme_downlink()
+
+    def update_theme_downlink(self):
+        """
+        Mets à jour l'apparence des boutons downlink
+        :return:
+        """
+        couleur = self.etiquette.speedGS.get_class_ids()[1]
+        print(couleur)
+        objet = pygame_gui.core.ObjectID(self.etiquette.selectedAlti.get_object_ids()[1], couleur)
+        self.etiquette.selectedAlti.change_object_id(objet)
+
+        objet = pygame_gui.core.ObjectID(self.etiquette.selectedHeading.get_object_ids()[1], couleur)
+        self.etiquette.selectedHeading.change_object_id(objet)
+
+        objet = pygame_gui.core.ObjectID(self.etiquette.selectedSpeed.get_object_ids()[1], couleur)
+        self.etiquette.selectedSpeed.change_object_id(objet)
+
     def kill(self):
         self.bouton.kill()
         self.etiquette.kill()
@@ -721,6 +768,8 @@ class Avion:
             self.papa = papa
             self.extendEtiquette(True)
 
+        self.regraissage_methodique(papa)
+
         self.papa = papa
 
     def etiquetteDrag(self) -> None:
@@ -744,10 +793,31 @@ def bold(bouton) -> None:
     bouton.change_object_id(pygame_gui.core.ObjectID(nouvelObjID, couleur))
 
 
+def toggle_surlignage(bouton) -> None:
+    """
+    Toggle le surlignage d'un bouton de l'étiquette
+    """
+
+    couleur = bouton.get_class_ids()[1]  # on récupère la couleur du bouton
+    objet = bouton.get_object_ids()[1]
+    if objet[-4:] == 'Blue':
+        if objet == '@etiquetteBold':
+            nouvelObjID = '@etiquetteBold'
+        else:
+            nouvelObjID = '@etiquette'
+    else:
+        if objet == '@etiquetteBold':
+            nouvelObjID = '@etiquetteBoldBlue'
+        else:
+            nouvelObjID = '@etiquetteBlue'
+
+    bouton.change_object_id(pygame_gui.core.ObjectID(nouvelObjID, couleur))
+
+
 def calculateEtiquetteOffset(container) -> tuple[float, float]:
     """
     Calcule l'offset d'un container par rapport à la position de la souris
-    :param container: Le conatiner de l'etiquette avec lequel on veut l'offset
+    :param container: Le container de l'étiquette avec lequel on veut l'offset
     :return:
     """
 

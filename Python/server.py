@@ -14,7 +14,7 @@ from pathlib import Path
 
 # Import fichiers
 import Python.horloge as horloge
-import loadXML
+import Python.loadXML as loadXML
 from Python.network import MCAST_GRP, MCAST_PORT, port
 from Python.paquets_avion import *
 import Python.server_def as server_def

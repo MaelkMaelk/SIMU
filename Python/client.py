@@ -546,10 +546,10 @@ def main(server_ip: str):
 
         # dessin alidad
         if alidad:
-            pygame.draw.line(win, (255, 105, 180), alidadPos, pygame.mouse.get_pos())
+            pygame.draw.line(win, (46, 80, 174), alidadPos, pygame.mouse.get_pos())
             distance = round(math.sqrt((alidadPos[0] - pygame.mouse.get_pos()[0]) ** 2 +
                                        (alidadPos[1] - pygame.mouse.get_pos()[1]) ** 2) / zoom * mapScale, 1)
-            img = font.render(str(distance), True, (255, 105, 180))
+            img = font.render(str(distance), True, (46, 80, 174))
             win.blit(img, (pygame.mouse.get_pos()[0] + 20, pygame.mouse.get_pos()[1]))
 
         # prise des screenshots

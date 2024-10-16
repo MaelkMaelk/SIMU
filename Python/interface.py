@@ -328,7 +328,7 @@ class etiquette:
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
             text=str(round(avion.papa.selectedHeading)),
             generate_click_events_from=clicks,
-            object_id=pygame_gui.core.ObjectID('@etiquetteBold', 'rose'),
+            object_id=pygame_gui.core.ObjectID('@etiquette', 'rose'),
             anchors={'top': 'top', 'top_target': self.AFL},
             container=self.container)
 
@@ -336,7 +336,7 @@ class etiquette:
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
             text=avion.papa.nextSector,
             generate_click_events_from=clicks,
-            object_id=pygame_gui.core.ObjectID('@etiquetteBold', 'rose'),
+            object_id=pygame_gui.core.ObjectID('@etiquette', 'rose'),
             anchors={'top': 'top', 'top_target': self.AFL},
             container=self.container)
 
@@ -344,7 +344,7 @@ class etiquette:
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
             text="45",
             generate_click_events_from=clicks,
-            object_id=pygame_gui.core.ObjectID('@etiquetteBold', 'rose'),
+            object_id=pygame_gui.core.ObjectID('@etiquette', 'rose'),
             anchors={'top': 'top', 'top_target': self.AFL},
             container=self.container)
 
@@ -353,6 +353,8 @@ class etiquette:
         self.ligneQuatre = [self.XPT, self.XFL, self.PFL, self.nextSector]
         self.ligneCinq = [self.selectedHeading, self.selectedAlti, self.selectedSpeed]
         self.rect = self.container.get_abs_rect()
+        self.surlignageLoc = [self.type_dest, self.CFL, self.PFL, self.nextSector]
+        self.surlignagePos = [self.indicatif, self.XPT, self.XFL, self.selectedHeading, self.selectedAlti, self.selectedSpeed]
 
     def update(self, avion):
 
@@ -487,7 +489,7 @@ class menuATC:
         self.lastHovered = 0  # temps : la dernière fois que le menu était survolé
 
         width = 80
-        height = 120
+        height = 110
 
         x = pos[0] - width / 2
         y = pos[1] - 35
@@ -512,25 +514,25 @@ class menuATC:
 
         # On définit tout d'abord les boutons qui sont tous les temps présents
         self.locWarn = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((0, 0), (width, -1)), text='WARN LOC',
+            relative_rect=pygame.Rect((0, 1), (width, -1)), text='WARN LOC',
             container=self.window)
 
         self.warn = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((0, 0), (width, -1)), text='WARN POS',
+            relative_rect=pygame.Rect((0, 1), (width, -1)), text='WARN POS',
             container=self.window, anchors={'top': 'top', 'top_target': self.locWarn})
 
         self.montrer = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((0, 0), (width, -1)), text='SHOW',
+            relative_rect=pygame.Rect((0, 1), (width, -1)), text='SHOW',
             container=self.window, anchors={'top': 'top', 'top_target': self.warn})
 
         self.halo = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((0, 0), (width, -1)), text='HALO',
+            relative_rect=pygame.Rect((0, 1), (width, -1)), text='HALO',
             container=self.window, anchors={'top': 'top', 'top_target': self.montrer})
 
         if not text == '':  # si le bouton doit apparaître alors, il aura du texte
 
             self.freqAssume = pygame_gui.elements.UIButton(
-                relative_rect=pygame.Rect((0, 0), (width, -1)),
+                relative_rect=pygame.Rect((0, 1), (width, -1)),
                 text=text,
                 container=self.window)
 
@@ -541,7 +543,7 @@ class menuATC:
         else:  # s'il ny a pas de bouton de transfer, il y a un bouton mvt
 
             self.mvt = pygame_gui.elements.UIButton(
-                relative_rect=pygame.Rect((0, 0), (width, -1)), text='MVT',
+                relative_rect=pygame.Rect((0, 1), (width, -1)), text='MVT',
                 container=self.window, anchors={'top': 'top', 'top_target': self.halo})
 
             self.freqAssume = None  # on assigne None pour pouvoir faire les comparaisons dans checkEvent
@@ -860,7 +862,6 @@ class menuValeurs:
         if valeur in ['XFL', 'PFL', 'CFL']:  # on ramène la fenêtre au bon endroit pour la souris (sur le PFL)
             y = y - (self.topContainer.get_abs_rect()[3] + self.listeBoutons[0].get_abs_rect()[
                 3] * 2.5 + self.window.title_bar_height)
-            self.window.set_position((x, y))
 
         widthListeContainer = self.listeContainer.get_abs_rect()[2]
 
@@ -871,6 +872,8 @@ class menuValeurs:
                   self.topContainer.rect[3] +
                   self.window.title_bar_height)
 
+        x, y = move_menu_on_screen((x, y), (width, height))
+        self.window.set_position((x, y))
         self.window.set_dimensions(
             (width,
              height))
@@ -926,6 +929,11 @@ class menuValeurs:
                     valeur = int(event.ui_element.text)
                 except:
                     valeur = event.ui_element.text
+
+            if self.valeur == 'XPT':
+                self.avion.boldXPT = False
+            elif self.valeur == 'XFL':
+                self.avion.boldXFL = False
 
             return self.avion.Id, self.valeur, valeur
 
@@ -1240,7 +1248,9 @@ class menuRadar:
 
         pos = pygame.mouse.get_pos()
         rect = self.window.get_abs_rect()
-        self.window.set_position((pos[0] - rect[2] / 2, pos[1] - rect[3] / 2))
+        pos = (pos[0] - rect[2] / 2, pos[1] - rect[3] / 2)
+        pos = move_menu_on_screen(pos, rect[2:])
+        self.window.set_position(pos)
         self.window.show()
 
     def checkActive(self):
@@ -1280,3 +1290,29 @@ class menuRadar:
         return False
 
 
+def move_menu_on_screen(pos: tuple[float, float] | list[float, float],
+                        size: tuple[float, float] | list[float, float]):
+    """
+    Renvoie une position du menu ajustée s'il débordait en dehors de l'écran
+    :param pos: position du menu vector2
+    :param size: taille du menu vector2
+    :return: la nouvelle position
+    """
+
+    y = pos[1]
+    x = pos[0]
+    width = size[0]
+    height = size[1]
+    winSize = pygame.display.get_surface().get_size()
+
+    if x < 0:
+        x = 0
+    elif x + width > winSize[0]:
+        x = winSize[0] - width
+
+    if y < 0:
+        y = 0
+    elif y + height > winSize[1]:
+        y = winSize[1] - height
+
+    return x, y
