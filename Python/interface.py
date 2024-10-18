@@ -2,6 +2,8 @@
 # Module imports
 import pygame
 import pygame_gui
+
+# Imports locaux
 import Python.horloge as horloge
 from Python.valeurs_config import *
 
@@ -222,7 +224,14 @@ class etiquette:
         clicks = frozenset([pygame.BUTTON_LEFT, pygame.BUTTON_RIGHT, pygame.BUTTON_MIDDLE])
 
         self.extended = True  # relate de si l'étiquette est étendue ou non
+        self.downlink = False
         self.centre = (0, 0)
+
+        if avion.papa.CPDLC:
+            indicatifText = avion.papa.indicatif + ' ϟ'
+        else:
+            indicatifText = avion.papa.indicatif
+
 
         self.container = pygame_gui.elements.UIAutoResizingContainer(
             pygame.Rect((0, 0), (0, 0)), pygame.Rect((0, 0), (0, 0)), resize_top=False, resize_left=False)
@@ -236,7 +245,7 @@ class etiquette:
 
         self.indicatif = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
-            text=avion.papa.indicatif,
+            text=indicatifText,
             object_id=pygame_gui.core.ObjectID('@etiquetteBold', 'rose'),
             anchors={'top': 'top', 'top_target': self.speedGS},
             container=self.container,
@@ -323,10 +332,37 @@ class etiquette:
             anchors={'top': 'top', 'top_target': self.AFL},
             container=self.container)
 
+        self.selectedHeading = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((0, 0), (-1, -1)),
+            text=str(round(avion.papa.selectedHeading)),
+            generate_click_events_from=clicks,
+            object_id=pygame_gui.core.ObjectID('@etiquette', 'rose'),
+            anchors={'top': 'top', 'top_target': self.AFL},
+            container=self.container)
+
+        self.selectedAlti = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((0, 0), (-1, -1)),
+            text=avion.papa.nextSector,
+            generate_click_events_from=clicks,
+            object_id=pygame_gui.core.ObjectID('@etiquette', 'rose'),
+            anchors={'top': 'top', 'top_target': self.AFL},
+            container=self.container)
+
+        self.selectedSpeed = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((0, 0), (-1, -1)),
+            text="45",
+            generate_click_events_from=clicks,
+            object_id=pygame_gui.core.ObjectID('@etiquette', 'rose'),
+            anchors={'top': 'top', 'top_target': self.AFL},
+            container=self.container)
+
         self.ligneDeux = [self.indicatif, self.type_dest]
         self.ligneTrois = [self.AFL, self.CFL, self.DCT, self.clearedSpeed, self.rate]
         self.ligneQuatre = [self.XPT, self.XFL, self.PFL, self.nextSector]
+        self.ligneCinq = [self.selectedHeading, self.selectedAlti, self.selectedSpeed]
         self.rect = self.container.get_abs_rect()
+        self.surlignageLoc = [self.type_dest, self.CFL, self.PFL, self.nextSector]
+        self.surlignagePos = [self.indicatif, self.XPT, self.XFL, self.selectedHeading, self.selectedAlti, self.selectedSpeed]
 
     def update(self, avion):
 
@@ -368,6 +404,8 @@ class etiquette:
         self.PFL.set_text("p" + str(avion.papa.PFL)[:2])
 
         self.XFL.set_text("x" + str(avion.papa.XFL)[:2])
+
+        # vitesse
         if avion.papa.clearedIAS and self.extended:
             self.clearedSpeed.set_text("k" + avion.papa.clearedIAS)
         elif avion.papa.clearedMach and self.extended:
@@ -380,7 +418,16 @@ class etiquette:
         else:
             self.rate.set_text("R")
 
-        self.boutonAgauche()  # TODO utiliser cette fonction que quand c'est nécessaire
+        # paramètres descendants
+        if avion.papa.machMode:
+            self.selectedSpeed.set_text("@" + str(round(avion.papa.selectedMach, 2)))
+        else:
+            self.selectedSpeed.set_text("@k" + str(round(avion.papa.selectedIAS)))
+
+        self.selectedHeading.set_text("@" + str(round(avion.papa.selectedHeading)))
+        self.selectedAlti.set_text("@" + str(avion.papa.selectedAlti)[:2])
+
+        self.boutonAgauche()
 
         # container
         self.container.set_position((avion.etiquetteX, avion.etiquetteY))
@@ -394,15 +441,20 @@ class etiquette:
         Méthode qui met les boutons le plus à gauche possible de l'étiquette en fonction des boutons visibles
         """
 
-        for ligne in [self.ligneDeux, self.ligneTrois, self.ligneQuatre]:  # on le fait pour chaque ligne
+        for ligne in [self.ligneDeux, self.ligneTrois, self.ligneQuatre, self.ligneCinq]:  # on fait pour chaque ligne
             for numBouton in range(len(ligne)):  # on fait avec un range pour pouvoir tronquer la liste
 
                 bouton = ligne[numBouton]  # on récupère le bouton
                 if bouton.visible:
                     distance = updateDistanceGauche(ligne[:numBouton])
+                    if bouton in self.ligneCinq:
+                        y = bouton.get_abs_rect()[3]
+                    else:
+                        y = 0
                 else:
                     distance = 0
-                bouton.set_relative_position((distance, 0))
+                    y = 0
+                bouton.set_relative_position((distance, y))
 
     def kill(self):
         self.container.kill()
@@ -444,14 +496,14 @@ class menuATC:
         self.avion = avion
         self.lastHovered = 0  # temps : la dernière fois que le menu était survolé
 
-        width = 80
-        height = 120
+        width = 72
+        height = 110
 
         x = pos[0] - width / 2
         y = pos[1] - 35
 
         if avion.papa.etatFrequence == 'previousFreq':
-            text = 'FORCE ASSU'
+            text = 'FORCE ASS'
         elif avion.papa.etatFrequence == 'previousShoot':
             text = 'ASSUME'
         elif avion.papa.etatFrequence == 'nextCoord':
@@ -468,48 +520,87 @@ class menuATC:
         self.window.set_minimum_dimensions((width, width))
         self.window.set_dimensions((width, height))
 
+        self.CPDLC = None
+
         # On définit tout d'abord les boutons qui sont tous les temps présents
+
         self.locWarn = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (width, -1)), text='WARN LOC',
-            container=self.window)
+            container=self.window,
+            object_id=pygame_gui.core.ObjectID('@menu', 'boutonWarnLoc'))
 
         self.warn = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (width, -1)), text='WARN POS',
-            container=self.window, anchors={'top': 'top', 'top_target': self.locWarn})
+            container=self.window,
+            object_id=pygame_gui.core.ObjectID('@menu', 'boutonWarn'),
+            anchors={'top': 'top', 'top_target': self.locWarn})
 
         self.montrer = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (width, -1)), text='SHOW',
-            container=self.window, anchors={'top': 'top', 'top_target': self.warn})
+            container=self.window,
+            object_id=pygame_gui.core.ObjectID('@menu', 'menuATC'),
+            anchors={'top': 'top', 'top_target': self.warn})
 
         self.halo = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (width, -1)), text='HALO',
-            container=self.window, anchors={'top': 'top', 'top_target': self.montrer})
+            container=self.window,
+            object_id=pygame_gui.core.ObjectID('@menu', 'menuATC'),
+            anchors={'top': 'top', 'top_target': self.montrer})
 
         if not text == '':  # si le bouton doit apparaître alors, il aura du texte
 
             self.freqAssume = pygame_gui.elements.UIButton(
                 relative_rect=pygame.Rect((0, 0), (width, -1)),
                 text=text,
+                object_id=pygame_gui.core.ObjectID('@menu', 'menuATC'),
                 container=self.window)
+
+            freqHeight = self.freqAssume.get_abs_rect()[3]
+
+            if avion.papa.CPDLC and avion.papa.etatFrequence == 'nextCoord':
+
+                self.CPDLC = pygame_gui.elements.UIButton(
+                    relative_rect=pygame.Rect((0, 0), (25, freqHeight)), text='D/L',
+                    container=self.window,
+                    object_id=pygame_gui.core.ObjectID('@menu', 'menuATC'),
+                    anchors={'left': 'left', 'left_target': self.freqAssume}
+                )
+
+                self.freqAssume.set_dimensions((width - self.CPDLC.get_abs_rect()[2], freqHeight))
 
             self.locWarn.set_anchors({'top': 'top', 'top_target': self.freqAssume})  # on décale donc le locWarn dessous
             self.locWarn.rebuild()
             self.mvt = None
+            ancres = {'top': 'top', 'top_target': self.halo}
 
         else:  # s'il ny a pas de bouton de transfer, il y a un bouton mvt
 
             self.mvt = pygame_gui.elements.UIButton(
-                relative_rect=pygame.Rect((0, 0), (width, -1)), text='MVT',
-                container=self.window, anchors={'top': 'top', 'top_target': self.halo})
+                relative_rect=pygame.Rect((0, 0), (width, -1)),
+                text='MVT',
+                object_id=pygame_gui.core.ObjectID('@menu', 'menuATC'),
+                container=self.window,
+                anchors={'top': 'top', 'top_target': self.halo})
 
+            ancres = {'top': 'top', 'top_target': self.mvt}
             self.freqAssume = None  # on assigne None pour pouvoir faire les comparaisons dans checkEvent
+
+        self.hold = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((0, 0), (width, -1)),
+            text='HOLD',
+            object_id=pygame_gui.core.ObjectID('@menu', 'menuATC'),
+            container=self.window,
+            anchors=ancres)
+
+        height = 6 * self.halo.get_abs_rect()[3] + self.window.title_bar_height
+        self.window.set_dimensions((width, height))
 
     def checkEvent(self, event):
 
         if event.ui_element == self.freqAssume:
             self.kill()
 
-            if self.freqAssume.text == 'FORCE ASSU':  # si on force assume, on passe direct en frequence
+            if self.freqAssume.text == 'FORCE ASS':  # si on force assume, on passe direct en frequence
                 return self.avion.Id, 'EtatFreq', 'inFreq'
 
             elif self.freqAssume.text == 'RECLAIM':  # si on reclaim, on revient en freq
@@ -517,6 +608,10 @@ class menuATC:
 
             elif not self.freqAssume.text == '':
                 return self.avion.Id, 'EtatFreq', None
+
+        elif event.ui_element == self.CPDLC:
+            self.kill()
+            return self.avion.Id, 'EtatFreq', None
 
         elif event.ui_element == self.mvt:
             self.kill()
@@ -763,7 +858,7 @@ class menuValeurs:
 
             self.listeGauche = scrollListGen(
                 listeGauche,
-                pygame.Rect((1, 0), (width / 3, -1)),
+                pygame.Rect((0, 0), (width / 3, -1)),
                 self.containerHdgGauche,
                 sliderBool=False)[1]
 
@@ -778,7 +873,7 @@ class menuValeurs:
 
             self.listeBoutons = scrollListGen(
                 self.listeAff,
-                pygame.Rect((1, 0), (width / 3, -1)),
+                pygame.Rect((0, 0), (width / 3, -1)),
                 self.listeContainer,
                 sliderBool=False,
                 objectID=objectID)[1]
@@ -794,7 +889,7 @@ class menuValeurs:
 
             self.listeDroite = scrollListGen(
                 listeDroite,
-                pygame.Rect((1, 0), (width / 3, -1)),
+                pygame.Rect((0, 0), (width / 3, -1)),
                 self.containerHdgDroite,
                 sliderBool=False)[1]
         else:
@@ -806,19 +901,16 @@ class menuValeurs:
                 anchors={'top': 'top', 'top_target': self.topContainer}
             )
 
-            tempo = scrollListGen(
-                self.listeAff,
-                pygame.Rect((1, 0), (width, -1)),
-                self.listeContainer,
-                sliderBool=False,
-                objectID=objectID)
-
-            self.listeBoutons = tempo[1]
+            self.listeBoutons = scrollListGen(
+                    self.listeAff,
+                    pygame.Rect((0, 0), (width, -1)),
+                    self.listeContainer,
+                    sliderBool=False,
+                    objectID=objectID)[1]
 
         if valeur in ['XFL', 'PFL', 'CFL']:  # on ramène la fenêtre au bon endroit pour la souris (sur le PFL)
             y = y - (self.topContainer.get_abs_rect()[3] + self.listeBoutons[0].get_abs_rect()[
                 3] * 2.5 + self.window.title_bar_height)
-            self.window.set_position((x, y))
 
         widthListeContainer = self.listeContainer.get_abs_rect()[2]
 
@@ -829,6 +921,8 @@ class menuValeurs:
                   self.topContainer.rect[3] +
                   self.window.title_bar_height)
 
+        x, y = move_menu_on_screen((x, y), (width, height))
+        self.window.set_position((x, y))
         self.window.set_dimensions(
             (width,
              height))
@@ -884,6 +978,11 @@ class menuValeurs:
                     valeur = int(event.ui_element.text)
                 except:
                     valeur = event.ui_element.text
+
+            if self.valeur == 'XPT':
+                self.avion.boldXPT = False
+            elif self.valeur == 'XFL':
+                self.avion.boldXFL = False
 
             return self.avion.Id, self.valeur, valeur
 
@@ -946,7 +1045,6 @@ class menuValeurs:
                     heading = round(self.avion.papa.selectedHeading + int(event.ui_element.text[1:]))
                 return self.avion.Id, self.valeur, heading
 
-
     def checkScrolled(self, event):
         """
         Vérifie si le menu est en train d'être scrollé
@@ -957,7 +1055,7 @@ class menuValeurs:
         rect = self.window.get_abs_rect()
 
         if not rect[0] <= mouse[0] <= rect[0] + rect[2] and rect[1] <= mouse[1] <= rect[1] + rect[3]:
-            return True
+            return False
 
         indexDebut = self.liste.index(self.listeAff[0])
 
@@ -969,6 +1067,7 @@ class menuValeurs:
         self.listeAff = [self.liste[(newIndex + i) % len(self.liste)] for i in range(len(self.listeAff))]
 
         self.scrollUpdate()
+        return True
 
     def scrollUpdate(self) -> None:
         """
@@ -1101,7 +1200,7 @@ class flightDataWindow:
             label.change_object_id(objectID)
 
         text = (str(avion.papa.indicatif) + '       ' + str(avion.papa.aircraft)
-                + '          ' + avion.papa.modeA + '       | N' + str(avion.papa.speedIAS) + ' Ok8  OkR  OkW')
+                + '          ' + avion.papa.modeA + '       | N' + str(round(avion.papa.speedIAS)) + ' Ok8  OkR  OkW')
         self.ligneUn.set_text(text)
 
         text = avion.papa.callsignFreq + '                                           ' + avion.papa.medevac
@@ -1198,7 +1297,9 @@ class menuRadar:
 
         pos = pygame.mouse.get_pos()
         rect = self.window.get_abs_rect()
-        self.window.set_position((pos[0] - rect[2] / 2, pos[1] - rect[3] / 2))
+        pos = (pos[0] - rect[2] / 2, pos[1] - rect[3] / 2)
+        pos = move_menu_on_screen(pos, rect[2:])
+        self.window.set_position(pos)
         self.window.show()
 
     def checkActive(self):
@@ -1225,7 +1326,7 @@ class menuRadar:
             self.window.hide()
             return 'Cercles'
 
-    def checkMenuHovered(self) -> None:
+    def checkMenuHovered(self) -> bool:
         """
         Commence le compteur si n'est plus survolé
         :return:
@@ -1234,8 +1335,33 @@ class menuRadar:
         mouse = pygame.mouse.get_pos()
 
         if rect[0] <= mouse[0] <= rect[0] + rect[2] and rect[1] <= mouse[1] <= rect[1] + rect[3]:
-            self.lastHovered = pygame.time.get_ticks()
+            return True
+        return False
 
-        elif pygame.time.get_ticks() - self.lastHovered > temps_disparition_menus:
-            self.window.hide()
 
+def move_menu_on_screen(pos: tuple[float, float] | list[float, float],
+                        size: tuple[float, float] | list[float, float]):
+    """
+    Renvoie une position du menu ajustée s'il débordait en dehors de l'écran
+    :param pos: position du menu vector2
+    :param size: taille du menu vector2
+    :return: la nouvelle position
+    """
+
+    y = pos[1]
+    x = pos[0]
+    width = size[0]
+    height = size[1]
+    winSize = pygame.display.get_surface().get_size()
+
+    if x < 0:
+        x = 0
+    elif x + width > winSize[0]:
+        x = winSize[0] - width
+
+    if y < 0:
+        y = 0
+    elif y + height > winSize[1]:
+        y = winSize[1] - height
+
+    return x, y

@@ -11,7 +11,7 @@
            "selected_text":"rgb(0,0,0)",
            "text_shadow": "#00000000",
            "dark_bg": "rgb(150, 150, 150)",
-           "normal_border": "#00000000",
+           "normal_border": "#6B7C91",
            "hovered_border": "#00000000",
            "disabled_border": "#00000000",
            "selected_border": "rgb(204, 85, 0)",
@@ -24,33 +24,70 @@
          {
              "name": "regular",
              "size": "12",
-             "regular_path": "ressources/fonts/LTSuperior-SemiBold.otf",
+             "regular_path": "ressources/fonts/LTSuperior-Medium.otf",
              "bold_path": "ressources/fonts/LTSuperior-Black.otf"
-             }
+             },
+     "misc": {
+          "border_width": "1",
+          "enable_close_button": "0",
+          "shadow_width": "0",
+       "text_vert_alignment": "top",
+          "text_vert_alignment_padding": "1"
+        }
    },
   "@menu":
       {
         "misc": {
           "border_width": "1",
           "enable_close_button": "0",
-          "shadow_width": "0"
+          "shadow_width": "0",
+          "text_vert_alignment": "top",
+          "text_vert_alignment_padding": "1"
         },
         "font": {
           "name": "bold",
           "size": "12",
-          "regular_path": "ressources/fonts/LTSuperior-SemiBold.otf",
+          "regular_path": "ressources/fonts/LTSuperior-Medium.otf",
           "bold_path": "ressources/fonts/LTSuperior-Black.otf"
         },
         "colours":
          {
-           "dark_bg": "#7F94AD",
-           "normal_border": "#3E3E3E",
-           "hovered_border": "#3E3E3E",
-           "disabled_border": "#3E3E3E",
-           "selected_border": "#3E3E3E",
-           "active_border": "#3E3E3E"
+           "dark_bg": "#7F94AD"
          }
       },
+   "menuATC": {
+
+     "colours": {
+
+       "selected_border": "#808080"
+     }
+   },
+   "boutonWarn": {
+
+     "colours": {
+
+       "normal_bg": "#EB7F32",
+           "hovered_bg": "#EB7F32",
+           "disabled_bg": "#EB7F32",
+           "active_bg": "#EB7F32",
+       "normal_border": "#EB7F32",
+           "hovered_border": "#EB7F32",
+           "disabled_border": "#EB7F32"
+     }
+   },
+   "boutonWarnLoc": {
+
+     "colours": {
+
+       "normal_bg": "#B6CCA5",
+           "hovered_bg": "#B6CCA5",
+           "disabled_bg": "#B6CCA5",
+           "active_bg": "#B6CCA5",
+       "normal_border": "#B6CCA5",
+           "hovered_border": "#B6CCA5",
+           "disabled_border": "#B6CCA5"
+     }
+   },
    "menuBleu": {
         "colours":
          {
@@ -72,7 +109,7 @@
   "@menuLabel":
       {
         "misc": {
-          "border_width": "1",
+          "border_width": "0",
           "text_horiz_alignment": "left",
           "text_horiz_alignment_padding": "0",
           "text_vert_alignment": "left",
@@ -92,8 +129,8 @@
         },
         "font": {
           "name": "bold",
-          "size": "15",
-          "regular_path": "ressources/fonts/LTSuperior-SemiBold.otf",
+          "size": "12",
+          "regular_path": "ressources/fonts/LTSuperior-Medium.otf",
           "bold_path": "ressources/fonts/LTSuperior-Black.otf"
         },
         "colours":
@@ -153,7 +190,7 @@
          {
              "name": "bold",
              "size": "12",
-             "regular_path": "ressources/fonts/LTSuperior-SemiBold.otf",
+             "regular_path": "ressources/fonts/LTSuperior-Medium.otf",
              "bold_path": "ressources/fonts/LTSuperior-Black.otf"
              }
      },
@@ -177,7 +214,7 @@
           "name": "bold",
           "size": "12",
           "bold": "1",
-          "regular_path": "ressources/fonts/LTSuperior-SemiBold.otf",
+          "regular_path": "ressources/fonts/LTSuperior-Medium.otf",
           "bold_path": "ressources/fonts/LTSuperior-Black.otf"
         }
       },
@@ -201,7 +238,7 @@
           "name": "bold",
           "size": "12",
           "bold": "1",
-          "regular_path": "ressources/fonts/LTSuperior-SemiBold.otf",
+          "regular_path": "ressources/fonts/LTSuperior-Medium.otf",
           "bold_path": "ressources/fonts/LTSuperior-Black.otf"
         }
       },
@@ -224,7 +261,7 @@
         "font": {
           "name": "bold",
           "size": "12",
-          "regular_path": "ressources/fonts/LTSuperior-SemiBold.otf",
+          "regular_path": "ressources/fonts/LTSuperior-Medium.otf",
           "bold_path": "ressources/fonts/LTSuperior-Black.otf"
         }
       },
@@ -250,6 +287,22 @@
             "selected_text": "#9E8C5B",
             "hovered_text": "#9E8C5B",
             "normal_text": "#9E8C5B"
+          }
+        },
+  "rouge":
+  {
+          "colours": {
+            "selected_text": "#FF0000",
+            "hovered_text": "#FF0000",
+            "normal_text": "#FF0000"
+          }
+        },
+  "jaune":
+  {
+          "colours": {
+            "selected_text": "#E7F00D",
+            "hovered_text": "#E7F00D",
+            "normal_text": "#E7F00D"
           }
         }
 

@@ -1,0 +1,18 @@
+<?xml version="1.0" ?>
+<simu>
+	<heure>100200</heure>
+	<avions>
+		<avion heure="100200">
+			<indicatif>FCACA</indicatif>
+			<aircraft>A20N</aircraft>
+			<route>GAI-RAPID</route>
+			<altitude>26000</altitude>
+			<arrival>False</arrival>
+			<clearedSpeed>k290+</clearedSpeed>
+			<CPDLC>True</CPDLC>
+			<x>699</x>
+			<y>1341</y>
+			<PFL>300</PFL>
+		</avion>
+	</avions>
+</simu>

@@ -236,7 +236,7 @@
     </points>
 
     <zones>
-        <zone color="75,75,75">
+        <zone name="SECTOR" color="90,90,90">
             <limite>
                 <x>1109</x>
                 <y>915</y>
@@ -294,6 +294,36 @@
                 <y>1266</y>
             </limite>
         </zone>
+        <zone name="TSA14" color="69,69,69">
+            <limite>
+                <x>1091</x>
+                <y>1178</y>
+            </limite>
+            <limite>
+                <x>1299</x>
+                <y>1189</y>
+            </limite>
+            <limite>
+                <x>1351</x>
+                <y>1238</y>
+            </limite>
+            <limite>
+                <x>1351</x>
+                <y>1531</y>
+            </limite>
+            <limite>
+                <x>1296</x>
+                <y>1578</y>
+            </limite>
+            <limite>
+                <x>994</x>
+                <y>1447</y>
+            </limite>
+            <limite>
+                <x>1024</x>
+                <y>1230</y>
+            </limite>
+        </zone>
     </zones>
 
     <routes>
@@ -317,11 +347,8 @@
                 <name>MINDI</name>
             </point>
             <point>
-                <name>LANZA</name>
-                <XPT>True</XPT>
-            </point>
-            <point>
                 <name>MEN</name>
+                <XPT>True</XPT>
             </point>
             <point>
                 <name>LOBOS</name>
@@ -357,10 +384,7 @@
                 <name>MINDI</name>
             </point>
             <point>
-                <name>LANZA</name>
                 <XPT>True</XPT>
-            </point>
-            <point>
                 <name>MEN</name>
             </point>
             <point>
@@ -375,7 +399,7 @@
 
         <route>
             <Type>TRANSIT</Type>
-            <destination>E-SE</destination>
+            <destination>E_SE</destination>
             <provenance>N</provenance>
             <point>
                 <name>ATN</name>
@@ -462,19 +486,7 @@
             <point>
                 <name>MTL</name>
             </point>
-            <point>
-                <name>SPIDY</name>
-                <XPT>True</XPT>
-            </point>
-            <point>
-                <name>ETORI</name>
-            </point>
-            <point>
-                <name>ONGHI</name>
-            </point>
-            <point>
-                <name>GAI</name>
-            </point>
+            <segment place="5">MTL-GAI</segment>
             <sortie min="245" max="285">OM</sortie>
             <sortie min="285" max="365">OS</sortie>
         </route>
@@ -488,6 +500,9 @@
                 <FL>20</FL>
             </point>
             <point>
+                <name>JUVEN</name>
+            </point>
+            <point>
                 <name>BOSUA</name>
                 <EPT>True</EPT>
                 <EFL>250</EFL>
@@ -498,19 +513,7 @@
             <point>
                 <name>MTL</name>
             </point>
-            <point>
-                <name>SPIDY</name>
-                <XPT>True</XPT>
-            </point>
-            <point>
-                <name>ETORI</name>
-            </point>
-            <point>
-                <name>ONGHI</name>
-            </point>
-            <point>
-                <name>GAI</name>
-            </point>
+            <segment place ="5">MTL-GAI</segment>
             <sortie min="245" max="285">OM</sortie>
             <sortie min="285" max="365">OS</sortie>
         </route>
@@ -519,19 +522,7 @@
             <Type>TRANSIT</Type>
             <provenance>SO</provenance>
             <destination>SE</destination>
-            <point>
-                <name>GAI</name>
-            </point>
-            <point>
-                <name>ONGHI</name>
-            </point>
-            <point>
-                <name>ETORI</name>
-            </point>
-            <point>
-                <name>SPIDY</name>
-                <EPT>True</EPT>
-            </point>
+            <segment place="0">GAI-MTL</segment>
             <point>
                 <name>MTL</name>
             </point>
@@ -553,19 +544,7 @@
             <Type>TRANSIT</Type>
             <provenance>SO</provenance>
             <destination>NE</destination>
-            <point>
-                <name>GAI</name>
-            </point>
-            <point>
-                <name>ONGHI</name>
-            </point>
-            <point>
-                <name>ETORI</name>
-            </point>
-            <point>
-                <name>SPIDY</name>
-                <EPT>True</EPT>
-            </point>
+            <segment place="0">GAI-MTL</segment>
             <point>
                 <name>MTL</name>
             </point>
@@ -876,11 +855,8 @@
                 <name>MINDI</name>
             </point>
             <point>
-                <name>LANZA</name>
-                <XPT>True</XPT>
-            </point>
-            <point>
                 <name>MEN</name>
+                <XPT>True</XPT>
                 <EFL>240</EFL>
             </point>
             <point>
@@ -893,6 +869,100 @@
             <sortie min="285" max="365">OS</sortie>
         </route>
     </routes>
+
+    <segments>
+        <segment>
+            <nom>GAI-MTL</nom>
+            <repli>GAI-MEN-MTL</repli>
+            <condition>
+                <zone>TSA14</zone>
+                <active>False</active>
+            </condition>
+            <point>
+                <name>GAI</name>
+            </point>
+            <point>
+                <name>ONGHI</name>
+            </point>
+            <point>
+                <name>ETORI</name>
+            </point>
+            <point>
+                <name>SPIDY</name>
+                <EPT>True</EPT>
+            </point>
+            <point>
+                <name>MTL</name>
+            </point>
+        </segment>
+
+        <segment>
+            <nom>GAI-MEN-MTL</nom>
+            <condition>
+                <zone>TSA14</zone>
+                <active>True</active>
+            </condition>
+            <point>
+                <name>GAI</name>
+            </point>
+            <point>
+                <name>LOBOS</name>
+            </point>
+            <point>
+                <name>MEN</name>
+            </point>
+            <point>
+                <name>MTL</name>
+                <EPT>True</EPT>
+            </point>
+        </segment>
+
+        <segment>
+            <nom>MTL-GAI</nom>
+            <repli>MTL-MEN-GAI</repli>
+            <condition>
+                <zone>TSA14</zone>
+                <active>False</active>
+            </condition>
+            <point>
+                <name>MTL</name>
+            </point>
+            <point>
+                <name>SPIDY</name>
+                <XPT>True</XPT>
+            </point>
+            <point>
+                <name>ETORI</name>
+            </point>
+            <point>
+                <name>ONGHI</name>
+            </point>
+            <point>
+                <name>GAI</name>
+            </point>
+        </segment>
+
+        <segment>
+            <nom>MTL-MEN-GAI</nom>
+            <condition>
+                <zone>TSA14</zone>
+                <active>True</active>
+            </condition>
+            <point>
+                <name>MTL</name>
+            </point>
+            <point>
+                <name>MEN</name>
+                <XPT>True</XPT>
+            </point>
+            <point>
+                <name>LOBOS</name>
+            </point>
+            <point>
+                <name>GAI</name>
+            </point>
+        </segment>
+    </segments>
 
     <Aeroports>
         <NE>
@@ -936,6 +1006,7 @@
             <AD>DRRN</AD>
             <AD>DTTA</AD>
             <AD>GCTS</AD>
+            <AD>DOAA</AD>
         </S>
 
         <SO>
@@ -960,13 +1031,13 @@
             <AD>DTTA</AD>
         </SE>
 
-        <E-SE>
+        <E_SE>
             <AD>LGAT</AD>
             <AD>LGAV</AD>
             <AD>LGIR</AD>
             <AD>LIMF</AD>
             <AD>LIPZ</AD>
-        </E-SE>
+        </E_SE>
 
         <E>
             <AD>LOWW</AD>

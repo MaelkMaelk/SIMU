@@ -1,7 +1,6 @@
 
 # Native imports
 import socket
-import math
 import sys
 import pickle
 from _thread import *
@@ -15,6 +14,7 @@ from pathlib import Path
 
 # Import fichiers
 import Python.horloge as horloge
+import Python.loadXML as loadXML
 from Python.network import MCAST_GRP, MCAST_PORT, port
 from Python.paquets_avion import *
 import Python.server_def as server_def
@@ -62,8 +62,8 @@ s.listen(2)
 playerId = 0
 dictAvion = {}  # dict contenant tous les avions
 requests = []  # liste des requêtes que le serveur doit gérer
-segments = {}
-gameMap = {'points': {}, 'zones': [], 'segments': [], 'routes': {}, 'mapScale': 0}
+lignes = {}
+gameMap = {'points': {}, 'zones': {}, 'lignes': [], 'routes': {}, 'mapScale': 0}
 
 # XML map loading
 
@@ -89,13 +89,20 @@ for point in root.find('points'):  # on parcourt la liste xml de points
 for zone in root.find('zones'):
 
     contour = []  # liste des points délimitant le contour du secteur, dans l'ordre de lecture xml
-
+    nom = zone.attrib['name']
+    active : list[tuple] = [(0, 0)]
     for limite in zone.findall('limite'):
         x = int(limite.find('x').text)
         y = int(limite.find('y').text)
         contour.append((x, y))
 
-    gameMap['zones'].append({'couleur': [int(x) for x in zone.attrib['color'].split(',')], 'contour': contour})
+    if nom == 'SECTOR':
+        active = [(0, time.time() * 2)]
+
+    gameMap['zones'].update({nom: {
+        'active': active,
+        'couleur': [int(x) for x in zone.attrib['color'].split(',')],
+        'contour': contour}})
 
 dictSecteurs = {}
 for secteur in root.find('secteurs'):
@@ -125,19 +132,18 @@ for direction in root.find('Aeroports'):
 
 gameMap.update({'aeroports': listeAeroports})
 
-# parsing des routes pour conaître tous les types de routes, pour l'affichage des segments
+# parsing des routes pour conaître tous les types de routes, pour l'affichage des lignes
 
 for route in root.find('routes'):
-    if route.find('Type').text not in segments:
-        segments.update({route.find('Type').text: []})
+    if route.find('Type').text not in lignes:
+        lignes.update({route.find('Type').text: []})
 
-gameMap['segments'] = segments  # liste des segments de route pour les dessiner qu'une seule fois
+gameMap['lignes'] = lignes  # liste des lignes de route pour les dessiner qu'une seule fois
+
+gameMap.update({'segments': loadXML.loadSegmentsXML(root)})
 
 for route in root.find('routes'):  # construction des routes
-    if 'name' in route.attrib:
-        nomRoute = route.attrib['name']
-    else:
-        nomRoute = route.findall('point')[0].find('name').text + "-" + route.findall('point')[-1].find('name').text
+
     routeType = route.find('Type').text
     listeSortie = []
     listeRoutePoints = []
@@ -176,10 +182,26 @@ for route in root.find('routes'):  # construction des routes
 
         y2 = gameMap['points'][point.find('name').text][1]
         x2 = gameMap['points'][point.find('name').text][0]
-        if ((x1, y1), (x2, y2)) not in gameMap['segments'][routeType] and x1 != x2 and y1 != y2:
-            gameMap['segments'][routeType].append(((x1, y1), (x2, y2)))
+        if ((x1, y1), (x2, y2)) not in gameMap['lignes'][routeType] and x1 != x2 and y1 != y2:
+            gameMap['lignes'][routeType].append(((x1, y1), (x2, y2)))
         x1 = x2
         y1 = y2
+
+    for segment in route.findall('segment'):
+        listeRoutePoints.insert(int(segment.attrib['place']), segment.text)
+
+    if 'name' in route.attrib:
+        nomRoute = route.attrib['name']
+    else:
+        if type(listeRoutePoints[0]) is str:
+            debut = listeRoutePoints[0].split('-')[0]
+        else:
+            debut = listeRoutePoints[0]['name']
+        if type(listeRoutePoints[-1]) is str:
+            fin = listeRoutePoints[-1].split('-')[-1]
+        else:
+            fin = listeRoutePoints[-1]['name']
+        nomRoute = debut + '-' + fin
     provenance = 'N'
     destination = 'S'
     if routeType == 'DEPART':
@@ -237,58 +259,43 @@ gameMap.update({'callsigns': callsignList})
 planeId = 0
 
 simuTree = None
-
+activiteZone = []
+avionSpawnListe = []
 try:
     simuTree = ET.parse(dossierXML / simu).getroot()
 
     heure = simuTree.find('heure').text
-    heure = int(heure[0:2]) * 3600 + int(heure[2:4]) * 60 + int(heure[4:])
+    heure = horloge.heureFloat(heure)
 
     game = Game(heure)
 
-    avionSpawnListe = []
     avionsXML = simuTree.find('avions')
-    for avion in avionsXML:
 
-        avionDict = {}
+    if simuTree.find('zones') is not None:
+        for zone in simuTree.find('zones'):
+            heureDebut = zone.find('debut').text
+            heureDebut = horloge.heureFloat(heureDebut)
+            heureFin = zone.find('fin').text
+            heureFin = horloge.heureFloat(heureFin)
+            activiteZone.append({
+                'debut': heureDebut,
+                'fin': heureFin,
+                'nom': zone.find('nom').text
+            })
 
-        for XMLpoint in avion:
-            try:
-                XMLpointValue = float(XMLpoint.text)
-            except:
-                XMLpointValue = XMLpoint.text
-            avionDict.update({XMLpoint.tag: XMLpointValue})
+    for activite in activiteZone:
+        gameMap['zones'][activite['nom']]['active'].append((activite['debut'], activite['fin']))
 
-        heureSpawn = avion.attrib['heure']
-        heureSpawn = int(heureSpawn[0:2]) * 3600 + int(heureSpawn[2:4]) * 60 + int(heureSpawn[4:])
+    for avionXML in avionsXML:
 
-        for route in gameMap['routes']:
-            if route == avionDict['route']:
-                spawnRoute = gameMap['routes'][route]
-                break
-        if 'altitude' in avionDict:
-            spawnFL = round(avionDict['altitude'] / 100)
-        else:
-            spawnFL = None
-        avionPack = AvionPacket(
-            gameMap,
-            planeId,
-            avionDict['indicatif'],
-            avionDict['aircraft'],
-            aircraftType[avionDict['aircraft']],
-            spawnRoute,
-            avionDict['arrival'] == 'True',
-            FL=spawnFL,
-            x=avionDict['x'],
-            y=avionDict['y'])
+        tuple_avion_a_spawn = loadXML.loadAvionXML(avionXML, gameMap, aircraftType, game.heure, planeId)
         planeId += 1
+        avionSpawnListe.append(tuple_avion_a_spawn)
 
-        avionSpawnListe.append((heureSpawn, avionPack))
 except:
 
     heure = input('Heure de début de simu, format: hhmm')
     heure = int(heure[0:2]) * 3600 + int(heure[2:]) * 60
-    avionSpawnListe = []
     simuTree = ET.Element('simu')
     game = Game(heure)
     heureXML = ET.SubElement(simuTree, 'heure')
@@ -320,7 +327,7 @@ def threaded_client(conn, caca):
                 print("Disconnected")
                 break
             else:
-                reply = Packet(packetId, game=game, dictAvions=dictAvion)
+                reply = Packet(packetId, game=game, dictAvions=dictAvion, carte=gameMap)
 
             conn.sendall(pickle.dumps(reply))
             nombre = 0
@@ -368,7 +375,6 @@ while Running:
 
             if len(req) == 3:
                 reqContent = req[2]
-            print(req)
 
             if reqType == 'Add':
 
@@ -387,8 +393,8 @@ while Running:
                 planeId += 1
 
                 if mode_ecriture:
-                    heure = horloge.heureXML(game.heure)
-                    server_def.generateAvionXML(avionsXML, reqContent, heure)
+                    heure = horloge.heureXML(game.heure + reqContent[0])
+                    server_def.generateAvionXML(avionsXML, reqContent[1], heure)
 
             elif reqType == 'Remove':
                 dictAvion.pop(reqId)
@@ -456,7 +462,6 @@ while Running:
             elif reqType == 'IAS':
                 if reqContent:
                     dictAvion[reqId].forcedSpeed = True
-                    dictAvion[reqId].machMode = False
                     dictAvion[reqId].selectedIAS = reqContent * 10
                 else:
                     dictAvion[reqId].forcedSpeed = False
@@ -464,7 +469,6 @@ while Running:
             elif reqType == 'Mach':
                 if reqContent:
                     dictAvion[reqId].forcedSpeed = True
-                    dictAvion[reqId].machMode = True
                     dictAvion[reqId].selectedMach = float(reqContent)
                 else:
                     dictAvion[reqId].forcedSpeed = False
@@ -529,45 +533,38 @@ while Running:
     for avion in toBeRemovedFromSpawn:
         avionSpawnListe.remove(avion)
 
-    if time.time() - temps >= radarRefresh/accelerationTemporelle and game.paused:
+    toBeRemovedFromActivite = []
+
+    for activite in toBeRemovedFromActivite:
+        activiteZone.remove(activite)
+
+    if not game.paused:
+        temps = time.time()  # si la game est sur pause alors on avance pas le temps
+    elif time.time() - temps >= radarRefresh/accelerationTemporelle:
         game.heure += (time.time() - temps) * accelerationTemporelle
         temps = time.time()
         suppListe = []
+
         for avion in list(dictAvion.values()):
             # si jamais l'avion doit etre supp, il le renvoie à la fin du move, sinon None
+
             if avion.move(gameMap):
                 suppListe.append(avion.Id)
+
         for avion in suppListe:
             dictAvion.pop(avion)
-        for avion in list(dictAvion.values()):
-            # tous les calculs de distances sont ici effectués en pixel, la conversion se fait avec le mapScale
-            # TODO remplacer ce STCA avec le nouveau dans server_def
+
+        for avion1 in dictAvion.values():
             STCAtriggered = False
-            predictedPos = []
-            VspeedOne = avion.evolution
-            AltitudeOne = avion.altitude
-            for i in range(12):
-                predictedPos.append((avion.x + avion.speedGS * 15 / radarRefresh * (i + 1) * math.cos(avion.headingRad),
-                                     avion.y + avion.speedGS * 15 / radarRefresh * (i + 1) * math.sin(avion.headingRad),
-                                     AltitudeOne + VspeedOne * (i + 1) * 15 / radarRefresh))
-            for avion2 in list(dictAvion.values()):
-                if avion != avion2:
-                    VspeedTwo = avion.evolution
-                    AltitudeTwo = avion2.altitude
-                    for i in range(12):
-                        if math.sqrt((predictedPos[i][0] - (
-                                avion2.x + avion2.speedGS * 15 / radarRefresh * (i + 1) * math.cos(
-                                avion2.headingRad))) ** 2 +
-                                     (predictedPos[i][1] - (
-                                             avion2.y + avion2.speedGS * 15 / radarRefresh * (i + 1) * math.sin(
-                                         avion2.headingRad))) ** 2) <= 5 / mapScale and abs(
-                            predictedPos[i][2] - AltitudeTwo - VspeedTwo * (i + 1) * 15 / radarRefresh) < float(
-                                1000) and abs(avion.altitude - avion2.altitude) <= 2500:
-                            STCAtriggered = True
-                            avion.STCA = True
-                            avion2.STCA = True
+            for avion2 in dictAvion.values():
+                if avion1 != avion2:
+                    STCAtriggered = server_def.STCA(avion1, avion2, gameMap)
+
+                    if STCAtriggered:
+                        avion1.STCA = True
+                        avion2.STCA = True
             if not STCAtriggered:
-                avion.STCA = False
+                avion1.STCA = False
 
     requests = []
 
