@@ -127,6 +127,7 @@ def calculateIntersection(point1Droite, point2Droite,
 
         left_side = np.array([[-coeffdroite1, 1], [-coeffdroite2, 1]])
         right_side = np.array([ordonnee1, ordonnee2])
+
         point = np.linalg.inv(left_side).dot(right_side)
 
     elif point == (point1Droite[0], 0):  # si la 1ere droite est verticale :

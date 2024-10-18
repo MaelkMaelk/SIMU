@@ -28,9 +28,14 @@ class Packet:
 
 class AvionPacket:
 
-    def __init__(self, gameMap, Id, indicatif, aircraft, perfos, route, arrival, heure, FL=None, x=None, y=None,
+    def __init__(self, gameMap, Id, indicatif, aircraft, perfos, route, arrival, heure,
+                 FL=None,
+                 x=None,
+                 y=None,
                  heading=None,
-                 PFL=None, medevac=False):
+                 PFL=None,
+                 medevac=False,
+                 CPDLC = False):
 
         self.Id = Id
         self.indicatif = indicatif
@@ -87,6 +92,8 @@ class AvionPacket:
         self.warning = False
         self.STCA = False
         self.montrer = False
+        self.CPDLC = CPDLC
+
         # états possibles : previousFreq, previousShoot, inFreq, nextCoord, nextShoot, nextFreq
         self.etatFrequence = "previousFreq"
         self.integreOrganique = False  # si on doit ou non afficher la case d'intégration organique

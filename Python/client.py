@@ -37,7 +37,7 @@ manager = pygame_gui.UIManager((width, height), path / 'ressources' / 'theme.jso
 pygame.display.set_caption("Client")
 temps = pygame.time.get_ticks()
 clock = pygame.time.Clock()
-font = pygame.font.SysFont('arial', 18)
+font = pygame.font.SysFont('arial', 16, bold=True)
 
 if replayMode:
     dossierScreen = Path('replay') / (str(time.localtime()[1]) + '_' + str(time.localtime()[2]) + '_' +
@@ -364,8 +364,10 @@ def main(server_ip: str):
                 curseur_aliSep = False
                 pygame.mouse.set_cursor(pygame.cursors.arrow)
 
-            elif (event.type == pygame.MOUSEBUTTONUP and event.button == 1 and not empecherDragging
-                  and not (curseur_aliSep or curseur_alidad) and mouseDownTime + dragDelay >= pygame.time.get_ticks()):
+            elif (event.type == pygame.MOUSEBUTTONUP and event.button == 1 and not (empecherDragging or
+                  curseur_aliSep or curseur_alidad) and menuValeurs is None and menuATC is None
+                  and mouseDownTime + dragDelay >= pygame.time.get_ticks()):
+
                 if curseur_cercles:
                     curseur_cercles = False
                 elif menuRadarTimer + dragDelay <= pygame.time.get_ticks():
@@ -546,10 +548,10 @@ def main(server_ip: str):
 
         # dessin alidad
         if alidad:
-            pygame.draw.line(win, (46, 80, 174), alidadPos, pygame.mouse.get_pos())
+            pygame.draw.line(win, (70, 140, 240), alidadPos, pygame.mouse.get_pos(), 2)
             distance = round(math.sqrt((alidadPos[0] - pygame.mouse.get_pos()[0]) ** 2 +
                                        (alidadPos[1] - pygame.mouse.get_pos()[1]) ** 2) / zoom * mapScale, 1)
-            img = font.render(str(distance), True, (46, 80, 174))
+            img = font.render(str(distance), True, (70, 140, 240))
             win.blit(img, (pygame.mouse.get_pos()[0] + 20, pygame.mouse.get_pos()[1]))
 
         # prise des screenshots

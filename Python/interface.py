@@ -2,6 +2,8 @@
 # Module imports
 import pygame
 import pygame_gui
+
+# Imports locaux
 import Python.horloge as horloge
 from Python.valeurs_config import *
 
@@ -225,6 +227,12 @@ class etiquette:
         self.downlink = False
         self.centre = (0, 0)
 
+        if avion.papa.CPDLC:
+            indicatifText = avion.papa.indicatif + ' ϟ'
+        else:
+            indicatifText = avion.papa.indicatif
+
+
         self.container = pygame_gui.elements.UIAutoResizingContainer(
             pygame.Rect((0, 0), (0, 0)), pygame.Rect((0, 0), (0, 0)), resize_top=False, resize_left=False)
 
@@ -237,7 +245,7 @@ class etiquette:
 
         self.indicatif = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 0), (-1, -1)),
-            text=avion.papa.indicatif,
+            text=indicatifText,
             object_id=pygame_gui.core.ObjectID('@etiquetteBold', 'rose'),
             anchors={'top': 'top', 'top_target': self.speedGS},
             container=self.container,
@@ -488,14 +496,14 @@ class menuATC:
         self.avion = avion
         self.lastHovered = 0  # temps : la dernière fois que le menu était survolé
 
-        width = 80
+        width = 72
         height = 110
 
         x = pos[0] - width / 2
         y = pos[1] - 35
 
         if avion.papa.etatFrequence == 'previousFreq':
-            text = 'FORCE ASSU'
+            text = 'FORCE ASS'
         elif avion.papa.etatFrequence == 'previousShoot':
             text = 'ASSUME'
         elif avion.papa.etatFrequence == 'nextCoord':
@@ -512,48 +520,87 @@ class menuATC:
         self.window.set_minimum_dimensions((width, width))
         self.window.set_dimensions((width, height))
 
+        self.CPDLC = None
+
         # On définit tout d'abord les boutons qui sont tous les temps présents
+
         self.locWarn = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((0, 1), (width, -1)), text='WARN LOC',
-            container=self.window)
+            relative_rect=pygame.Rect((0, 0), (width, -1)), text='WARN LOC',
+            container=self.window,
+            object_id=pygame_gui.core.ObjectID('@menu', 'boutonWarnLoc'))
 
         self.warn = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((0, 1), (width, -1)), text='WARN POS',
-            container=self.window, anchors={'top': 'top', 'top_target': self.locWarn})
+            relative_rect=pygame.Rect((0, 0), (width, -1)), text='WARN POS',
+            container=self.window,
+            object_id=pygame_gui.core.ObjectID('@menu', 'boutonWarn'),
+            anchors={'top': 'top', 'top_target': self.locWarn})
 
         self.montrer = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((0, 1), (width, -1)), text='SHOW',
-            container=self.window, anchors={'top': 'top', 'top_target': self.warn})
+            relative_rect=pygame.Rect((0, 0), (width, -1)), text='SHOW',
+            container=self.window,
+            object_id=pygame_gui.core.ObjectID('@menu', 'menuATC'),
+            anchors={'top': 'top', 'top_target': self.warn})
 
         self.halo = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((0, 1), (width, -1)), text='HALO',
-            container=self.window, anchors={'top': 'top', 'top_target': self.montrer})
+            relative_rect=pygame.Rect((0, 0), (width, -1)), text='HALO',
+            container=self.window,
+            object_id=pygame_gui.core.ObjectID('@menu', 'menuATC'),
+            anchors={'top': 'top', 'top_target': self.montrer})
 
         if not text == '':  # si le bouton doit apparaître alors, il aura du texte
 
             self.freqAssume = pygame_gui.elements.UIButton(
-                relative_rect=pygame.Rect((0, 1), (width, -1)),
+                relative_rect=pygame.Rect((0, 0), (width, -1)),
                 text=text,
+                object_id=pygame_gui.core.ObjectID('@menu', 'menuATC'),
                 container=self.window)
+
+            freqHeight = self.freqAssume.get_abs_rect()[3]
+
+            if avion.papa.CPDLC and avion.papa.etatFrequence == 'nextCoord':
+
+                self.CPDLC = pygame_gui.elements.UIButton(
+                    relative_rect=pygame.Rect((0, 0), (25, freqHeight)), text='D/L',
+                    container=self.window,
+                    object_id=pygame_gui.core.ObjectID('@menu', 'menuATC'),
+                    anchors={'left': 'left', 'left_target': self.freqAssume}
+                )
+
+                self.freqAssume.set_dimensions((width - self.CPDLC.get_abs_rect()[2], freqHeight))
 
             self.locWarn.set_anchors({'top': 'top', 'top_target': self.freqAssume})  # on décale donc le locWarn dessous
             self.locWarn.rebuild()
             self.mvt = None
+            ancres = {'top': 'top', 'top_target': self.halo}
 
         else:  # s'il ny a pas de bouton de transfer, il y a un bouton mvt
 
             self.mvt = pygame_gui.elements.UIButton(
-                relative_rect=pygame.Rect((0, 1), (width, -1)), text='MVT',
-                container=self.window, anchors={'top': 'top', 'top_target': self.halo})
+                relative_rect=pygame.Rect((0, 0), (width, -1)),
+                text='MVT',
+                object_id=pygame_gui.core.ObjectID('@menu', 'menuATC'),
+                container=self.window,
+                anchors={'top': 'top', 'top_target': self.halo})
 
+            ancres = {'top': 'top', 'top_target': self.mvt}
             self.freqAssume = None  # on assigne None pour pouvoir faire les comparaisons dans checkEvent
+
+        self.hold = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((0, 0), (width, -1)),
+            text='HOLD',
+            object_id=pygame_gui.core.ObjectID('@menu', 'menuATC'),
+            container=self.window,
+            anchors=ancres)
+
+        height = 6 * self.halo.get_abs_rect()[3] + self.window.title_bar_height
+        self.window.set_dimensions((width, height))
 
     def checkEvent(self, event):
 
         if event.ui_element == self.freqAssume:
             self.kill()
 
-            if self.freqAssume.text == 'FORCE ASSU':  # si on force assume, on passe direct en frequence
+            if self.freqAssume.text == 'FORCE ASS':  # si on force assume, on passe direct en frequence
                 return self.avion.Id, 'EtatFreq', 'inFreq'
 
             elif self.freqAssume.text == 'RECLAIM':  # si on reclaim, on revient en freq
@@ -561,6 +608,10 @@ class menuATC:
 
             elif not self.freqAssume.text == '':
                 return self.avion.Id, 'EtatFreq', None
+
+        elif event.ui_element == self.CPDLC:
+            self.kill()
+            return self.avion.Id, 'EtatFreq', None
 
         elif event.ui_element == self.mvt:
             self.kill()
@@ -807,7 +858,7 @@ class menuValeurs:
 
             self.listeGauche = scrollListGen(
                 listeGauche,
-                pygame.Rect((1, 0), (width / 3, -1)),
+                pygame.Rect((0, 0), (width / 3, -1)),
                 self.containerHdgGauche,
                 sliderBool=False)[1]
 
@@ -822,7 +873,7 @@ class menuValeurs:
 
             self.listeBoutons = scrollListGen(
                 self.listeAff,
-                pygame.Rect((1, 0), (width / 3, -1)),
+                pygame.Rect((0, 0), (width / 3, -1)),
                 self.listeContainer,
                 sliderBool=False,
                 objectID=objectID)[1]
@@ -838,7 +889,7 @@ class menuValeurs:
 
             self.listeDroite = scrollListGen(
                 listeDroite,
-                pygame.Rect((1, 0), (width / 3, -1)),
+                pygame.Rect((0, 0), (width / 3, -1)),
                 self.containerHdgDroite,
                 sliderBool=False)[1]
         else:
@@ -850,14 +901,12 @@ class menuValeurs:
                 anchors={'top': 'top', 'top_target': self.topContainer}
             )
 
-            tempo = scrollListGen(
-                self.listeAff,
-                pygame.Rect((1, 0), (width, -1)),
-                self.listeContainer,
-                sliderBool=False,
-                objectID=objectID)
-
-            self.listeBoutons = tempo[1]
+            self.listeBoutons = scrollListGen(
+                    self.listeAff,
+                    pygame.Rect((0, 0), (width, -1)),
+                    self.listeContainer,
+                    sliderBool=False,
+                    objectID=objectID)[1]
 
         if valeur in ['XFL', 'PFL', 'CFL']:  # on ramène la fenêtre au bon endroit pour la souris (sur le PFL)
             y = y - (self.topContainer.get_abs_rect()[3] + self.listeBoutons[0].get_abs_rect()[

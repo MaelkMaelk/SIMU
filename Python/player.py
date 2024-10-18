@@ -462,8 +462,6 @@ class Avion:
                 return self.Id, 'Warning'
 
             elif event.mouse_button == 3:
-                if pilote:  # si on est en pilote alors ça supp l'avion
-                    return self.Id, 'Remove'
                 self.locWarning = not self.locWarning  # toggle les warnings locs
 
         elif event.ui_element == self.etiquette.indicatif:
@@ -474,7 +472,7 @@ class Avion:
             elif event.mouse_button == 1 and not pilote:
                 return 'menuATC'
 
-            elif event.mouse_button == 3 and self.papa.integreOrganique and (
+            elif event.mouse_button == 3 and (
                     self.etiquette.indicatif.get_object_ids()[1] in ['@etiquetteBold', '@etiquetteBoldBlue']):
 
                 self.unBold()
@@ -670,7 +668,6 @@ class Avion:
         """
 
         if self.papa.XPT != papa.XPT:
-            print(self.boldXPT)
             if self.boldXPT:
                 bold(self.etiquette.XPT)
                 bold(self.etiquette.indicatif)
@@ -734,7 +731,7 @@ class Avion:
         :return:
         """
         couleur = self.etiquette.speedGS.get_class_ids()[1]
-        print(couleur)
+
         objet = pygame_gui.core.ObjectID(self.etiquette.selectedAlti.get_object_ids()[1], couleur)
         self.etiquette.selectedAlti.change_object_id(objet)
 

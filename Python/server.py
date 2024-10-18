@@ -270,6 +270,7 @@ try:
     game = Game(heure)
 
     avionsXML = simuTree.find('avions')
+
     if simuTree.find('zones') is not None:
         for zone in simuTree.find('zones'):
             heureDebut = zone.find('debut').text
@@ -285,43 +286,12 @@ try:
     for activite in activiteZone:
         gameMap['zones'][activite['nom']]['active'].append((activite['debut'], activite['fin']))
 
-    for avion in avionsXML:
+    for avionXML in avionsXML:
 
-        avionDict = {}
-
-        for XMLpoint in avion:
-            try:
-                XMLpointValue = float(XMLpoint.text)
-            except:
-                XMLpointValue = XMLpoint.text
-            avionDict.update({XMLpoint.tag: XMLpointValue})
-
-        heureSpawn = avion.attrib['heure']
-        heureSpawn = int(heureSpawn[0:2]) * 3600 + int(heureSpawn[2:4]) * 60 + int(heureSpawn[4:])
-
-        for route in gameMap['routes']:
-            if route == avionDict['route']:
-                spawnRoute = gameMap['routes'][route]
-                break
-        if 'altitude' in avionDict:
-            spawnFL = round(avionDict['altitude'] / 100)
-        else:
-            spawnFL = None
-        avionPack = AvionPacket(
-            gameMap,
-            planeId,
-            avionDict['indicatif'],
-            avionDict['aircraft'],
-            aircraftType[avionDict['aircraft']],
-            spawnRoute,
-            avionDict['arrival'] == 'True',
-            game.heure,
-            FL=spawnFL,
-            x=avionDict['x'],
-            y=avionDict['y'])
+        tuple_avion_a_spawn = loadXML.loadAvionXML(avionXML, gameMap, aircraftType, game.heure, planeId)
         planeId += 1
+        avionSpawnListe.append(tuple_avion_a_spawn)
 
-        avionSpawnListe.append((heureSpawn, avionPack))
 except:
 
     heure = input('Heure de début de simu, format: hhmm')
