@@ -76,6 +76,12 @@ def generateAvionXML(parentNode, avion, heureXML):
     node = ET.SubElement(avionXML, 'PFL')
     node.text = str(avion.PFL)
 
+    node = ET.SubElement(avionXML, 'CPDLC')
+    node.text = str(avion.CPDLC)
+
+    node = ET.SubElement(avionXML, 'ExRVSM')
+    node.text = str(avion.ExRVSM)
+
 
 def prettyPrint(docXML):
     """

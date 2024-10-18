@@ -129,7 +129,7 @@
         },
         "font": {
           "name": "bold",
-          "size": "12",
+          "size": "15",
           "regular_path": "ressources/fonts/LTSuperior-Medium.otf",
           "bold_path": "ressources/fonts/LTSuperior-Black.otf"
         },

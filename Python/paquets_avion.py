@@ -35,7 +35,8 @@ class AvionPacket:
                  heading=None,
                  PFL=None,
                  medevac=False,
-                 CPDLC = False):
+                 CPDLC=False,
+                 ExRVSM=False):
 
         self.Id = Id
         self.indicatif = indicatif
@@ -93,6 +94,8 @@ class AvionPacket:
         self.STCA = False
         self.montrer = False
         self.CPDLC = CPDLC
+        self.ExRVSM = ExRVSM
+        self.halo = ExRVSM
 
         # états possibles : previousFreq, previousShoot, inFreq, nextCoord, nextShoot, nextFreq
         self.etatFrequence = "previousFreq"
@@ -110,7 +113,7 @@ class AvionPacket:
         elif indicatif[:3] in gameMap['callsigns']:
             self.callsignFreq = gameMap['callsigns'][indicatif[:3]]
         else:
-            self.callsignFreq = 'caca'
+            self.callsignFreq = ''
 
         if route['type'] == 'DEPART':
             self.provenance = route['provenance']

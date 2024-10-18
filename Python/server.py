@@ -480,6 +480,9 @@ while Running:
             elif reqType == 'Warning':
                 dictAvion[reqId].warning = not dictAvion[reqId].warning
 
+            elif reqType == 'Halo':
+                dictAvion[reqId].halo = not dictAvion[reqId].halo
+
             elif reqType == 'Integre':
                 dictAvion[reqId].integreOrganique = True
 

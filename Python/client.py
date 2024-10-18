@@ -13,6 +13,7 @@ from Python.paquets_avion import *
 import Python.outils_radar as outils_radar
 import Python.capture as capture
 import Python.carte_defs as carte_defs
+import fdw as fdw
 
 # recherche de tous les serveurs sur le réseau
 address = server_browser.serverBrowser()
@@ -304,7 +305,9 @@ def main(server_ip: str):
                                 carte['routes'][newPlaneData['route']],  # on va chercher la route en entier dans la map
                                 newPlaneData['arrival'],
                                 game.heure,
+                                CPDLC=newPlaneData['CPDLC'],
                                 FL=FL,
+                                ExRVSM=newPlaneData['ExRVSM'],
                                 PFL=PFL)
 
                             if newPlaneData['conflit']:
@@ -412,7 +415,7 @@ def main(server_ip: str):
                 delaiPressage = pygame.time.get_ticks()
 
             if keys[pygame.K_f] and flightDataWindow is None:  # Flight Data Window
-                flightDataWindow = interface.flightDataWindow()
+                flightDataWindow = fdw.flightDataWindow()
                 pressing = True
                 delaiPressage = pygame.time.get_ticks()
 

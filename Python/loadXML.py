@@ -116,6 +116,7 @@ def loadAvionXML(avionXML, carte: dict, perfos: dict, heure: float, planeId: int
         heure,
         FL=spawnFL,
         CPDLC=avionDict['CPDLC'] == 'True',
+        ExRVSM=avionDict['ExRVSM'] == 'True',
         x=avionDict['x'],
         y=avionDict['y'])
 

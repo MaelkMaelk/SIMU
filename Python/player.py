@@ -9,7 +9,7 @@ import pygame_gui
 # Imports fichiers
 from Python.valeurs_config import *
 import Python.geometry as geometry
-import Python.interface as interface
+import Python.etiquettes as etq
 import Python.horloge as horloge
 
 
@@ -87,7 +87,7 @@ class Avion:
         self.etiquetteOffsetY = offsettEtiquetteDefault
 
         # init de l'étiquette
-        self.etiquette = interface.etiquette(self)
+        self.etiquette = etq.etiquette(self)
         etatFrequenceInit(self)
         self.checkHighlight(papa)
 
@@ -234,6 +234,9 @@ class Avion:
 
         elif vecteurs or self.papa.warning or self.locWarning:  # si on doit dessiner les vecteurs
             self.drawVector(color, win, vecteurSetting, zoom)  # on appelle la fonction
+
+        if self.papa.halo:
+            pygame.draw.circle(win, (0, 206, 209), (self.affX + plotSize, self.affY + plotSize), 10, 1)
 
         radius = 1
         for plot in self.papa.comete:
@@ -628,7 +631,7 @@ class Avion:
                 bouton.change_object_id(pygame_gui.core.ObjectID('@etiquetteBlue', couleur))
 
             # on montre le bouton, il faut donc calculer sa distance à gauche
-            distance = interface.updateDistanceGauche(liste[boutonTuple[0]][:boutonTuple[1]])
+            distance = etq.updateDistanceGauche(liste[boutonTuple[0]][:boutonTuple[1]])
             bouton.set_relative_position((distance, 0))
             bouton.show()
 
