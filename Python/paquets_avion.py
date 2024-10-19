@@ -1,4 +1,4 @@
-import math
+
 # Native imports
 import random
 
@@ -14,16 +14,18 @@ class Game:
         self.ready = False
         self.paused = False  # on commence avec la situation en pause
         self.heure = heure
+        self.accelerationTemporelle = 1
 
 
 class Packet:
-    def __init__(self, Id, game=None, dictAvions=None, requests=None, carte=None, perfos=None):
+    def __init__(self, Id, game=None, dictAvions=None, requests=None, carte=None, perfos=None, listeTotale=None):
         self.Id = Id
         self.game = game
         self.dictAvions = dictAvions
         self.requests = requests
         self.map = carte
         self.perfos = perfos
+        self.listeTotale = listeTotale
 
 
 class AvionPacket:
@@ -104,7 +106,7 @@ class AvionPacket:
         self.modeA = str(random.randint(1000, 9999))
 
         if medevac:
-            self.medevac = 'MEDEVAC'  # TODO ajouter le noW
+            self.medevac = 'MEDEVAC'
         else:
             self.medevac = ''
 
@@ -127,7 +129,7 @@ class AvionPacket:
 
         self.headingMode = False
 
-        self.nextPoint = None
+        self.nextPoint: dict = self.route['points'][0]
         self.findNextPoint(gameMap)
 
         if PFL is not None:
@@ -469,6 +471,7 @@ class AvionPacket:
         x1 = self.x
         y1 = self.y
 
+        point = {}
         for point in self.route['points']:
             if point['name'] == self.DCT:
                 break

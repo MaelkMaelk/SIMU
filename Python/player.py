@@ -47,7 +47,7 @@ class Avion:
     global timeConstant
     global plotSize
 
-    def __init__(self, Id: int, papa, zoom: float, scroll: list[float, float]):
+    def __init__(self, Id: int, papa, zoom: float, scroll: list[float]):
         self.Id = Id
         self.papa = papa
         clicks = frozenset([pygame.BUTTON_LEFT, pygame.BUTTON_RIGHT, pygame.BUTTON_MIDDLE])
@@ -474,6 +474,9 @@ class Avion:
 
             elif event.mouse_button == 1 and not pilote:
                 return 'menuATC'
+
+            elif event.mouse_button == 2 and pilote:
+                return 'modifier'
 
             elif event.mouse_button == 3 and (
                     self.etiquette.indicatif.get_object_ids()[1] in ['@etiquetteBold', '@etiquetteBoldBlue']):

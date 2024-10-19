@@ -66,7 +66,7 @@ def scrollListGen(valueList, rect, container, sliderBool=True, sliderDroite=Fals
 
 class nouvelAvionWindow:
 
-    def __init__(self, routes, avions):
+    def __init__(self, routes, avions, avion_tuple=None):
 
         # le dictionnaire utilisé pour renvoyer les valeurs sélectionnées par nos boutons
         self.returnValues = {'indicatif': 'FCACA',
@@ -75,6 +75,8 @@ class nouvelAvionWindow:
                              'conflit': False,
                              'CPDLC': False,
                              'ExRVSM': False}
+        avion = avion_tuple[1]
+        self.avion = avion
 
         # la fenêtre du menu
         self.window = pygame_gui.elements.UIWindow(pygame.Rect((250, 250), (600, 400)))
@@ -166,6 +168,38 @@ class nouvelAvionWindow:
             container=self.window,
             anchors={'top': 'top', 'top_target': self.CPDLC, 'left': 'left',
                      'left_target': self.conflitsBouton})
+
+        if avion is not None:
+
+            self.returnValues = {'indicatif': avion.indicatif,
+                                 'avion': avion.aircraft,
+                                 'arrival': avion.arrival,
+                                 'conflit': False,
+                                 'CPDLC': avion.CPDLC,
+                                 'altitude': avion.altitude,
+                                 'PFL': avion.PFL,
+                                 'ExRVSM': avion.ExRVSM}
+
+            for bouton in self.routeBoutonListe:
+                if bouton.text == avion.route['name']:
+                    bouton.select()
+
+            for bouton in self.typeAvionBoutonListe:
+                if bouton.text == avion.aircraft:
+                    bouton.select()
+
+            if avion.ExRVSM:
+                self.ExRVSM.select()
+
+            if avion.CPDLC:
+                self.CPDLC.select()
+
+            if avion.arrival:
+                self.arrivalBouton.select()
+
+            self.indicatifinput.set_text(avion.indicatif)
+            self.FLinput.set_text(str(round(avion.altitude / 100)))
+            self.PFLinput.set_text(str(avion.PFL))
 
     def checkEvent(self, event):
 

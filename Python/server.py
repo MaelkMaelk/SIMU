@@ -90,7 +90,7 @@ for zone in root.find('zones'):
 
     contour = []  # liste des points délimitant le contour du secteur, dans l'ordre de lecture xml
     nom = zone.attrib['name']
-    active : list[tuple] = [(0, 0)]
+    active: list[tuple] = [(0, 0)]
     for limite in zone.findall('limite'):
         x = int(limite.find('x').text)
         y = int(limite.find('y').text)
@@ -261,6 +261,7 @@ planeId = 0
 simuTree = None
 activiteZone = []
 avionSpawnListe = []
+dictAvionTotal = {}
 try:
     simuTree = ET.parse(dossierXML / simu).getroot()
 
@@ -289,18 +290,20 @@ try:
     for avionXML in avionsXML:
 
         tuple_avion_a_spawn = loadXML.loadAvionXML(avionXML, gameMap, aircraftType, game.heure, planeId)
-        planeId += 1
         avionSpawnListe.append(tuple_avion_a_spawn)
+        dictAvionTotal.update({planeId: tuple_avion_a_spawn})
+        planeId += 1
+
 
 except:
 
     heure = input('Heure de début de simu, format: hhmm')
     heure = int(heure[0:2]) * 3600 + int(heure[2:]) * 60
-    simuTree = ET.Element('simu')
-    game = Game(heure)
-    heureXML = ET.SubElement(simuTree, 'heure')
-    heureXML.text = horloge.heureXML(game.heure)
-    avionsXML = ET.SubElement(simuTree, 'avions')
+
+simuTree = ET.Element('simu')
+game = Game(heure)
+heureXML = ET.SubElement(simuTree, 'heure')
+heureXML.text = horloge.heureXML(game.heure)
 
 
 def threaded_client(conn, caca):
@@ -314,7 +317,7 @@ def threaded_client(conn, caca):
     localPlayerId = playerId
     playerId += 1
     packetId = 0
-    packet = Packet(packetId, game=game, dictAvions=dictAvion, carte=gameMap, perfos=aircraftType)
+    packet = Packet(packetId, game=game, dictAvions=dictAvion, carte=gameMap, perfos=aircraftType, listeTotale=dictAvionTotal)
     conn.send(pickle.dumps(packet))
     reply = ""
     while True:
@@ -327,7 +330,7 @@ def threaded_client(conn, caca):
                 print("Disconnected")
                 break
             else:
-                reply = Packet(packetId, game=game, dictAvions=dictAvion, carte=gameMap)
+                reply = Packet(packetId, game=game, dictAvions=dictAvion, carte=gameMap, listeTotale=dictAvionTotal)
 
             conn.sendall(pickle.dumps(reply))
             nombre = 0
@@ -362,8 +365,8 @@ start_new_thread(threaded_waiting, ())
 start_new_thread(threaded_ping_responder, ())
 temps = time.time()
 STCAtriggered = False
-accelerationTemporelle = 1
 Running = True
+
 while Running:
     inReq = reqQ.get()
     requests.append(inReq)
@@ -380,21 +383,22 @@ while Running:
 
                 reqContent.Id = planeId
                 dictAvion.update({planeId: reqContent})
+                dictAvionTotal.update({planeId: (game.heure, reqContent)})
                 planeId += 1
-
-                if mode_ecriture:
-                    heure = horloge.heureXML(game.heure)
-                    server_def.generateAvionXML(avionsXML, reqContent, heure)
 
             elif reqType == 'DelayedAdd':
 
                 reqContent[1].Id = planeId
                 avionSpawnListe.append((game.heure + reqContent[0], reqContent[1]))
+                dictAvionTotal.update({planeId: (game.heure + reqContent[0], reqContent)})
                 planeId += 1
 
-                if mode_ecriture:
-                    heure = horloge.heureXML(game.heure + reqContent[0])
-                    server_def.generateAvionXML(avionsXML, reqContent[1], heure)
+            elif reqType == 'Modifier':
+                server_def.modifier_spawn_avion(dictAvion[reqId],
+                                                dictAvionTotal[reqId],
+                                                reqContent,
+                                                gameMap,
+                                                aircraftType)
 
             elif reqType == 'Remove':
                 dictAvion.pop(reqId)
@@ -516,13 +520,22 @@ while Running:
                 game.paused = not game.paused
 
             elif reqType == 'Faster':
-                accelerationTemporelle += 0.5
+                if game.accelerationTemporelle < 64:
+                    game.accelerationTemporelle = game.accelerationTemporelle * 2
 
             elif reqType == 'Slower':
-                if accelerationTemporelle > 0.5:
-                    accelerationTemporelle -= 0.5
+                if game.accelerationTemporelle > 0.25:
+                    game.accelerationTemporelle = game.accelerationTemporelle / 2
 
             elif reqType == 'Save' and mode_ecriture:
+
+                avionsXML = ET.SubElement(simuTree, 'avions')
+
+                for avion_tuple_a_XMLer in dictAvionTotal.values():
+
+                    heure = horloge.heureXML(avion_tuple_a_XMLer[0])
+                    server_def.generateAvionXML(avionsXML, avion_tuple_a_XMLer[1], heure)
+
                 xmlstr = server_def.prettyPrint(minidom.parseString(ET.tostring(simuTree)))
                 with open("XML/simu.xml", "w") as f:
                     f.write(xmlstr)
@@ -542,9 +555,9 @@ while Running:
         activiteZone.remove(activite)
 
     if not game.paused:
-        temps = time.time()  # si la game est sur pause alors on avance pas le temps
-    elif time.time() - temps >= radarRefresh/accelerationTemporelle:
-        game.heure += (time.time() - temps) * accelerationTemporelle
+        temps = time.time()  # si la game est sur pause alors, on n'avance pas le temps
+    elif time.time() - temps >= radarRefresh / game.accelerationTemporelle:
+        game.heure += (time.time() - temps) * game.accelerationTemporelle
         temps = time.time()
         suppListe = []
 

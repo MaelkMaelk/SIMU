@@ -4,27 +4,27 @@
 	<avions>
 		<avion heure="100200">
 			<indicatif>FCACA</indicatif>
-			<aircraft>A339</aircraft>
-			<route>ABISA-NEV</route>
+			<aircraft>B738</aircraft>
+			<route>ABISA-RAPID</route>
 			<altitude>30000</altitude>
 			<arrival>False</arrival>
-			<x>1375</x>
-			<y>1644</y>
+			<x>1375.0</x>
+			<y>1644.0</y>
+			<PFL>300</PFL>
+			<CPDLC>False</CPDLC>
+			<ExRVSM>False</ExRVSM>
+		</avion>
+		<avion heure="100200">
+			<indicatif>AFR1563</indicatif>
+			<aircraft>B738</aircraft>
+			<route>GAI-JUVEN</route>
+			<altitude>30000</altitude>
+			<arrival>False</arrival>
+			<x>699.0</x>
+			<y>1341.0</y>
 			<PFL>300</PFL>
 			<CPDLC>True</CPDLC>
 			<ExRVSM>True</ExRVSM>
-		</avion>
-		<avion heure="100200">
-			<indicatif>FCACA</indicatif>
-			<aircraft>B738</aircraft>
-			<route>BIELA-GAI</route>
-			<altitude>30000</altitude>
-			<arrival>False</arrival>
-			<x>2229</x>
-			<y>944</y>
-			<PFL>300</PFL>
-			<CPDLC>True</CPDLC>
-			<ExRVSM>False</ExRVSM>
 		</avion>
 	</avions>
 </simu>

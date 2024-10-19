@@ -105,6 +105,16 @@ def loadAvionXML(avionXML, carte: dict, perfos: dict, heure: float, planeId: int
     else:
         spawnFL = None
 
+    if 'CPDLC' in avionDict:
+        CPDLC = avionDict['CPDLC'] == 'True'
+    else:
+        CPDLC = False
+
+    if 'ExRVSM' in avionDict:
+        ExRVSM = avionDict['ExRVSM'] == 'True'
+    else:
+        ExRVSM = False
+
     avionPack = AvionPacket(
         carte,
         planeId,
@@ -115,8 +125,8 @@ def loadAvionXML(avionXML, carte: dict, perfos: dict, heure: float, planeId: int
         avionDict['arrival'] == 'True',
         heure,
         FL=spawnFL,
-        CPDLC=avionDict['CPDLC'] == 'True',
-        ExRVSM=avionDict['ExRVSM'] == 'True',
+        CPDLC=CPDLC,
+        ExRVSM=ExRVSM,
         x=avionDict['x'],
         y=avionDict['y'])
 

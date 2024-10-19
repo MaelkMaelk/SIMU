@@ -44,6 +44,21 @@ def STCA(avion1, avion2, carte) -> bool:
     return False
 
 
+def modifier_spawn_avion(avion, avion_spawn_tuple: tuple, data: dict, carte: dict, perfos: dict):
+
+    avion_spawn = avion_spawn_tuple[1]
+
+    avion_spawn.altitude = data['altitude']
+    avion_spawn.indicatif = data['indicatif']
+    avion_spawn.aircraft = data['avion']
+    avion_spawn.arrival = data['arrival']
+    avion_spawn.PFL = data['PFL']
+    avion_spawn.CPDLC = data['CPDLC']
+    avion_spawn.ExRVSM = data['ExRVSM']
+
+    return avion_spawn_tuple[0], avion_spawn
+
+
 def generateAvionXML(parentNode, avion, heureXML):
 
     """

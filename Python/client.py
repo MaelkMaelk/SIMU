@@ -81,6 +81,7 @@ def main(server_ip: str):
     game = packet.game
     dictAvionsAff = {}
     dictAvions = packet.dictAvions
+    dict_avion_spawn = packet.listeTotale
 
     # Map
     carte = packet.map
@@ -101,7 +102,7 @@ def main(server_ip: str):
 
     # scroll and zoom
     zoomDef = 0.5
-    scrollDef = [width / 4, height/4]
+    scrollDef: list[float] = [width / 4, height/4]
     zoom = zoomDef
     scroll = scrollDef
     drag = [0, 0]
@@ -148,15 +149,17 @@ def main(server_ip: str):
                 # 2em boucle pour supprimer, car on ne peut pas delete en pleine iteration
                 dictAvionsAff[avionId].kill()
                 dictAvionsAff.pop(avionId)
+
         carte = packet.map
         game = packet.game
         dictAvions = packet.dictAvions
+        if packet.listeTotale is not None:
+            dict_avion_spawn = packet.listeTotale
 
         for sep in sepDict.values():
             sep.calculation(carte)
 
         for event in pygame.event.get():
-
             if event.type == pygame.QUIT:
                 run = False
                 pygame.quit()
@@ -238,8 +241,8 @@ def main(server_ip: str):
                             localRequests.append((len(dictAvions), "DelayedAdd", action))
                         else:
                             localRequests.append((len(dictAvions), "Add", action))
-                            for avion in dictAvionsAff.values():
-                                avion.conflitSelected = False
+                        for avion in dictAvionsAff.values():
+                            avion.conflitSelected = False
                         conflitBool = False
                         conflitGen = None
 
@@ -275,6 +278,9 @@ def main(server_ip: str):
                         elif action == 'menuATC' and menuATC is None:
                             menuATC = interface.menuATC(avion, pygame.mouse.get_pos())
 
+                        elif action == 'modifier':
+                            nouvelAvionWin = interface.nouvelAvionWindow(carte['routes'], perfos, dict_avion_spawn[avion.Id])
+
                         elif menuValeurs is None and action is not None:
                             # si on a renvoyé autre chose alors c'est une valeur pour ouvrir un menu
                             menuValeurs = interface.menuValeurs(avion, pygame.mouse.get_pos(), action, pilote)
@@ -286,7 +292,10 @@ def main(server_ip: str):
                         newPlaneData = nouvelAvionWin.checkEvent(event)
 
                         # on vérifie que newPlane n'est pas None (les valeurs ont été renvoyés)
-                        if newPlaneData:
+                        if newPlaneData is not None and nouvelAvionWin.avion is not None:
+                            localRequests.append((nouvelAvionWin.avion.Id, 'Modifier', newPlaneData))
+
+                        elif newPlaneData:
 
                             # on crée alors un nouvel avion
                             FL = None
@@ -435,12 +444,15 @@ def main(server_ip: str):
                 pressing = True
                 delaiPressage = pygame.time.get_ticks()
             if keys[pygame.K_LEFT]:
+                pressing = True
                 localRequests.append((0, 'Slower'))
                 delaiPressage = pygame.time.get_ticks()
             if keys[pygame.K_RIGHT]:
+                pressing = True
                 localRequests.append((0, 'Faster'))
                 delaiPressage = pygame.time.get_ticks()
             if keys[pygame.K_s]:
+                pressing = True
                 localRequests.append((0, 'Save'))
                 delaiPressage = pygame.time.get_ticks()
 
@@ -542,6 +554,10 @@ def main(server_ip: str):
         if not game.paused:  # oui en fait quand c en pause c False
             img = font.render("gelé", True, (255, 105, 180))
             win.blit(img, (20, 50))
+
+        if game.accelerationTemporelle != 1:
+            img = font.render(str(game.accelerationTemporelle), True, (255, 105, 180))
+            win.blit(img, (20, 70))
 
         # dessin Heure
         heureDisplay = horloge.affichageHeure(game.heure)
