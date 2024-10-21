@@ -62,7 +62,7 @@ def main(server_ip: str):
     flightDataWindow = None
     menuRadar = interface.menuRadar()
     menuRadarTimer = 0
-    save_text_timing = 0
+    save_text_timing = - temps_affichage_text - 1
 
     # screenshots replays
     dernierScreen = pygame.time.get_ticks()
@@ -323,11 +323,8 @@ def main(server_ip: str):
                                 ExRVSM=newPlaneData['ExRVSM'],
                                 PFL=PFL)
 
-                            if newPlaneData['conflit']:
-                                conflitGen = outils_radar.conflictGenerator(win, newPlane, carte)
-                                conflitBool = True
-                            else:
-                                localRequests.append((len(dictAvions), "Add", newPlane))
+                            conflitGen = outils_radar.conflictGenerator(win, newPlane, carte)
+                            conflitBool = True
 
                     if modifWindow is not None:
                         modifData = modifWindow.checkEvent(event)

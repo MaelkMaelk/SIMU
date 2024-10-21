@@ -180,7 +180,7 @@ def distanceMinie(pos1: tuple[float, float], vitesse1: float, heading1: float,
 
     caca = minimize(
         distanceMiniEnFduTemps, x0, args=(pos1, vitesse1, heading1, pos2, vitesse2, heading2),
-        method='Nelder-Mead', tol=1e-4
+        method='Nelder-Mead', tol=1e-2
     )
     return caca.x[0]
 

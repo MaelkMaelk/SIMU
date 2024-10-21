@@ -337,7 +337,7 @@ def threaded_client(conn, caca):
             nombre = 0
 
         except error:
-            print(error)
+            pass
 
     print("Lost connection")
     conn.close()
@@ -536,7 +536,7 @@ while Running:
                 avionSpawnListe = [copy.deepcopy(x) for x in dictAvionTotal.values()]
 
             elif reqType == 'Faster':
-                if game.accelerationTemporelle < 64:
+                if game.accelerationTemporelle < 128:
                     game.accelerationTemporelle = game.accelerationTemporelle * 2
 
             elif reqType == 'Slower':
@@ -587,17 +587,23 @@ while Running:
         for avion in suppListe:
             dictAvion.pop(avion)
 
-        for avion1 in dictAvion.values():
-            STCAtriggered = False
-            for avion2 in dictAvion.values():
-                if avion1 != avion2:
-                    STCAtriggered = server_def.STCA(avion1, avion2, gameMap)
+        listeAvionsCheck = list(dictAvion.values())
+        if acceldefault <= 1:
+            for avion1 in dictAvion.values():
+                STCAtriggered = False
+                listeAvionsCheck.pop(listeAvionsCheck.index(avion1))
+                for avion2 in listeAvionsCheck:
 
-                    if STCAtriggered:
-                        avion1.STCA = True
-                        avion2.STCA = True
-            if not STCAtriggered:
-                avion1.STCA = False
+                    if avion1 == avion2:
+                        pass
+                    elif calculateDistance(avion1.x, avion1.y, avion2.x, avion1.y) * mapScale <= 60:
+                        STCAtriggered = server_def.STCA(avion1, avion2, gameMap)
+
+                        if STCAtriggered:
+                            avion1.STCA = True
+                            avion2.STCA = True
+                if not STCAtriggered:
+                    avion1.STCA = False
 
     requests = []
 

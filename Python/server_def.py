@@ -41,7 +41,7 @@ def STCA(avion1, avion2, carte) -> bool:
             return True
 
         elif abs(avion2.altitude + avion2.evolution / radarRefresh * temps
-                 - (avion1.altitude + avion1.evolution / radarRefresh * temps)) <= 3000:
+                 - (avion1.altitude + avion1.evolution / radarRefresh * temps)) <= 1300:
             return True
     return False
 
