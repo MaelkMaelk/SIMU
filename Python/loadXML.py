@@ -71,7 +71,7 @@ def loadSegmentsXML(listeXML) -> dict:
     return dictSeg
 
 
-def loadAvionXML(avionXML, carte: dict, perfos: dict, heure: float, planeId: int) -> tuple:
+def loadAvionXML(avionXML, carte: dict, perfos: dict, heure: float, planeId: int) -> tuple[float, object]:
 
     """
     Prends une balise XML en entrée et retourne une liste d'avion à faire spawn

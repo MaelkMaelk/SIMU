@@ -66,17 +66,17 @@ def scrollListGen(valueList, rect, container, sliderBool=True, sliderDroite=Fals
 
 class nouvelAvionWindow:
 
-    def __init__(self, routes, avions, avion_tuple=None):
+    def __init__(self, routes, avions):
+
+        nomRoute = list(routes.keys())[0]
 
         # le dictionnaire utilisé pour renvoyer les valeurs sélectionnées par nos boutons
         self.returnValues = {'indicatif': 'FCACA',
                              'avion': 'B738',
                              'arrival': False,
-                             'conflit': False,
                              'CPDLC': False,
-                             'ExRVSM': False}
-        avion = avion_tuple[1]
-        self.avion = avion
+                             'ExRVSM': False,
+                             'route': nomRoute}
 
         # la fenêtre du menu
         self.window = pygame_gui.elements.UIWindow(pygame.Rect((250, 250), (600, 400)))
@@ -134,72 +134,33 @@ class nouvelAvionWindow:
             relative_rect=pygame.Rect((0, 0), (200, 30)), container=self.window,
             anchors={'left': 'left', 'left_target': self.typeAvionContainer, 'top': 'top', 'top_target': self.PFLlabel})
 
-        self.conflitsBouton = pygame_gui.elements.UIButton(
+        self.validerBouton = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 20), (200, 17)),
-            text='Générateur de conflits',
+            text='Ok',
             container=self.window,
-            anchors={'top': 'top', 'top_target': self.typeAvionContainer, 'left': 'left',
+            anchors={'top': 'top', 'top_target': self.routeContainer, 'left': 'left',
                      'left_target': self.routeContainer})
 
         self.arrivalBouton = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((0, 5), (200, 17)),
+            relative_rect=pygame.Rect((0, 20), (200, 17)),
             text='Arrivée?',
             container=self.window,
-            anchors={'top': 'top', 'top_target': self.conflitsBouton, 'left': 'left',
-                     'left_target': self.routeContainer})
-
-        self.validerBouton = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((0, 5), (200, 17)),
-            text='Ok',
-            container=self.window,
-            anchors={'top': 'top', 'top_target': self.arrivalBouton, 'left': 'left',
-                     'left_target': self.routeContainer})
+            anchors={'top': 'top', 'top_target': self.routeContainer, 'left': 'left',
+                     'left_target': self.validerBouton})
 
         self.CPDLC = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((0, 20), (200, 17)),
+            relative_rect=pygame.Rect((0, 5), (200, 17)),
             text='CPDLC',
             container=self.window,
-            anchors={'top': 'top', 'top_target': self.routeContainer, 'left': 'left',
-                     'left_target': self.conflitsBouton})
+            anchors={'top': 'top', 'top_target': self.arrivalBouton, 'left': 'left',
+                     'left_target': self.validerBouton})
 
         self.ExRVSM = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((0, 5), (200, 17)),
             text='ExRVSM',
             container=self.window,
             anchors={'top': 'top', 'top_target': self.CPDLC, 'left': 'left',
-                     'left_target': self.conflitsBouton})
-
-        if avion is not None:
-
-            self.returnValues = {'indicatif': avion.indicatif,
-                                 'avion': avion.aircraft,
-                                 'arrival': avion.arrival,
-                                 'conflit': False,
-                                 'CPDLC': avion.CPDLC,
-                                 'altitude': avion.altitude,
-                                 'PFL': avion.PFL,
-                                 'ExRVSM': avion.ExRVSM}
-
-            for bouton in self.routeBoutonListe:
-                if bouton.text == avion.route['name']:
-                    bouton.select()
-
-            for bouton in self.typeAvionBoutonListe:
-                if bouton.text == avion.aircraft:
-                    bouton.select()
-
-            if avion.ExRVSM:
-                self.ExRVSM.select()
-
-            if avion.CPDLC:
-                self.CPDLC.select()
-
-            if avion.arrival:
-                self.arrivalBouton.select()
-
-            self.indicatifinput.set_text(avion.indicatif)
-            self.FLinput.set_text(str(round(avion.altitude / 100)))
-            self.PFLinput.set_text(str(avion.PFL))
+                     'left_target': self.validerBouton})
 
     def checkEvent(self, event):
 
@@ -226,13 +187,6 @@ class nouvelAvionWindow:
                 self.arrivalBouton.select()
             else:
                 self.arrivalBouton.unselect()
-
-        elif event.ui_element == self.conflitsBouton:
-            self.returnValues['conflit'] = not self.returnValues['conflit']
-            if not self.conflitsBouton.is_selected:
-                self.conflitsBouton.select()
-            else:
-                self.conflitsBouton.unselect()
 
         elif event.ui_element == self.ExRVSM:
             self.returnValues['ExRVSM'] = not self.returnValues['ExRVSM']

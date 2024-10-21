@@ -5,7 +5,7 @@ import pygame
 import pygame_gui
 
 # Import fichiers
-import horloge as horloge
+import Python.horloge as horloge
 
 
 class flightDataWindow:

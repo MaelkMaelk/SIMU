@@ -13,7 +13,8 @@ from Python.paquets_avion import *
 import Python.outils_radar as outils_radar
 import Python.capture as capture
 import Python.carte_defs as carte_defs
-import fdw as fdw
+import Python.fdw as fdw
+import Python.outils_creation as outils_creation
 
 # recherche de tous les serveurs sur le réseau
 address = server_browser.serverBrowser()
@@ -61,6 +62,7 @@ def main(server_ip: str):
     flightDataWindow = None
     menuRadar = interface.menuRadar()
     menuRadarTimer = 0
+    save_text_timing = 0
 
     # screenshots replays
     dernierScreen = pygame.time.get_ticks()
@@ -115,6 +117,9 @@ def main(server_ip: str):
 
     # fenêtre nouvel avion
     nouvelAvionWin = None
+
+    # fenêtre modifs
+    modifWindow = None
 
     # pour qu'on n'ait qu'un seul appui par touche
     pressing = False
@@ -279,7 +284,9 @@ def main(server_ip: str):
                             menuATC = interface.menuATC(avion, pygame.mouse.get_pos())
 
                         elif action == 'modifier':
-                            nouvelAvionWin = interface.nouvelAvionWindow(carte['routes'], perfos, dict_avion_spawn[avion.Id])
+                            modifWindow = outils_creation.menu_modifs_avion(carte['routes'],
+                                                                               perfos,
+                                                                               dict_avion_spawn[avion.Id])
 
                         elif menuValeurs is None and action is not None:
                             # si on a renvoyé autre chose alors c'est une valeur pour ouvrir un menu
@@ -291,11 +298,8 @@ def main(server_ip: str):
                         # si on appuie sur le bouton valider, alors le menu renvoie les valeurs
                         newPlaneData = nouvelAvionWin.checkEvent(event)
 
-                        # on vérifie que newPlane n'est pas None (les valeurs ont été renvoyés)
-                        if newPlaneData is not None and nouvelAvionWin.avion is not None:
-                            localRequests.append((nouvelAvionWin.avion.Id, 'Modifier', newPlaneData))
-
-                        elif newPlaneData:
+                        # on vérifie que newPlane n'est pas None (les valeurs ont été renvoyés
+                        if newPlaneData:
 
                             # on crée alors un nouvel avion
                             FL = None
@@ -325,10 +329,24 @@ def main(server_ip: str):
                             else:
                                 localRequests.append((len(dictAvions), "Add", newPlane))
 
-            elif event.type == pygame_gui.UI_TEXT_ENTRY_CHANGED:
-                nouvelAvionWin.checkFields(event)
+                    if modifWindow is not None:
+                        modifData = modifWindow.checkEvent(event)
 
-            if nouvelAvionWin:
+                        if modifData is not None:
+                            if 'Remove' in modifData:
+                                localRequests.append((modifWindow.avion.Id, 'Remove'))
+                            else:
+                                localRequests.append((modifWindow.avion.Id, 'Modifier', modifData))
+
+            elif event.type == pygame_gui.UI_TEXT_ENTRY_CHANGED:
+
+                if nouvelAvionWin is not None:
+                    nouvelAvionWin.checkFields(event)
+
+                if modifWindow is not None:
+                    modifWindow.checkFields(event)
+
+            if nouvelAvionWin or modifWindow:
                 pass
 
             # zoom géré ici
@@ -415,13 +433,7 @@ def main(server_ip: str):
 
         keys = pygame.key.get_pressed()
 
-        if not pressing and nouvelAvionWin is None:
-
-            if keys[pygame.K_r]:  # reset zoom & scroll
-                zoom = zoomDef
-                scroll = scrollDef
-                pressing = True
-                delaiPressage = pygame.time.get_ticks()
+        if not pressing and nouvelAvionWin is None and modifWindow is None:
 
             if keys[pygame.K_f] and flightDataWindow is None:  # Flight Data Window
                 flightDataWindow = fdw.flightDataWindow()
@@ -453,11 +465,20 @@ def main(server_ip: str):
                 delaiPressage = pygame.time.get_ticks()
             if keys[pygame.K_s]:
                 pressing = True
-                localRequests.append((0, 'Save'))
+                delaiPressage = pygame.time.get_ticks()
+            if keys[pygame.K_r]:
+                pressing = True
                 delaiPressage = pygame.time.get_ticks()
 
-        elif True not in pygame.key.ScancodeWrapper() and pygame.time.get_ticks() - delaiPressage >= dragDelay:
+        elif pygame.time.get_ticks() - delaiPressage >= dragDelay:
             # on vérifie que plus aucune touche n'est pressée et on remet la variable à son état initial
+
+            if keys[pygame.K_s]:
+                localRequests.append((0, 'Save'))
+                save_text_timing = pygame.time.get_ticks()
+
+            if keys[pygame.K_r]:
+                localRequests.append((0, 'Restart'))
             pressing = False
 
         # on se débarrasse des menus inutils
@@ -476,6 +497,10 @@ def main(server_ip: str):
         if nouvelAvionWin is not None:
             if not nouvelAvionWin.checkAlive():
                 nouvelAvionWin = None
+
+        if modifWindow is not None:
+            if not modifWindow.checkAlive():
+                modifWindow = None
 
         if menuRadar.checkActive():
             menuRadar.checkMenuHovered()
@@ -572,6 +597,10 @@ def main(server_ip: str):
                                        (alidadPos[1] - pygame.mouse.get_pos()[1]) ** 2) / zoom * mapScale, 1)
             img = font.render(str(distance), True, (70, 140, 240))
             win.blit(img, (pygame.mouse.get_pos()[0] + 20, pygame.mouse.get_pos()[1]))
+
+        if pygame.time.get_ticks() - temps_affichage_text <= save_text_timing:
+            img = font.render("Sauvegardé", True, (70, 140, 240))
+            win.blit(img, ((width - img.get_width())/2, (height - img.get_height())/2))
 
         # prise des screenshots
         if pygame.time.get_ticks() >= dernierScreen + delaiScreen and replayMode and not pilote:

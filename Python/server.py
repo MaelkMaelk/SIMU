@@ -1,6 +1,7 @@
 
 # Native imports
 import socket
+import copy
 import sys
 import pickle
 from _thread import *
@@ -291,7 +292,7 @@ try:
 
         tuple_avion_a_spawn = loadXML.loadAvionXML(avionXML, gameMap, aircraftType, game.heure, planeId)
         avionSpawnListe.append(tuple_avion_a_spawn)
-        dictAvionTotal.update({planeId: tuple_avion_a_spawn})
+        dictAvionTotal.update({planeId: copy.deepcopy(tuple_avion_a_spawn)})
         planeId += 1
 
 
@@ -299,11 +300,11 @@ except:
 
     heure = input('Heure de début de simu, format: hhmm')
     heure = int(heure[0:2]) * 3600 + int(heure[2:]) * 60
-
-simuTree = ET.Element('simu')
-game = Game(heure)
-heureXML = ET.SubElement(simuTree, 'heure')
-heureXML.text = horloge.heureXML(game.heure)
+    simuTree = ET.Element('simu')
+    game = Game(heure)
+    heureXML = ET.SubElement(simuTree, 'heure')
+    heureXML.text = horloge.heureXML(game.heure)
+    avionsXML = ET.SubElement(simuTree, 'avions')
 
 
 def threaded_client(conn, caca):
@@ -383,24 +384,29 @@ while Running:
 
                 reqContent.Id = planeId
                 dictAvion.update({planeId: reqContent})
-                dictAvionTotal.update({planeId: (game.heure, reqContent)})
+                dictAvionTotal.update({planeId: (game.heure, copy.deepcopy(reqContent))})
                 planeId += 1
 
             elif reqType == 'DelayedAdd':
 
                 reqContent[1].Id = planeId
                 avionSpawnListe.append((game.heure + reqContent[0], reqContent[1]))
-                dictAvionTotal.update({planeId: (game.heure + reqContent[0], reqContent)})
+                dictAvionTotal.update({planeId: (game.heure + reqContent[0], copy.deepcopy(reqContent[1]))})
                 planeId += 1
 
             elif reqType == 'Modifier':
-                server_def.modifier_spawn_avion(dictAvion[reqId],
-                                                dictAvionTotal[reqId],
-                                                reqContent,
-                                                gameMap,
-                                                aircraftType)
+                dictAvionTotal[reqId] = (
+                    dictAvionTotal[reqId][0],
+                    server_def.modifier_spawn_avion(dictAvionTotal[reqId], reqContent, gameMap, aircraftType)
+                )
+                dictAvion.update({reqId: server_def.compute_spawn_changes_impact(game.heure, dictAvionTotal[reqId], gameMap)})
 
-            elif reqType == 'Remove':
+            elif reqType == 'Remove':  # supprime l'avion mais supprime aussi le XML
+                print('qsd')
+                dictAvion.pop(reqId)
+                dictAvionTotal.pop(reqId)
+
+            elif reqType == 'Clear':  # supprime l'avion
                 dictAvion.pop(reqId)
 
             elif reqType == 'FL':
@@ -519,6 +525,16 @@ while Running:
             elif reqType == 'Pause':
                 game.paused = not game.paused
 
+            elif reqType == 'Restart':
+                game.paused = False
+                game.accelerationTemporelle = 1
+                game.heure = simuTree.find('heure').text
+                game.heure = horloge.heureFloat(game.heure)
+
+                planeId = 0
+                dictAvion = {}
+                avionSpawnListe = [copy.deepcopy(x) for x in dictAvionTotal.values()]
+
             elif reqType == 'Faster':
                 if game.accelerationTemporelle < 64:
                     game.accelerationTemporelle = game.accelerationTemporelle * 2
@@ -529,6 +545,7 @@ while Running:
 
             elif reqType == 'Save' and mode_ecriture:
 
+                simuTree.remove(avionsXML)
                 avionsXML = ET.SubElement(simuTree, 'avions')
 
                 for avion_tuple_a_XMLer in dictAvionTotal.values():
