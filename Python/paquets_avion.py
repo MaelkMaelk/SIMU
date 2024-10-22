@@ -2,6 +2,7 @@
 # Native imports
 import random
 
+import horloge
 # Imports fichiers
 from Python.geometry import *
 from Python.valeurs_config import *
@@ -44,7 +45,10 @@ class AvionPacket:
         self.indicatif = indicatif
         self.aircraft = aircraft
         self.arrival = arrival and (route['arrival'] != False)
-        self.route = dict(route)
+        self.route = route.copy()
+        self.route['points'] = list(route['points'])
+        self.x = x
+        self.y = y
 
         ratio = 0.8 / perfos['cruiseMach']
 
@@ -54,8 +58,20 @@ class AvionPacket:
             if type(point) is str:  # si c'est un str alors c'est le nom d'un segment
                 segment = gameMap['segments'][point]  # on va chercher le segment pour modifier ensuite
 
-                if (carte_defs.check_is_segment_active(segment, heure + 200 * ratio, gameMap['zones']) and
-                    carte_defs.check_is_segment_active(segment, heure + 600 + 500 * ratio, gameMap['zones'])):
+                distance = 0
+                if index - 2 >= 0:
+                    for index2 in range(len(
+                            route['points'][:index - 2])):  # on calcule la distance jusqu'au segment
+
+                        distance += calculateDistance(
+                            gameMap['points'][self.route['points'][index2]['name']][0],
+                            gameMap['points'][self.route['points'][index2]['name']][1],
+                            gameMap['points'][self.route['points'][index2 + 1]['name']][0],
+                            gameMap['points'][self.route['points'][index2 + 1]['name']][1]
+                        )
+
+                if (carte_defs.check_is_segment_active(segment, heure + distance/40 * 60 * ratio, gameMap['zones']) and
+                    carte_defs.check_is_segment_active(segment, heure + (distance + 500)/40 * 60 * ratio, gameMap['zones'])):
 
                     # si le segment est actif pendant
 
@@ -70,21 +86,31 @@ class AvionPacket:
                     for i in range(len(segment['points'])):
                         self.route['points'].insert(i + index, segment['points'][i])
 
-        if x is not None:  # si on a défini un point de spawn pendant le setup
-            self.x = x
-            self.y = y
-            
-        else:  # s'il n'y a pas de point de spawn défini, on prend le 1er point de la route
-            self.x = gameMap['points'][route['points'][0]['name']][0]
-            self.y = gameMap['points'][route['points'][0]['name']][1]
+                if segment['EPT'] is not None:
+                    self.route['EPT'] = segment['EPT']
+
+                if segment['XPT'] is not None:
+                    self.route['XPT'] = segment['XPT']
+
+        pointSuppListe = []
+        for index in range(len(self.route['points']) - 1):
+            if self.route['points'][index] == self.route['points'][index + 1]:
+                pointSuppListe.append(index)
+
+        for index in pointSuppListe:
+            self.route['points'].pop(index)
+
+        if x is None:  # s'il n'y a pas de point de spawn défini, on prend le 1er point de la route
+            self.x = gameMap['points'][self.route['points'][0]['name']][0]
+            self.y = gameMap['points'][self.route['points'][0]['name']][1]
 
         self.comete = []
 
         # altis
         if FL is not None:  # si on a défini un FL pendant le setup
             self.altitude = FL * 100  # en pieds
-        elif 'FL' in route['points'][0]:  # si on a une alti de spawn
-            self.altitude = route['points'][0]['FL'] * 100
+        elif 'FL' in self.route['points'][0]:  # si on a une alti de spawn
+            self.altitude = self.route['points'][0]['FL'] * 100
         else:
             self.altitude = altiDefault
 
@@ -117,15 +143,15 @@ class AvionPacket:
         else:
             self.callsignFreq = ''
 
-        if route['type'] == 'DEPART':
-            self.provenance = route['provenance']
+        if self.route['type'] == 'DEPART':
+            self.provenance = self.route['provenance']
         else:
-            self.provenance = random.choice(gameMap['aeroports'][route['provenance']])
+            self.provenance = random.choice(gameMap['aeroports'][self.route['provenance']])
 
         if self.arrival:
-            self.destination = route['arrival']['aeroport']
+            self.destination = self.route['arrival']['aeroport']
         else:
-            self.destination = random.choice(gameMap['aeroports'][route['destination']])
+            self.destination = random.choice(gameMap['aeroports'][self.route['destination']])
 
         self.headingMode = False
 
@@ -143,13 +169,13 @@ class AvionPacket:
 
         # On détermine le prochain secteur et le XFL en fonction du PFL, et si c'est une arrivée
         self.nextSector = None
-        self.defaultXPT = route['XPT']  # le XPT par default
+        self.defaultXPT = self.route['XPT']  # le XPT par default
         self.XPT = self.defaultXPT
-        self.EPT = route['EPT']
+        self.EPT = self.route['EPT']
 
         if self.arrival:  # si c'est une arrivée,
-            self.XFL = route['arrival']['XFL']
-            self.nextSector = route['arrival']['secteur']
+            self.XFL = self.route['arrival']['XFL']
+            self.nextSector = self.route['arrival']['secteur']
 
         else:
             if gameMap['floor'] < self.PFL < gameMap['ceiling']:
@@ -171,7 +197,7 @@ class AvionPacket:
 
         self.CFL = None
 
-        for point in route['points'][route['points'].index(self.nextPoint):]:
+        for point in self.route['points'][self.route['points'].index(self.nextPoint):]:
             if 'EFL' in point:
                 self.CFL = point['EFL']
         if not self.CFL:

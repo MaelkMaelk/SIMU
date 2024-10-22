@@ -322,7 +322,7 @@ def threaded_client(conn, caca):
     reply = ""
     while True:
         try:
-            data = pickle.loads(conn.recv(2048 * 16))
+            data = pickle.loads(conn.recv(2048 * 64))
             if packetId != data.Id:
                 reqQ.put(data.requests)
                 packetId = data.Id

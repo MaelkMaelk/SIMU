@@ -123,7 +123,7 @@ def loadAvionXML(avionXML, carte: dict, perfos: dict, heure: float, planeId: int
         perfos[avionDict['aircraft']],
         spawnRoute,
         avionDict['arrival'] == 'True',
-        heure,
+        heureSpawn,
         FL=spawnFL,
         CPDLC=CPDLC,
         ExRVSM=ExRVSM,

@@ -126,6 +126,9 @@ def main(server_ip: str):
     pressing = False
     delaiPressage = pygame.time.get_ticks()
 
+    # pour qu'on étende qu'une étiquette
+    survol_etiquette = False
+
     # pilote
     pilote = False
 
@@ -175,12 +178,16 @@ def main(server_ip: str):
                 if menuValeurs:  # on regarde ici pour dessiner les directs
                     menuValeurs.checkHovered(event)
 
-                for avion in dictAvionsAff.values():
-                    if avion.checkEtiquetteOnHover():  # renvoies True quand le bouton correspond à cette etiquette
-                        if flightDataWindow:  # si la FDW est déployée
-                            flightDataWindow.linkAvion(avion, carte['points'], game.heure)  # on associe l'avion à la FDW
+                if not survol_etiquette:
+                    for avion in dictAvionsAff.values():
+                        if avion.checkEtiquetteOnHover():  # renvoies True quand le bouton correspond à cette etiquette
+                            avion.extendEtiquette()
 
-                        break  # dès qu'on a trouvé le responsable, on casse
+                            if flightDataWindow:  # si la FDW est déployée
+                                flightDataWindow.linkAvion(avion, carte['points'], game.heure)  # on associe l'avion à la FDW
+
+                            survol_etiquette = True
+                            break  # dès qu'on a trouvé le responsable, on casse
 
             elif event.type == pygame_gui.UI_BUTTON_ON_UNHOVERED:
                 if menuValeurs:
@@ -200,7 +207,7 @@ def main(server_ip: str):
 
             elif event.type == pygame_gui.UI_BUTTON_PRESSED:
                 empecherDragging = False
-                
+
                 if menuRadar.checkActive():
                     action = menuRadar.checkEvent(event)
 
@@ -274,8 +281,8 @@ def main(server_ip: str):
                 else:
                     for avion in dictAvionsAff.values():  # pour chaque avion
 
-                        action = avion.checkEvent(event, pilote, conflitBool)  
-                        
+                        action = avion.checkEvent(event, pilote, conflitBool)
+
                         # on vérifie si l'event est associé avec ses boutons
 
                         if type(action) in [list, tuple]:  # si c'est un tuple alors cela correspond à une requête
@@ -506,6 +513,21 @@ def main(server_ip: str):
         if menuRadar.checkActive():
             menuRadar.checkMenuHovered()
 
+        # Gestion des avions
+        if survol_etiquette:  # on regarde si on doit dés étendre une étiquette ici
+            for avion in dictAvionsAff.values():
+
+                if avion.etiquetteExtended and not avion.drag:
+                    if avion.checkStillHovered():
+                        avion.extendEtiquette()
+                        survol_etiquette = False
+                    break
+
+        for avion in dictAvionsAff.values():
+            avion.change_color()
+            avion.compute_aff_pos(zoom, scroll)
+            avion.etiquette_update()
+
         '''partie affichage'''
 
         # on remplit d'abord avec une couleur
@@ -570,8 +592,18 @@ def main(server_ip: str):
                     color[2] += 70
                 avion.drawEstimatedRoute(carte['points'], conflitGen.temps, color, win, zoom, scroll)
 
+        avionSurvol = None
         for avion in dictAvionsAff.values():
-            avion.draw(win, zoom, scroll, vecteurs, vecteurSetting, carte['points'], game.heure)
+            if avion.etiquetteExtended:
+                avionSurvol = avion
+            else:
+                avion.draw_tools(win, zoom, scroll, vecteurs, vecteurSetting, carte['points'], game.heure)
+
+        if avionSurvol is not None:
+            avionSurvol.draw_tools(win, zoom, scroll, vecteurs, vecteurSetting, carte['points'], game.heure)
+
+        for avion in dictAvionsAff.values():
+            avion.draw_plot_comete(win, zoom, scroll)
 
         # on affiche les boutons
         manager.update(time_delta)
