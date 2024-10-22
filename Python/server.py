@@ -314,7 +314,6 @@ def threaded_client(conn, caca):
     global aircraftType
     global playerId
 
-    nombre = 0
     localPlayerId = playerId
     playerId += 1
     packetId = 0
@@ -334,7 +333,6 @@ def threaded_client(conn, caca):
                 reply = Packet(packetId, game=game, dictAvions=dictAvion, carte=gameMap, listeTotale=dictAvionTotal)
 
             conn.sendall(pickle.dumps(reply))
-            nombre = 0
 
         except error:
             pass
@@ -401,13 +399,13 @@ while Running:
                 )
                 dictAvion.update({reqId: server_def.compute_spawn_changes_impact(game.heure, dictAvionTotal[reqId], gameMap)})
 
+            elif reqType == 'Kill':  # supprime l'avion
+                dictAvion.pop(reqId)
+
             elif reqType == 'Remove':  # supprime l'avion mais supprime aussi le XML
-                print('qsd')
+
                 dictAvion.pop(reqId)
                 dictAvionTotal.pop(reqId)
-
-            elif reqType == 'Clear':  # supprime l'avion
-                dictAvion.pop(reqId)
 
             elif reqType == 'FL':
                 dictAvion[reqId].selectedAlti = reqContent * 100
@@ -574,7 +572,7 @@ while Running:
     if not game.paused:
         temps = time.time()  # si la game est sur pause alors, on n'avance pas le temps
     elif time.time() - temps >= radarRefresh / game.accelerationTemporelle:
-        game.heure += (time.time() - temps) * game.accelerationTemporelle
+        game.heure += radarRefresh
         temps = time.time()
         suppListe = []
 

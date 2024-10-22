@@ -57,8 +57,6 @@ def modifier_spawn_avion(avion_spawn_tuple: tuple, data: dict, carte: dict, perf
     :return:
     """
 
-    avion_spawn = avion_spawn_tuple[1]
-
     a = avion_spawn_tuple[1]
     avion = AvionPacket(carte,
                         a.Id,
@@ -123,7 +121,6 @@ def compute_spawn_changes_impact(heure: float, avion_tuple: tuple, carte: dict):
     """
     Recalcule la position et les paramètres d'un avion depuis son spawn (ne prend pas en compte les clairances
      ultèrieures à celles au spawn)
-    :param perfos: le dict des perfos de tous les avions
     :param carte: la carte du jeu
     :param heure: l'heure de la partie
     :param avion_tuple: le tuple de spawn de l'avion

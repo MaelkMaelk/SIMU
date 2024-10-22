@@ -26,12 +26,13 @@ else:
 
 # fenêtre Pygame, mettre en 1920, 1080 pour plein écran
 pygame.init()
-width = 1000
-height = 1000
-win = pygame.display.set_mode((width, height))
-
-# win = pygame.display.set_mode()
-# width, height = pygame.display.get_surface().get_size()
+if not replayMode:
+    width = 1000
+    height = 1000
+    win = pygame.display.set_mode((width, height))
+else:
+    win = pygame.display.set_mode()
+    width, height = pygame.display.get_surface().get_size()
 
 path = Path(os.getcwd())
 manager = pygame_gui.UIManager((width, height), path / 'ressources' / 'theme.json')
@@ -470,12 +471,15 @@ def main(server_ip: str):
         elif pygame.time.get_ticks() - delaiPressage >= dragDelay:
             # on vérifie que plus aucune touche n'est pressée et on remet la variable à son état initial
 
-            if keys[pygame.K_s]:
-                localRequests.append((0, 'Save'))
-                save_text_timing = pygame.time.get_ticks()
+            if nouvelAvionWin is None and modifWindow is None:
 
-            if keys[pygame.K_r]:
-                localRequests.append((0, 'Restart'))
+                if keys[pygame.K_s]:
+                    localRequests.append((0, 'Save'))
+                    save_text_timing = pygame.time.get_ticks()
+
+                if keys[pygame.K_r]:
+                    localRequests.append((0, 'Restart'))
+
             pressing = False
 
         # on se débarrasse des menus inutils
