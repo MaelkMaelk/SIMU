@@ -201,5 +201,113 @@
 			<CPDLC>False</CPDLC>
 			<ExRVSM>False</ExRVSM>
 		</avion>
+		<avion heure="081530">
+			<indicatif>AFR1423</indicatif>
+			<aircraft>A320</aircraft>
+			<route>ATN-VAREK</route>
+			<altitude>33000</altitude>
+			<arrival>False</arrival>
+			<x>1273.0</x>
+			<y>446.0</y>
+			<PFL>330</PFL>
+			<CPDLC>True</CPDLC>
+			<ExRVSM>False</ExRVSM>
+		</avion>
+		<avion heure="081452">
+			<indicatif>LOT4127</indicatif>
+			<aircraft>A321</aircraft>
+			<route>FRI-GAI</route>
+			<altitude>31000</altitude>
+			<arrival>False</arrival>
+			<x>1788.2573545766686</x>
+			<y>542.9798253857821</y>
+			<PFL>310</PFL>
+			<CPDLC>False</CPDLC>
+			<ExRVSM>False</ExRVSM>
+		</avion>
+		<avion heure="082221">
+			<indicatif>DAH1856</indicatif>
+			<aircraft>B734</aircraft>
+			<route>Depart MTL</route>
+			<altitude>5000</altitude>
+			<arrival>False</arrival>
+			<x>1384.0</x>
+			<y>759.0</y>
+			<PFL>300</PFL>
+			<CPDLC>True</CPDLC>
+			<ExRVSM>False</ExRVSM>
+		</avion>
+		<avion heure="082630">
+			<indicatif>CTM0012</indicatif>
+			<aircraft>B734</aircraft>
+			<route>ATN-VAREK</route>
+			<altitude>29000</altitude>
+			<arrival>False</arrival>
+			<x>1273</x>
+			<y>446</y>
+			<PFL>290</PFL>
+			<CPDLC>False</CPDLC>
+			<ExRVSM>True</ExRVSM>
+		</avion>
+		<avion heure="082626">
+			<indicatif>FGJMJ</indicatif>
+			<aircraft>TBM7</aircraft>
+			<route>LSGG-GAI</route>
+			<altitude>12000</altitude>
+			<arrival>False</arrival>
+			<x>1669</x>
+			<y>610</y>
+			<PFL>270</PFL>
+			<CPDLC>False</CPDLC>
+			<ExRVSM>False</ExRVSM>
+		</avion>
+		<avion heure="082053">
+			<indicatif>ROT2853</indicatif>
+			<aircraft>A320</aircraft>
+			<route>BIELA-GAI</route>
+			<altitude>33000</altitude>
+			<arrival>False</arrival>
+			<x>2229</x>
+			<y>944</y>
+			<PFL>330</PFL>
+			<CPDLC>True</CPDLC>
+			<ExRVSM>False</ExRVSM>
+		</avion>
+		<avion heure="082032">
+			<indicatif>SAA8623</indicatif>
+			<aircraft>B773</aircraft>
+			<route>ABISA-RAPID</route>
+			<altitude>30000</altitude>
+			<arrival>False</arrival>
+			<x>1375.0</x>
+			<y>1603.225287322132</y>
+			<PFL>300</PFL>
+			<CPDLC>True</CPDLC>
+			<ExRVSM>False</ExRVSM>
+		</avion>
+		<avion heure="082200">
+			<indicatif>AFR5577</indicatif>
+			<aircraft>A320</aircraft>
+			<route>MIROS-NEV</route>
+			<altitude>34000</altitude>
+			<arrival>False</arrival>
+			<x>1947</x>
+			<y>1538</y>
+			<PFL>340</PFL>
+			<CPDLC>True</CPDLC>
+			<ExRVSM>False</ExRVSM>
+		</avion>
+		<avion heure="082032">
+			<indicatif>AUA725</indicatif>
+			<aircraft>A320</aircraft>
+			<route>GAI-JUVEN</route>
+			<altitude>36000</altitude>
+			<arrival>False</arrival>
+			<x>734.7521771356628</x>
+			<y>1331.9427817922988</y>
+			<PFL>360</PFL>
+			<CPDLC>False</CPDLC>
+			<ExRVSM>False</ExRVSM>
+		</avion>
 	</avions>
 </simu>

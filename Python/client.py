@@ -139,31 +139,32 @@ def main(server_ip: str):
         time_delta = clock.tick(60) / 1000.0
         clock.tick(60)
 
-        for avionId, avion in packet.dictAvions.items():  # on parcourt le paquet qu'on a reçu du serveur
-
-            if avionId in dictAvionsAff.keys():  # si l'avion est deja dans notre liste locale
-                # on l'update avec la methode update de la classe avion
-                dictAvionsAff[avionId].update(avion)
-            else:  # sinon
-                # on l'ajoute avec methode update de la classe dict
-                dictAvionsAff.update({avionId: Avion(avionId, avion, zoom, scroll)})
-
-        if len(dictAvionsAff) > len(packet.dictAvions):  # si on a plus d'avions locaux qu'on en reçoit
-            toBeRemovedOther = []
-            for avionId in dictAvionsAff.keys():  # on itère sur la boucle locale
-                # si on trouve un avion local qui n'est pas dans les données reçues
-                if avionId not in list(packet.dictAvions.keys()):
-                    toBeRemovedOther.append(avionId)
-            for avionId in toBeRemovedOther:
-                # 2em boucle pour supprimer, car on ne peut pas delete en pleine iteration
-                dictAvionsAff[avionId].kill()
-                dictAvionsAff.pop(avionId)
-
-        carte = packet.map
-        game = packet.game
-        dictAvions = packet.dictAvions
         if packet.listeTotale is not None:
             dict_avion_spawn = packet.listeTotale
+        elif packet.dictAvions is not None:
+            for avionId, avion in packet.dictAvions.items():  # on parcourt le paquet qu'on a reçu du serveur
+
+                if avionId in dictAvionsAff.keys():  # si l'avion est deja dans notre liste locale
+                    # on l'update avec la methode update de la classe avion
+                    dictAvionsAff[avionId].update(avion)
+                else:  # sinon
+                    # on l'ajoute avec methode update de la classe dict
+                    dictAvionsAff.update({avionId: Avion(avionId, avion, zoom, scroll)})
+
+            if len(dictAvionsAff) > len(packet.dictAvions):  # si on a plus d'avions locaux qu'on en reçoit
+                toBeRemovedOther = []
+                for avionId in dictAvionsAff.keys():  # on itère sur la boucle locale
+                    # si on trouve un avion local qui n'est pas dans les données reçues
+                    if avionId not in list(packet.dictAvions.keys()):
+                        toBeRemovedOther.append(avionId)
+                for avionId in toBeRemovedOther:
+                    # 2em boucle pour supprimer, car on ne peut pas delete en pleine iteration
+                    dictAvionsAff[avionId].kill()
+                    dictAvionsAff.pop(avionId)
+
+            dictAvions = packet.dictAvions
+
+        game = packet.game
 
         for sep in sepDict.values():
             sep.calculation(carte)

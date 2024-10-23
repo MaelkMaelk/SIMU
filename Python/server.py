@@ -317,12 +317,14 @@ def threaded_client(conn, caca):
     localPlayerId = playerId
     playerId += 1
     packetId = 0
-    packet = Packet(packetId, game=game, dictAvions=dictAvion, carte=gameMap, perfos=aircraftType, listeTotale=dictAvionTotal)
+    packet = Packet(packetId, game=game, carte=gameMap, perfos=aircraftType)
     conn.send(pickle.dumps(packet))
+    last_total_sendIdLoc = last_total_sendId + 1
     reply = ""
     while True:
+
         try:
-            data = pickle.loads(conn.recv(2048 * 64))
+            data = pickle.loads(conn.recv(2048 * 32))
             if packetId != data.Id:
                 reqQ.put(data.requests)
                 packetId = data.Id
@@ -330,7 +332,13 @@ def threaded_client(conn, caca):
                 print("Disconnected")
                 break
             else:
-                reply = Packet(packetId, game=game, dictAvions=dictAvion, carte=gameMap, listeTotale=dictAvionTotal)
+                if last_total_sendIdLoc == last_total_sendId:
+                    reply = Packet(packetId, game=game, dictAvions=dictAvion)
+                else:
+                    print("sqd")
+
+                    reply = Packet(packetId, game=game, listeTotale=dictAvionTotal)
+                    last_total_sendIdLoc = last_total_sendId
 
             conn.sendall(pickle.dumps(reply))
 
@@ -365,6 +373,7 @@ start_new_thread(threaded_ping_responder, ())
 temps = time.time()
 STCAtriggered = False
 Running = True
+last_total_sendId = 0
 
 while Running:
     inReq = reqQ.get()
@@ -398,6 +407,7 @@ while Running:
                     server_def.modifier_spawn_avion(dictAvionTotal[reqId], reqContent, gameMap, aircraftType)
                 )
                 dictAvion.update({reqId: server_def.compute_spawn_changes_impact(game.heure, dictAvionTotal[reqId], gameMap)})
+                last_total_sendId = (last_total_sendId + 1) % 100
 
             elif reqType == 'Kill':  # supprime l'avion
                 dictAvion.pop(reqId)
@@ -406,6 +416,7 @@ while Running:
 
                 dictAvion.pop(reqId)
                 dictAvionTotal.pop(reqId)
+                last_total_sendId = (last_total_sendId + 1) % 100
 
             elif reqType == 'FL':
                 dictAvion[reqId].selectedAlti = reqContent * 100
