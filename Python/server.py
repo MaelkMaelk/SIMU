@@ -391,6 +391,7 @@ while Running:
                 dictAvion.update({planeId: reqContent})
                 dictAvionTotal.update({planeId: (game.heure, copy.deepcopy(reqContent))})
                 planeId += 1
+                last_total_sendId = (last_total_sendId + 1) % 100
 
             elif reqType == 'DelayedAdd':
 
@@ -398,6 +399,7 @@ while Running:
                 avionSpawnListe.append((game.heure + reqContent[0], reqContent[1]))
                 dictAvionTotal.update({planeId: (game.heure + reqContent[0], copy.deepcopy(reqContent[1]))})
                 planeId += 1
+                last_total_sendId = (last_total_sendId + 1) % 100
 
             elif reqType == 'Modifier':
                 dictAvionTotal[reqId] = (
