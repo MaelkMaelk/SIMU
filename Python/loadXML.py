@@ -71,7 +71,7 @@ def loadSegmentsXML(listeXML) -> dict:
     return dictSeg
 
 
-def loadAvionXML(avionXML, carte: dict, perfos: dict, heure: float, planeId: int) -> tuple:
+def loadAvionXML(avionXML, carte: dict, perfos: dict, heure: float, planeId: int) -> tuple[float, object]:
 
     """
     Prends une balise XML en entrée et retourne une liste d'avion à faire spawn
@@ -105,6 +105,16 @@ def loadAvionXML(avionXML, carte: dict, perfos: dict, heure: float, planeId: int
     else:
         spawnFL = None
 
+    if 'CPDLC' in avionDict:
+        CPDLC = avionDict['CPDLC'] == 'True'
+    else:
+        CPDLC = False
+
+    if 'ExRVSM' in avionDict:
+        ExRVSM = avionDict['ExRVSM'] == 'True'
+    else:
+        ExRVSM = False
+
     avionPack = AvionPacket(
         carte,
         planeId,
@@ -113,9 +123,10 @@ def loadAvionXML(avionXML, carte: dict, perfos: dict, heure: float, planeId: int
         perfos[avionDict['aircraft']],
         spawnRoute,
         avionDict['arrival'] == 'True',
-        heure,
+        heureSpawn,
         FL=spawnFL,
-        CPDLC=avionDict['CPDLC'] == 'True',
+        CPDLC=CPDLC,
+        ExRVSM=ExRVSM,
         x=avionDict['x'],
         y=avionDict['y'])
 

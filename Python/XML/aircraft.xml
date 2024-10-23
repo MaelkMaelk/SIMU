@@ -212,6 +212,25 @@
             <descentROD>2500</descentROD>
         </aircraft>
 
+        <aircraft name="B744">
+            <cruiseMach>0.85</cruiseMach>
+            <climbMach>0.75</climbMach>
+            <descentMach>0.85</descentMach>
+
+            <climbIAS>300</climbIAS>
+            <initialClimbIAS>300</initialClimbIAS>
+
+            <descentIAS>300</descentIAS>
+
+            <cruiseROC>1500</cruiseROC>
+            <cruiseROD>1000</cruiseROD>
+
+            <climbROC>1500</climbROC>
+            <initialClimbROC>2000</initialClimbROC>
+
+            <descentROD>2500</descentROD>
+        </aircraft>
+
         <aircraft name="TBM7">
             <cruiseMach>0.46</cruiseMach>
             <climbMach>0.46</climbMach>
@@ -229,6 +248,44 @@
             <initialClimbROC>1000</initialClimbROC>
 
             <descentROD>1500</descentROD>
+        </aircraft>
+
+        <aircraft name="BE20">
+            <cruiseMach>0.48</cruiseMach>
+            <climbMach>0.48</climbMach>
+            <descentMach>0.48</descentMach>
+
+            <climbIAS>230</climbIAS>
+            <initialClimbIAS>230</initialClimbIAS>
+
+            <descentIAS>250</descentIAS>
+
+            <cruiseROC>1000</cruiseROC>
+            <cruiseROD>1500</cruiseROD>
+
+            <climbROC>1000</climbROC>
+            <initialClimbROC>1000</initialClimbROC>
+
+            <descentROD>1500</descentROD>
+        </aircraft>
+
+        <aircraft name="FA50">
+            <cruiseMach>0.82</cruiseMach>
+            <climbMach>0.72</climbMach>
+            <descentMach>0.80</descentMach>
+
+            <climbIAS>290</climbIAS>
+            <initialClimbIAS>290</initialClimbIAS>
+
+            <descentIAS>290</descentIAS>
+
+            <cruiseROC>1000</cruiseROC>
+            <cruiseROD>1500</cruiseROD>
+
+            <climbROC>1600</climbROC>
+            <initialClimbROC>2200</initialClimbROC>
+
+            <descentROD>3000</descentROD>
         </aircraft>
 
     </aircrafts>

@@ -29,9 +29,9 @@ def calculateDistance(x1: int | float, y1: int | float, x2: int | float, y2: int
     return math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
 
 
-def calculateShortestPoint(pointDroite1: list[float, float] | tuple[float, float],
-                           pointDroite2: list[float, float] | tuple[float, float],
-                           point: list[float, float] | tuple[float, float],
+def calculateShortestPoint(pointDroite1: list[float] | tuple[float, float],
+                           pointDroite2: list[float] | tuple[float, float],
+                           point: list[float] | tuple[float, float],
                            segment=False
                            ):
     """
@@ -180,7 +180,7 @@ def distanceMinie(pos1: tuple[float, float], vitesse1: float, heading1: float,
 
     caca = minimize(
         distanceMiniEnFduTemps, x0, args=(pos1, vitesse1, heading1, pos2, vitesse2, heading2),
-        method='Nelder-Mead', tol=1e-4
+        method='Nelder-Mead', tol=1e-2
     )
     return caca.x[0]
 

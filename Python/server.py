@@ -1,6 +1,7 @@
 
 # Native imports
 import socket
+import copy
 import sys
 import pickle
 from _thread import *
@@ -90,7 +91,7 @@ for zone in root.find('zones'):
 
     contour = []  # liste des points délimitant le contour du secteur, dans l'ordre de lecture xml
     nom = zone.attrib['name']
-    active : list[tuple] = [(0, 0)]
+    active: list[tuple] = [(0, 0)]
     for limite in zone.findall('limite'):
         x = int(limite.find('x').text)
         y = int(limite.find('y').text)
@@ -261,6 +262,7 @@ planeId = 0
 simuTree = None
 activiteZone = []
 avionSpawnListe = []
+dictAvionTotal = {}
 try:
     simuTree = ET.parse(dossierXML / simu).getroot()
 
@@ -289,8 +291,10 @@ try:
     for avionXML in avionsXML:
 
         tuple_avion_a_spawn = loadXML.loadAvionXML(avionXML, gameMap, aircraftType, game.heure, planeId)
-        planeId += 1
         avionSpawnListe.append(tuple_avion_a_spawn)
+        dictAvionTotal.update({planeId: copy.deepcopy(tuple_avion_a_spawn)})
+        planeId += 1
+
 
 except:
 
@@ -310,16 +314,17 @@ def threaded_client(conn, caca):
     global aircraftType
     global playerId
 
-    nombre = 0
     localPlayerId = playerId
     playerId += 1
     packetId = 0
-    packet = Packet(packetId, game=game, dictAvions=dictAvion, carte=gameMap, perfos=aircraftType)
+    packet = Packet(packetId, game=game, carte=gameMap, perfos=aircraftType)
     conn.send(pickle.dumps(packet))
+    last_total_sendIdLoc = last_total_sendId + 1
     reply = ""
     while True:
+
         try:
-            data = pickle.loads(conn.recv(2048 * 16))
+            data = pickle.loads(conn.recv(2048 * 32))
             if packetId != data.Id:
                 reqQ.put(data.requests)
                 packetId = data.Id
@@ -327,13 +332,16 @@ def threaded_client(conn, caca):
                 print("Disconnected")
                 break
             else:
-                reply = Packet(packetId, game=game, dictAvions=dictAvion, carte=gameMap)
+                if last_total_sendIdLoc == last_total_sendId:
+                    reply = Packet(packetId, game=game, dictAvions=dictAvion)
+                else:
+                    reply = Packet(packetId, game=game, listeTotale=dictAvionTotal)
+                    last_total_sendIdLoc = last_total_sendId
 
             conn.sendall(pickle.dumps(reply))
-            nombre = 0
 
         except error:
-            print(error)
+            pass
 
     print("Lost connection")
     conn.close()
@@ -362,8 +370,9 @@ start_new_thread(threaded_waiting, ())
 start_new_thread(threaded_ping_responder, ())
 temps = time.time()
 STCAtriggered = False
-accelerationTemporelle = 1
 Running = True
+last_total_sendId = 0
+
 while Running:
     inReq = reqQ.get()
     requests.append(inReq)
@@ -380,24 +389,34 @@ while Running:
 
                 reqContent.Id = planeId
                 dictAvion.update({planeId: reqContent})
+                dictAvionTotal.update({planeId: (game.heure, copy.deepcopy(reqContent))})
                 planeId += 1
-
-                if mode_ecriture:
-                    heure = horloge.heureXML(game.heure)
-                    server_def.generateAvionXML(avionsXML, reqContent, heure)
+                last_total_sendId = (last_total_sendId + 1) % 100
 
             elif reqType == 'DelayedAdd':
 
                 reqContent[1].Id = planeId
                 avionSpawnListe.append((game.heure + reqContent[0], reqContent[1]))
+                dictAvionTotal.update({planeId: (game.heure + reqContent[0], copy.deepcopy(reqContent[1]))})
                 planeId += 1
+                last_total_sendId = (last_total_sendId + 1) % 100
 
-                if mode_ecriture:
-                    heure = horloge.heureXML(game.heure + reqContent[0])
-                    server_def.generateAvionXML(avionsXML, reqContent[1], heure)
+            elif reqType == 'Modifier':
+                dictAvionTotal[reqId] = (
+                    dictAvionTotal[reqId][0],
+                    server_def.modifier_spawn_avion(dictAvionTotal[reqId], reqContent, gameMap, aircraftType)
+                )
+                dictAvion.update({reqId: server_def.compute_spawn_changes_impact(game.heure, dictAvionTotal[reqId], gameMap)})
+                last_total_sendId = (last_total_sendId + 1) % 100
 
-            elif reqType == 'Remove':
+            elif reqType == 'Kill':  # supprime l'avion
                 dictAvion.pop(reqId)
+
+            elif reqType == 'Remove':  # supprime l'avion mais supprime aussi le XML
+
+                dictAvion.pop(reqId)
+                dictAvionTotal.pop(reqId)
+                last_total_sendId = (last_total_sendId + 1) % 100
 
             elif reqType == 'FL':
                 dictAvion[reqId].selectedAlti = reqContent * 100
@@ -480,6 +499,9 @@ while Running:
             elif reqType == 'Warning':
                 dictAvion[reqId].warning = not dictAvion[reqId].warning
 
+            elif reqType == 'Halo':
+                dictAvion[reqId].halo = not dictAvion[reqId].halo
+
             elif reqType == 'Integre':
                 dictAvion[reqId].integreOrganique = True
 
@@ -512,14 +534,34 @@ while Running:
             elif reqType == 'Pause':
                 game.paused = not game.paused
 
+            elif reqType == 'Restart':
+                game.paused = False
+                game.accelerationTemporelle = 1
+                game.heure = simuTree.find('heure').text
+                game.heure = horloge.heureFloat(game.heure)
+
+                dictAvion = {}
+                avionSpawnListe = [copy.deepcopy(x) for x in dictAvionTotal.values()]
+                planeId = len(avionSpawnListe)
+
             elif reqType == 'Faster':
-                accelerationTemporelle += 0.5
+                if game.accelerationTemporelle < 128:
+                    game.accelerationTemporelle = game.accelerationTemporelle * 2
 
             elif reqType == 'Slower':
-                if accelerationTemporelle > 0.5:
-                    accelerationTemporelle -= 0.5
+                if game.accelerationTemporelle > 0.25:
+                    game.accelerationTemporelle = game.accelerationTemporelle / 2
 
             elif reqType == 'Save' and mode_ecriture:
+
+                simuTree.remove(avionsXML)
+                avionsXML = ET.SubElement(simuTree, 'avions')
+
+                for avion_tuple_a_XMLer in dictAvionTotal.values():
+
+                    heure = horloge.heureXML(avion_tuple_a_XMLer[0])
+                    server_def.generateAvionXML(avionsXML, avion_tuple_a_XMLer[1], heure)
+
                 xmlstr = server_def.prettyPrint(minidom.parseString(ET.tostring(simuTree)))
                 with open("XML/simu.xml", "w") as f:
                     f.write(xmlstr)
@@ -539,9 +581,9 @@ while Running:
         activiteZone.remove(activite)
 
     if not game.paused:
-        temps = time.time()  # si la game est sur pause alors on avance pas le temps
-    elif time.time() - temps >= radarRefresh/accelerationTemporelle:
-        game.heure += (time.time() - temps) * accelerationTemporelle
+        temps = time.time()  # si la game est sur pause alors, on n'avance pas le temps
+    elif time.time() - temps >= radarRefresh / game.accelerationTemporelle:
+        game.heure += radarRefresh
         temps = time.time()
         suppListe = []
 
@@ -554,17 +596,23 @@ while Running:
         for avion in suppListe:
             dictAvion.pop(avion)
 
-        for avion1 in dictAvion.values():
-            STCAtriggered = False
-            for avion2 in dictAvion.values():
-                if avion1 != avion2:
-                    STCAtriggered = server_def.STCA(avion1, avion2, gameMap)
+        listeAvionsCheck = list(dictAvion.values())
+        if acceldefault <= 1:
+            for avion1 in dictAvion.values():
+                STCAtriggered = False
+                listeAvionsCheck.pop(listeAvionsCheck.index(avion1))
+                for avion2 in listeAvionsCheck:
 
-                    if STCAtriggered:
-                        avion1.STCA = True
-                        avion2.STCA = True
-            if not STCAtriggered:
-                avion1.STCA = False
+                    if avion1 == avion2:
+                        pass
+                    elif calculateDistance(avion1.x, avion1.y, avion2.x, avion1.y) * mapScale <= 60:
+                        STCAtriggered = server_def.STCA(avion1, avion2, gameMap)
+
+                        if STCAtriggered:
+                            avion1.STCA = True
+                            avion2.STCA = True
+                if not STCAtriggered:
+                    avion1.STCA = False
 
     requests = []
 

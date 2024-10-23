@@ -13,6 +13,8 @@ from Python.paquets_avion import *
 import Python.outils_radar as outils_radar
 import Python.capture as capture
 import Python.carte_defs as carte_defs
+import Python.fdw as fdw
+import Python.outils_creation as outils_creation
 
 # recherche de tous les serveurs sur le réseau
 address = server_browser.serverBrowser()
@@ -24,12 +26,13 @@ else:
 
 # fenêtre Pygame, mettre en 1920, 1080 pour plein écran
 pygame.init()
-width = 1000
-height = 1000
-win = pygame.display.set_mode((width, height))
-
-# win = pygame.display.set_mode()
-# width, height = pygame.display.get_surface().get_size()
+if not replayMode:
+    width = 1000
+    height = 1000
+    win = pygame.display.set_mode((width, height))
+else:
+    win = pygame.display.set_mode()
+    width, height = pygame.display.get_surface().get_size()
 
 path = Path(os.getcwd())
 manager = pygame_gui.UIManager((width, height), path / 'ressources' / 'theme.json')
@@ -60,6 +63,7 @@ def main(server_ip: str):
     flightDataWindow = None
     menuRadar = interface.menuRadar()
     menuRadarTimer = 0
+    save_text_timing = - temps_affichage_text - 1
 
     # screenshots replays
     dernierScreen = pygame.time.get_ticks()
@@ -80,6 +84,7 @@ def main(server_ip: str):
     game = packet.game
     dictAvionsAff = {}
     dictAvions = packet.dictAvions
+    dict_avion_spawn = packet.listeTotale
 
     # Map
     carte = packet.map
@@ -100,7 +105,7 @@ def main(server_ip: str):
 
     # scroll and zoom
     zoomDef = 0.5
-    scrollDef = [width / 4, height/4]
+    scrollDef: list[float] = [width / 4, height/4]
     zoom = zoomDef
     scroll = scrollDef
     drag = [0, 0]
@@ -114,9 +119,15 @@ def main(server_ip: str):
     # fenêtre nouvel avion
     nouvelAvionWin = None
 
+    # fenêtre modifs
+    modifWindow = None
+
     # pour qu'on n'ait qu'un seul appui par touche
     pressing = False
     delaiPressage = pygame.time.get_ticks()
+
+    # pour qu'on étende qu'une étiquette
+    survol_etiquette = False
 
     # pilote
     pilote = False
@@ -128,34 +139,37 @@ def main(server_ip: str):
         time_delta = clock.tick(60) / 1000.0
         clock.tick(60)
 
-        for avionId, avion in packet.dictAvions.items():  # on parcourt le paquet qu'on a reçu du serveur
+        if packet.listeTotale is not None:
+            dict_avion_spawn = packet.listeTotale
+        elif packet.dictAvions is not None:
+            for avionId, avion in packet.dictAvions.items():  # on parcourt le paquet qu'on a reçu du serveur
 
-            if avionId in dictAvionsAff.keys():  # si l'avion est deja dans notre liste locale
-                # on l'update avec la methode update de la classe avion
-                dictAvionsAff[avionId].update(avion)
-            else:  # sinon
-                # on l'ajoute avec methode update de la classe dict
-                dictAvionsAff.update({avionId: Avion(avionId, avion, zoom, scroll)})
+                if avionId in dictAvionsAff.keys():  # si l'avion est deja dans notre liste locale
+                    # on l'update avec la methode update de la classe avion
+                    dictAvionsAff[avionId].update(avion)
+                else:  # sinon
+                    # on l'ajoute avec methode update de la classe dict
+                    dictAvionsAff.update({avionId: Avion(avionId, avion, zoom, scroll)})
 
-        if len(dictAvionsAff) > len(packet.dictAvions):  # si on a plus d'avions locaux qu'on en reçoit
-            toBeRemovedOther = []
-            for avionId in dictAvionsAff.keys():  # on itère sur la boucle locale
-                # si on trouve un avion local qui n'est pas dans les données reçues
-                if avionId not in list(packet.dictAvions.keys()):
-                    toBeRemovedOther.append(avionId)
-            for avionId in toBeRemovedOther:
-                # 2em boucle pour supprimer, car on ne peut pas delete en pleine iteration
-                dictAvionsAff[avionId].kill()
-                dictAvionsAff.pop(avionId)
-        carte = packet.map
+            if len(dictAvionsAff) > len(packet.dictAvions):  # si on a plus d'avions locaux qu'on en reçoit
+                toBeRemovedOther = []
+                for avionId in dictAvionsAff.keys():  # on itère sur la boucle locale
+                    # si on trouve un avion local qui n'est pas dans les données reçues
+                    if avionId not in list(packet.dictAvions.keys()):
+                        toBeRemovedOther.append(avionId)
+                for avionId in toBeRemovedOther:
+                    # 2em boucle pour supprimer, car on ne peut pas delete en pleine iteration
+                    dictAvionsAff[avionId].kill()
+                    dictAvionsAff.pop(avionId)
+
+            dictAvions = packet.dictAvions
+
         game = packet.game
-        dictAvions = packet.dictAvions
 
         for sep in sepDict.values():
             sep.calculation(carte)
 
         for event in pygame.event.get():
-
             if event.type == pygame.QUIT:
                 run = False
                 pygame.quit()
@@ -165,12 +179,16 @@ def main(server_ip: str):
                 if menuValeurs:  # on regarde ici pour dessiner les directs
                     menuValeurs.checkHovered(event)
 
-                for avion in dictAvionsAff.values():
-                    if avion.checkEtiquetteOnHover():  # renvoies True quand le bouton correspond à cette etiquette
-                        if flightDataWindow:  # si la FDW est déployée
-                            flightDataWindow.linkAvion(avion, carte['points'], game.heure)  # on associe l'avion à la FDW
+                if not survol_etiquette:
+                    for avion in dictAvionsAff.values():
+                        if avion.checkEtiquetteOnHover():  # renvoies True quand le bouton correspond à cette etiquette
+                            avion.extendEtiquette()
 
-                        break  # dès qu'on a trouvé le responsable, on casse
+                            if flightDataWindow:  # si la FDW est déployée
+                                flightDataWindow.linkAvion(avion, carte['points'], game.heure)  # on associe l'avion à la FDW
+
+                            survol_etiquette = True
+                            break  # dès qu'on a trouvé le responsable, on casse
 
             elif event.type == pygame_gui.UI_BUTTON_ON_UNHOVERED:
                 if menuValeurs:
@@ -190,7 +208,7 @@ def main(server_ip: str):
 
             elif event.type == pygame_gui.UI_BUTTON_PRESSED:
                 empecherDragging = False
-                
+
                 if menuRadar.checkActive():
                     action = menuRadar.checkEvent(event)
 
@@ -237,8 +255,8 @@ def main(server_ip: str):
                             localRequests.append((len(dictAvions), "DelayedAdd", action))
                         else:
                             localRequests.append((len(dictAvions), "Add", action))
-                            for avion in dictAvionsAff.values():
-                                avion.conflitSelected = False
+                        for avion in dictAvionsAff.values():
+                            avion.conflitSelected = False
                         conflitBool = False
                         conflitGen = None
 
@@ -264,8 +282,8 @@ def main(server_ip: str):
                 else:
                     for avion in dictAvionsAff.values():  # pour chaque avion
 
-                        action = avion.checkEvent(event, pilote, conflitBool)  
-                        
+                        action = avion.checkEvent(event, pilote, conflitBool)
+
                         # on vérifie si l'event est associé avec ses boutons
 
                         if type(action) in [list, tuple]:  # si c'est un tuple alors cela correspond à une requête
@@ -273,6 +291,11 @@ def main(server_ip: str):
 
                         elif action == 'menuATC' and menuATC is None:
                             menuATC = interface.menuATC(avion, pygame.mouse.get_pos())
+
+                        elif action == 'modifier':
+                            modifWindow = outils_creation.menu_modifs_avion(carte['routes'],
+                                                                               perfos,
+                                                                               dict_avion_spawn[avion.Id])
 
                         elif menuValeurs is None and action is not None:
                             # si on a renvoyé autre chose alors c'est une valeur pour ouvrir un menu
@@ -284,7 +307,7 @@ def main(server_ip: str):
                         # si on appuie sur le bouton valider, alors le menu renvoie les valeurs
                         newPlaneData = nouvelAvionWin.checkEvent(event)
 
-                        # on vérifie que newPlane n'est pas None (les valeurs ont été renvoyés)
+                        # on vérifie que newPlane n'est pas None (les valeurs ont été renvoyés
                         if newPlaneData:
 
                             # on crée alors un nouvel avion
@@ -304,19 +327,32 @@ def main(server_ip: str):
                                 carte['routes'][newPlaneData['route']],  # on va chercher la route en entier dans la map
                                 newPlaneData['arrival'],
                                 game.heure,
+                                CPDLC=newPlaneData['CPDLC'],
                                 FL=FL,
+                                ExRVSM=newPlaneData['ExRVSM'],
                                 PFL=PFL)
 
-                            if newPlaneData['conflit']:
-                                conflitGen = outils_radar.conflictGenerator(win, newPlane, carte)
-                                conflitBool = True
+                            conflitGen = outils_radar.conflictGenerator(win, newPlane, carte)
+                            conflitBool = True
+
+                    if modifWindow is not None:
+                        modifData = modifWindow.checkEvent(event)
+
+                        if modifData is not None:
+                            if 'Remove' in modifData:
+                                localRequests.append((modifWindow.avion.Id, 'Remove'))
                             else:
-                                localRequests.append((len(dictAvions), "Add", newPlane))
+                                localRequests.append((modifWindow.avion.Id, 'Modifier', modifData))
 
             elif event.type == pygame_gui.UI_TEXT_ENTRY_CHANGED:
-                nouvelAvionWin.checkFields(event)
 
-            if nouvelAvionWin:
+                if nouvelAvionWin is not None:
+                    nouvelAvionWin.checkFields(event)
+
+                if modifWindow is not None:
+                    modifWindow.checkFields(event)
+
+            if nouvelAvionWin or modifWindow:
                 pass
 
             # zoom géré ici
@@ -403,16 +439,10 @@ def main(server_ip: str):
 
         keys = pygame.key.get_pressed()
 
-        if not pressing and nouvelAvionWin is None:
-
-            if keys[pygame.K_r]:  # reset zoom & scroll
-                zoom = zoomDef
-                scroll = scrollDef
-                pressing = True
-                delaiPressage = pygame.time.get_ticks()
+        if not pressing and nouvelAvionWin is None and modifWindow is None:
 
             if keys[pygame.K_f] and flightDataWindow is None:  # Flight Data Window
-                flightDataWindow = interface.flightDataWindow()
+                flightDataWindow = fdw.flightDataWindow()
                 pressing = True
                 delaiPressage = pygame.time.get_ticks()
 
@@ -432,17 +462,32 @@ def main(server_ip: str):
                 pressing = True
                 delaiPressage = pygame.time.get_ticks()
             if keys[pygame.K_LEFT]:
+                pressing = True
                 localRequests.append((0, 'Slower'))
                 delaiPressage = pygame.time.get_ticks()
             if keys[pygame.K_RIGHT]:
+                pressing = True
                 localRequests.append((0, 'Faster'))
                 delaiPressage = pygame.time.get_ticks()
             if keys[pygame.K_s]:
-                localRequests.append((0, 'Save'))
+                pressing = True
+                delaiPressage = pygame.time.get_ticks()
+            if keys[pygame.K_r]:
+                pressing = True
                 delaiPressage = pygame.time.get_ticks()
 
-        elif True not in pygame.key.ScancodeWrapper() and pygame.time.get_ticks() - delaiPressage >= dragDelay:
+        elif pygame.time.get_ticks() - delaiPressage >= dragDelay:
             # on vérifie que plus aucune touche n'est pressée et on remet la variable à son état initial
+
+            if nouvelAvionWin is None and modifWindow is None:
+
+                if keys[pygame.K_s]:
+                    localRequests.append((0, 'Save'))
+                    save_text_timing = pygame.time.get_ticks()
+
+                if keys[pygame.K_r]:
+                    localRequests.append((0, 'Restart'))
+
             pressing = False
 
         # on se débarrasse des menus inutils
@@ -462,8 +507,27 @@ def main(server_ip: str):
             if not nouvelAvionWin.checkAlive():
                 nouvelAvionWin = None
 
+        if modifWindow is not None:
+            if not modifWindow.checkAlive():
+                modifWindow = None
+
         if menuRadar.checkActive():
             menuRadar.checkMenuHovered()
+
+        # Gestion des avions
+        if survol_etiquette:  # on regarde si on doit dés étendre une étiquette ici
+            for avion in dictAvionsAff.values():
+
+                if avion.etiquetteExtended and not avion.drag:
+                    if avion.checkStillHovered():
+                        avion.extendEtiquette()
+                        survol_etiquette = False
+                    break
+
+        for avion in dictAvionsAff.values():
+            avion.change_color()
+            avion.compute_aff_pos(zoom, scroll)
+            avion.etiquette_update()
 
         '''partie affichage'''
 
@@ -529,8 +593,18 @@ def main(server_ip: str):
                     color[2] += 70
                 avion.drawEstimatedRoute(carte['points'], conflitGen.temps, color, win, zoom, scroll)
 
+        avionSurvol = None
         for avion in dictAvionsAff.values():
-            avion.draw(win, zoom, scroll, vecteurs, vecteurSetting, carte['points'], game.heure)
+            if avion.etiquetteExtended:
+                avionSurvol = avion
+            else:
+                avion.draw_tools(win, zoom, scroll, vecteurs, vecteurSetting, carte['points'], game.heure)
+
+        if avionSurvol is not None:
+            avionSurvol.draw_tools(win, zoom, scroll, vecteurs, vecteurSetting, carte['points'], game.heure)
+
+        for avion in dictAvionsAff.values():
+            avion.draw_plot_comete(win, zoom, scroll)
 
         # on affiche les boutons
         manager.update(time_delta)
@@ -539,6 +613,10 @@ def main(server_ip: str):
         if not game.paused:  # oui en fait quand c en pause c False
             img = font.render("gelé", True, (255, 105, 180))
             win.blit(img, (20, 50))
+
+        if game.accelerationTemporelle != 1:
+            img = font.render(str(game.accelerationTemporelle), True, (255, 105, 180))
+            win.blit(img, (20, 70))
 
         # dessin Heure
         heureDisplay = horloge.affichageHeure(game.heure)
@@ -553,6 +631,10 @@ def main(server_ip: str):
                                        (alidadPos[1] - pygame.mouse.get_pos()[1]) ** 2) / zoom * mapScale, 1)
             img = font.render(str(distance), True, (70, 140, 240))
             win.blit(img, (pygame.mouse.get_pos()[0] + 20, pygame.mouse.get_pos()[1]))
+
+        if pygame.time.get_ticks() - temps_affichage_text <= save_text_timing:
+            img = font.render("Sauvegardé", True, (70, 140, 240))
+            win.blit(img, ((width - img.get_width())/2, (height - img.get_height())/2))
 
         # prise des screenshots
         if pygame.time.get_ticks() >= dernierScreen + delaiScreen and replayMode and not pilote:

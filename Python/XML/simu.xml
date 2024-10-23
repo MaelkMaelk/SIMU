@@ -1,18 +1,313 @@
 <?xml version="1.0" ?>
 <simu>
-	<heure>100200</heure>
+	<heure>080100</heure>
+	<zones>
+		<zone>
+			<nom>TSA14</nom>
+			<debut>0825</debut>
+			<fin>0858</fin>
+		</zone>
+	</zones>
 	<avions>
-		<avion heure="100200">
-			<indicatif>FCACA</indicatif>
-			<aircraft>A20N</aircraft>
+		<avion heure="080100">
+			<indicatif>TAR2455</indicatif>
+			<aircraft>A320</aircraft>
+			<route>ABISA-RAPID</route>
+			<altitude>40000</altitude>
+			<arrival>True</arrival>
+			<x>1374.8270070522315</x>
+			<y>1351.2495796998273</y>
+			<PFL>300</PFL>
+			<CPDLC>True</CPDLC>
+			<ExRVSM>False</ExRVSM>
+		</avion>
+		<avion heure="080100">
+			<indicatif>BAW3218</indicatif>
+			<aircraft>B773</aircraft>
+			<route>ATN-SAMOS</route>
+			<altitude>35000</altitude>
+			<arrival>False</arrival>
+			<x>1553.8263689932357</x>
+			<y>928.7364696054027</y>
+			<PFL>350</PFL>
+			<CPDLC>True</CPDLC>
+			<ExRVSM>False</ExRVSM>
+		</avion>
+		<avion heure="080100">
+			<indicatif>AF336WZ</indicatif>
+			<aircraft>A318</aircraft>
+			<route>ATN-SAMOS</route>
+			<altitude>33000</altitude>
+			<arrival>False</arrival>
+			<x>1483.0603513134693</x>
+			<y>828.1398776619793</y>
+			<PFL>330</PFL>
+			<CPDLC>True</CPDLC>
+			<ExRVSM>False</ExRVSM>
+		</avion>
+		<avion heure="080100">
+			<indicatif>ITY5689</indicatif>
+			<aircraft>A320</aircraft>
+			<route>GAI-JUVEN</route>
+			<altitude>36000</altitude>
+			<arrival>False</arrival>
+			<x>1152.3207997708266</x>
+			<y>1224.3366316392562</y>
+			<PFL>360</PFL>
+			<CPDLC>True</CPDLC>
+			<ExRVSM>False</ExRVSM>
+		</avion>
+		<avion heure="080100">
+			<indicatif>SWR4652</indicatif>
+			<aircraft>A320</aircraft>
+			<route>ABISA-RAPID</route>
+			<altitude>34000</altitude>
+			<arrival>True</arrival>
+			<x>1374.8317043878997</x>
+			<y>1352.3017828895381</y>
+			<PFL>340</PFL>
+			<CPDLC>True</CPDLC>
+			<ExRVSM>False</ExRVSM>
+		</avion>
+		<avion heure="080100">
+			<indicatif>AIB1012</indicatif>
+			<aircraft>A319</aircraft>
+			<route>FRI-GAI</route>
+			<altitude>31000</altitude>
+			<arrival>False</arrival>
+			<x>1584.7131079318394</x>
+			<y>685.4370751014026</y>
+			<PFL>310</PFL>
+			<CPDLC>True</CPDLC>
+			<ExRVSM>False</ExRVSM>
+		</avion>
+		<avion heure="080242">
+			<indicatif>AF301SM</indicatif>
+			<aircraft>A320</aircraft>
+			<route>Depart MEN</route>
+			<altitude>5000</altitude>
+			<arrival>False</arrival>
+			<x>1427.1956461631949</x>
+			<y>777.6188130013771</y>
+			<PFL>300</PFL>
+			<CPDLC>True</CPDLC>
+			<ExRVSM>False</ExRVSM>
+		</avion>
+		<avion heure="080100">
+			<indicatif>FGBER</indicatif>
+			<aircraft>TBM7</aircraft>
+			<route>ATN-VAREK</route>
+			<altitude>27000</altitude>
+			<arrival>False</arrival>
+			<x>1301.3732563757521</x>
+			<y>502.74651275150404</y>
+			<PFL>270</PFL>
+			<CPDLC>False</CPDLC>
+			<ExRVSM>False</ExRVSM>
+		</avion>
+		<avion heure="080335">
+			<indicatif>ITY1425</indicatif>
+			<aircraft>A320</aircraft>
+			<route>GAI-JUVEN</route>
+			<altitude>34000</altitude>
+			<arrival>False</arrival>
+			<x>854.6712027020484</x>
+			<y>1301.5428159723904</y>
+			<PFL>340</PFL>
+			<CPDLC>True</CPDLC>
+			<ExRVSM>False</ExRVSM>
+		</avion>
+		<avion heure="080335">
+			<indicatif>AF702ZM</indicatif>
+			<aircraft>A320</aircraft>
+			<route>MIROS-NEV</route>
+			<altitude>34000</altitude>
+			<arrival>False</arrival>
+			<x>1822.1998922276562</x>
+			<y>1455.5057600035088</y>
+			<PFL>340</PFL>
+			<CPDLC>True</CPDLC>
+			<ExRVSM>False</ExRVSM>
+		</avion>
+		<avion heure="080547">
+			<indicatif>DLH6329</indicatif>
+			<aircraft>A320</aircraft>
+			<route>ABISA-RAPID</route>
+			<altitude>34000</altitude>
+			<arrival>False</arrival>
+			<x>1375.0</x>
+			<y>1644.0</y>
+			<PFL>340</PFL>
+			<CPDLC>True</CPDLC>
+			<ExRVSM>False</ExRVSM>
+		</avion>
+		<avion heure="080335">
+			<indicatif>ITODE</indicatif>
+			<aircraft>B734</aircraft>
+			<route>GAI-JUVEN</route>
+			<altitude>32000</altitude>
+			<arrival>True</arrival>
+			<x>838.3693036789266</x>
+			<y>1305.693109734672</y>
+			<PFL>320</PFL>
+			<CPDLC>False</CPDLC>
+			<ExRVSM>False</ExRVSM>
+		</avion>
+		<avion heure="080343">
+			<indicatif>EJU9012</indicatif>
+			<aircraft>B738</aircraft>
+			<route>FRI-GAI</route>
+			<altitude>33000</altitude>
+			<arrival>False</arrival>
+			<x>1747.5765889754725</x>
+			<y>571.4963877171692</y>
+			<PFL>330</PFL>
+			<CPDLC>False</CPDLC>
+			<ExRVSM>False</ExRVSM>
+		</avion>
+		<avion heure="080343">
+			<indicatif>ITY3123</indicatif>
+			<aircraft>B734</aircraft>
+			<route>Depart LIML</route>
+			<altitude>15000</altitude>
+			<arrival>False</arrival>
+			<x>2065.89260909516</x>
+			<y>987.0084165072464</y>
+			<PFL>300</PFL>
+			<CPDLC>False</CPDLC>
+			<ExRVSM>False</ExRVSM>
+		</avion>
+		<avion heure="081201">
+			<indicatif>RYR6324</indicatif>
+			<aircraft>B738</aircraft>
+			<route>Depart RETNO</route>
+			<altitude>5000</altitude>
+			<arrival>False</arrival>
+			<x>1384.0</x>
+			<y>759.0</y>
+			<PFL>300</PFL>
+			<CPDLC>True</CPDLC>
+			<ExRVSM>False</ExRVSM>
+		</avion>
+		<avion heure="081224">
+			<indicatif>FBUUN</indicatif>
+			<aircraft>TBM7</aircraft>
 			<route>GAI-RAPID</route>
 			<altitude>26000</altitude>
 			<arrival>False</arrival>
-			<clearedSpeed>k290+</clearedSpeed>
+			<x>879.3239349247341</x>
+			<y>1295.2084333873947</y>
+			<PFL>260</PFL>
+			<CPDLC>False</CPDLC>
+			<ExRVSM>False</ExRVSM>
+		</avion>
+		<avion heure="081530">
+			<indicatif>AFR1423</indicatif>
+			<aircraft>A320</aircraft>
+			<route>ATN-VAREK</route>
+			<altitude>33000</altitude>
+			<arrival>False</arrival>
+			<x>1273.0</x>
+			<y>446.0</y>
+			<PFL>330</PFL>
 			<CPDLC>True</CPDLC>
-			<x>699</x>
-			<y>1341</y>
+			<ExRVSM>False</ExRVSM>
+		</avion>
+		<avion heure="081452">
+			<indicatif>LOT4127</indicatif>
+			<aircraft>A321</aircraft>
+			<route>FRI-GAI</route>
+			<altitude>31000</altitude>
+			<arrival>False</arrival>
+			<x>1788.2573545766686</x>
+			<y>542.9798253857821</y>
+			<PFL>310</PFL>
+			<CPDLC>False</CPDLC>
+			<ExRVSM>False</ExRVSM>
+		</avion>
+		<avion heure="082221">
+			<indicatif>DAH1856</indicatif>
+			<aircraft>B734</aircraft>
+			<route>Depart MTL</route>
+			<altitude>5000</altitude>
+			<arrival>False</arrival>
+			<x>1384.0</x>
+			<y>759.0</y>
 			<PFL>300</PFL>
+			<CPDLC>True</CPDLC>
+			<ExRVSM>False</ExRVSM>
+		</avion>
+		<avion heure="082630">
+			<indicatif>CTM0012</indicatif>
+			<aircraft>B734</aircraft>
+			<route>ATN-VAREK</route>
+			<altitude>29000</altitude>
+			<arrival>False</arrival>
+			<x>1273</x>
+			<y>446</y>
+			<PFL>290</PFL>
+			<CPDLC>False</CPDLC>
+			<ExRVSM>True</ExRVSM>
+		</avion>
+		<avion heure="082626">
+			<indicatif>FGJMJ</indicatif>
+			<aircraft>TBM7</aircraft>
+			<route>LSGG-GAI</route>
+			<altitude>12000</altitude>
+			<arrival>False</arrival>
+			<x>1669</x>
+			<y>610</y>
+			<PFL>270</PFL>
+			<CPDLC>False</CPDLC>
+			<ExRVSM>False</ExRVSM>
+		</avion>
+		<avion heure="082053">
+			<indicatif>ROT2853</indicatif>
+			<aircraft>A320</aircraft>
+			<route>BIELA-GAI</route>
+			<altitude>33000</altitude>
+			<arrival>False</arrival>
+			<x>2229</x>
+			<y>944</y>
+			<PFL>330</PFL>
+			<CPDLC>True</CPDLC>
+			<ExRVSM>False</ExRVSM>
+		</avion>
+		<avion heure="082032">
+			<indicatif>SAA8623</indicatif>
+			<aircraft>B773</aircraft>
+			<route>ABISA-RAPID</route>
+			<altitude>30000</altitude>
+			<arrival>False</arrival>
+			<x>1375.0</x>
+			<y>1603.225287322132</y>
+			<PFL>300</PFL>
+			<CPDLC>True</CPDLC>
+			<ExRVSM>False</ExRVSM>
+		</avion>
+		<avion heure="082200">
+			<indicatif>AFR5577</indicatif>
+			<aircraft>A320</aircraft>
+			<route>MIROS-NEV</route>
+			<altitude>34000</altitude>
+			<arrival>False</arrival>
+			<x>1947</x>
+			<y>1538</y>
+			<PFL>340</PFL>
+			<CPDLC>True</CPDLC>
+			<ExRVSM>False</ExRVSM>
+		</avion>
+		<avion heure="082032">
+			<indicatif>AUA725</indicatif>
+			<aircraft>A320</aircraft>
+			<route>GAI-JUVEN</route>
+			<altitude>36000</altitude>
+			<arrival>False</arrival>
+			<x>734.7521771356628</x>
+			<y>1331.9427817922988</y>
+			<PFL>360</PFL>
+			<CPDLC>False</CPDLC>
+			<ExRVSM>False</ExRVSM>
 		</avion>
 	</avions>
 </simu>

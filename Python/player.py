@@ -9,7 +9,7 @@ import pygame_gui
 # Imports fichiers
 from Python.valeurs_config import *
 import Python.geometry as geometry
-import Python.interface as interface
+import Python.etiquettes as etq
 import Python.horloge as horloge
 
 
@@ -47,7 +47,8 @@ class Avion:
     global timeConstant
     global plotSize
 
-    def __init__(self, Id: int, papa, zoom: float, scroll: list[float, float]):
+    def __init__(self, Id: int, papa, zoom: float, scroll: list[float]):
+
         self.Id = Id
         self.papa = papa
         clicks = frozenset([pygame.BUTTON_LEFT, pygame.BUTTON_RIGHT, pygame.BUTTON_MIDDLE])
@@ -66,6 +67,9 @@ class Avion:
         self.locWarning = False
         self.sep = False
         self.couleurSTCA = 'rouge'
+        self.plotColor = (255, 255, 255)
+        self.cometeColor = (255, 255, 255)
+        self.vectorColor = (255, 255, 255)
         self.temps_cligno_stca = 0
         self.sepSetting = {}  # [temps à dessiner, distance minie en nm]
         self.etiquetteExtended = False
@@ -87,9 +91,10 @@ class Avion:
         self.etiquetteOffsetY = offsettEtiquetteDefault
 
         # init de l'étiquette
-        self.etiquette = interface.etiquette(self)
+        self.etiquette = etq.etiquette(self)
         etatFrequenceInit(self)
         self.checkHighlight(papa)
+        self.extendEtiquette()
 
         # interaction avec les events
         self.returnValues = {}
@@ -100,17 +105,15 @@ class Avion:
         self.etiquetteX = self.affX + self.etiquetteOffsetX
         self.etiquetteY = self.affY + self.etiquetteOffsetY
 
-    def drawVector(self, color, window, vecteurSetting, zoom):
+    def drawVector(self, window, vecteurSetting, zoom):
         """
-
-        :param color: quelle couleur pour le vecteur ?
         :param window: quelle surface ? (mettre la surface qu'on utilise pour pygame)
         :param vecteurSetting: int à combien de minutes, on doit les dessiner
         :param zoom: niveau de zoom de la fenêtre
         :return: rien
         """
 
-        pygame.draw.line(window, color, (self.affX + plotSize, self.affY + plotSize), (
+        pygame.draw.line(window, self.vectorColor, (self.affX + plotSize, self.affY + plotSize), (
             self.affX + plotSize + self.papa.speedPx * 60 / radarRefresh * vecteurSetting * zoom * math.cos(
                 self.papa.headingRad),
             self.affY + plotSize + self.papa.speedPx * 60 / radarRefresh * vecteurSetting * zoom * math.sin(
@@ -180,9 +183,7 @@ class Avion:
                 couleur = 'marron'
         self.etiquette.indicatif.change_object_id(pygame_gui.core.ObjectID(gras, couleur))
 
-    def draw(self, win, zoom, scroll, vecteurs, vecteurSetting, points, temps):
-
-        # updates
+    def compute_aff_pos(self, zoom, scroll):
 
         # ces coordonées correspondent au sommet haut gauche du plot avion
         self.affX = self.papa.x * zoom - plotSize + scroll[0]
@@ -190,11 +191,93 @@ class Avion:
 
         self.bouton.set_position((self.affX, self.affY))
 
+    def change_color(self) -> None:
+
+        """
+        Choisis la couleur adaptée pour le dessin de l'avion
+        :return:
+        """
+
+        # couleur comète
+        if self.papa.etatFrequence in ['inFreq', 'nextCoord', 'nextShoot']:
+            self.cometeColor = (255, 255, 255)
+
+        elif self.papa.etatFrequence in ['previousFreq', 'previousShoot']:
+            self.cometeColor = (253, 181, 192)
+
+        else:
+            self.cometeColor = (158, 140, 91)
+
+        # couleur plot et vecteur
+        if self.papa.warning and self.etiquetteExtended:
+            self.vectorColor = (255, 150, 85)
+            self.plotColor = (30, 144, 255)
+
+        elif self.papa.warning:
+            self.vectorColor = (255, 120, 60)
+            self.plotColor = (255, 120, 60)
+
+        elif self.locWarning and self.etiquetteExtended:
+            self.vectorColor = (125, 225, 125)
+            self.plotColor = (30, 144, 255)
+
+        elif self.locWarning:
+            self.vectorColor = (100, 200, 100)
+            self.plotColor = (100, 200, 100)
+
+        elif self.etiquetteExtended:
+            self.plotColor = (30, 144, 255)
+            self.vectorColor = (255, 255, 255)
+
+        else:
+            self.plotColor = self.cometeColor
+            self.vectorColor = (255, 255, 255)
+
+    def draw_tools(self, win, zoom, scroll, vecteurs, vecteurSetting, points, temps):
+
         if self.drawRouteBool:
             self.drawRoute(points, win, zoom, scroll, temps)
 
         if self.pointDessinDirect:
             self.drawDirect(points, self.pointDessinDirect, win, zoom, scroll)
+
+        if self.sep:
+            self.drawSep(win, zoom)
+
+        elif vecteurs or self.papa.warning or self.locWarning:  # si on doit dessiner les vecteurs
+            self.drawVector(win, vecteurSetting, zoom)  # on appelle la fonction
+
+        if self.papa.halo:
+            pygame.draw.circle(win, (0, 206, 209), (self.affX + plotSize, self.affY + plotSize), 10, 1)
+
+    def draw_plot_comete(self, win, zoom, scroll):
+
+        color = self.cometeColor
+        width = 1
+        if self.etiquetteExtended:
+            width = 3
+            color = self.plotColor
+
+        # Dessin
+        if not self.visible:
+            return None
+
+        pygame.draw.circle(win, self.plotColor, (self.affX + plotSize, self.affY + plotSize), plotSize, 1)
+        pygame.draw.circle(win, self.plotColor, (self.affX + plotSize, self.affY + plotSize), plotSize / 1.5, 1)
+
+        radius = 1
+        for plot in self.papa.comete:
+            affPlot = [plot[0] * zoom + scroll[0],
+                       plot[1] * zoom + scroll[1]]
+            pygame.draw.circle(win, self.cometeColor, affPlot, int(round(radius)), 1)
+            radius += 0.3
+
+        point = self.findEtiquetteAnchorPoint()
+        if point is not None:
+            pygame.draw.line(win, color, (self.affX + plotSize, self.affY + plotSize),
+                             (point[0], point[1]), width)
+
+    def etiquette_update(self):
 
         if (self.startPressTime != 0 and self.startPressTime + dragDelay <= pygame.time.get_ticks()
                 and pygame.mouse.get_pressed()[0]):
@@ -204,48 +287,9 @@ class Avion:
             self.startPressTime = 0
 
         self.positionEtiquette()
-        if self.etiquetteExtended:
-            self.checkStillHovered()
-        self.extendEtiquette()
         self.etiquette.update(self)  # on update via la fonction de l'étiquette
-        width = 1
 
         self.drawSTCA()
-
-        # Dessin
-        if not self.visible:
-            return None
-
-        if self.papa.warning:
-            color = (255, 120, 60)
-        elif self.locWarning:
-            color = (100, 200, 100)
-        elif self.etiquetteExtended:
-            color = (30, 144, 255)
-            width = 3
-        else:
-            color = (255, 255, 255)
-
-        pygame.draw.circle(win, color, (self.affX + plotSize, self.affY + plotSize), plotSize, 1)
-        pygame.draw.circle(win, color, (self.affX + plotSize, self.affY + plotSize), plotSize / 1.5, 1)
-
-        if self.sep:
-            self.drawSep(win, zoom)
-
-        elif vecteurs or self.papa.warning or self.locWarning:  # si on doit dessiner les vecteurs
-            self.drawVector(color, win, vecteurSetting, zoom)  # on appelle la fonction
-
-        radius = 1
-        for plot in self.papa.comete:
-            affPlot = [plot[0] * zoom + scroll[0],
-                       plot[1] * zoom + scroll[1]]
-            pygame.draw.circle(win, (255, 255, 255), affPlot, int(round(radius)), 1)
-            radius += 0.3
-
-        point = self.findEtiquetteAnchorPoint()
-        if point is not None:
-            pygame.draw.line(win, color, (self.affX + plotSize, self.affY + plotSize),
-                             (point[0], point[1]), width)
 
     def findEtiquetteAnchorPoint(self) -> tuple[float, float]:
         """
@@ -400,7 +444,7 @@ class Avion:
         else:
             return False
 
-    def checkScrolled(self, event):
+    def checkScrolled(self, event) -> bool:
 
         if self.etiquette.extended:
             if event.y <= 0:
@@ -408,6 +452,8 @@ class Avion:
             else:
                 self.etiquette.downlink = False
             return True
+
+        return False
 
     def checkEvent(self, event, pilote, conflitBool):
 
@@ -472,6 +518,9 @@ class Avion:
             elif event.mouse_button == 1 and not pilote:
                 return 'menuATC'
 
+            elif event.mouse_button == 2 and pilote:
+                return 'modifier'
+
             elif event.mouse_button == 3 and (
                     self.etiquette.indicatif.get_object_ids()[1] in ['@etiquetteBold', '@etiquetteBoldBlue']):
 
@@ -516,7 +565,7 @@ class Avion:
         elif event.ui_element == self.etiquette.rate and event.mouse_button == 1:
             return 'C_Rate'
 
-    def checkEtiquetteOnHover(self):
+    def checkEtiquetteOnHover(self) -> bool:
         """
         Vérifie si on doit ou non étendre l'étiquette
         :return: True si l'event appartient à cette étiquette
@@ -527,7 +576,7 @@ class Avion:
             return True
         return False
 
-    def checkStillHovered(self):
+    def checkStillHovered(self) -> bool:
 
         """
         Vérifie si on doit ou non désétendre l'étiquette
@@ -539,6 +588,9 @@ class Avion:
         if not (rect[0] <= mouse[0] <= rect[0] + rect[2] and rect[1] <= mouse[1] <= rect[1] + rect[3]):
             self.etiquetteExtended = False
             self.etiquette.downlink = False
+            return True
+
+        return False
 
     def extendEtiquette(self, force=False):
         """
@@ -628,7 +680,7 @@ class Avion:
                 bouton.change_object_id(pygame_gui.core.ObjectID('@etiquetteBlue', couleur))
 
             # on montre le bouton, il faut donc calculer sa distance à gauche
-            distance = interface.updateDistanceGauche(liste[boutonTuple[0]][:boutonTuple[1]])
+            distance = etq.updateDistanceGauche(liste[boutonTuple[0]][:boutonTuple[1]])
             bouton.set_relative_position((distance, 0))
             bouton.show()
 
