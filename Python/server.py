@@ -335,8 +335,6 @@ def threaded_client(conn, caca):
                 if last_total_sendIdLoc == last_total_sendId:
                     reply = Packet(packetId, game=game, dictAvions=dictAvion)
                 else:
-                    print("sqd")
-
                     reply = Packet(packetId, game=game, listeTotale=dictAvionTotal)
                     last_total_sendIdLoc = last_total_sendId
 
@@ -540,9 +538,9 @@ while Running:
                 game.heure = simuTree.find('heure').text
                 game.heure = horloge.heureFloat(game.heure)
 
-                planeId = 0
                 dictAvion = {}
                 avionSpawnListe = [copy.deepcopy(x) for x in dictAvionTotal.values()]
+                planeId = len(avionSpawnListe)
 
             elif reqType == 'Faster':
                 if game.accelerationTemporelle < 128:

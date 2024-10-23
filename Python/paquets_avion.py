@@ -2,7 +2,6 @@
 # Native imports
 import random
 
-import horloge
 # Imports fichiers
 from Python.geometry import *
 from Python.valeurs_config import *
