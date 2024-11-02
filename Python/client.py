@@ -517,12 +517,11 @@ def main(server_ip: str):
         # Gestion des avions
         if survol_etiquette:  # on regarde si on doit dés étendre une étiquette ici
             for avion in dictAvionsAff.values():
-
-                if avion.etiquetteExtended and not avion.drag:
+                if avion.etiquetteExtended:
                     if avion.checkStillHovered():
                         avion.extendEtiquette()
                         survol_etiquette = False
-                    break
+                        break
 
         for avion in dictAvionsAff.values():
             avion.change_color()
@@ -591,7 +590,7 @@ def main(server_ip: str):
                 elif color[2] <= 255 - 40:
                     color[1] = 255
                     color[2] += 70
-                avion.drawEstimatedRoute(carte['points'], conflitGen.temps, color, win, zoom, scroll)
+                avion.drawEstimatedRoute(carte, conflitGen.temps, color, win, zoom, scroll)
 
         avionSurvol = None
         for avion in dictAvionsAff.values():

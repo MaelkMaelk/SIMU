@@ -786,20 +786,19 @@ class menuValeurs:
 
         elif self.valeur in ['C_HDG', 'HDG']:
             if event.ui_element in self.listeGauche:
-                self.kill()
-                if self.avion.papa.clearedHeading:
-                    heading = round(self.avion.papa.clearedHeading - int(event.ui_element.text[1:]))
-                else:
-                    heading = round(self.avion.papa.selectedHeading - int(event.ui_element.text[1:]))
-                return self.avion.Id, self.valeur, heading
-
+                valeurTourne = - int(event.ui_element.text[1:])
             elif event.ui_element in self.listeDroite:
-                self.kill()
-                if self.avion.papa.clearedHeading:
-                    heading = round(self.avion.papa.clearedHeading + int(event.ui_element.text[1:]))
-                else:
-                    heading = round(self.avion.papa.selectedHeading + int(event.ui_element.text[1:]))
-                return self.avion.Id, self.valeur, heading
+                valeurTourne = + int(event.ui_element.text[1:])
+            else:
+                return None
+
+            self.kill()
+            if self.avion.papa.clearedHeading and self.valeur == 'C_HDG':
+                heading = round(self.avion.papa.clearedHeading + valeurTourne) % 360
+            else:
+                heading = round(self.avion.papa.selectedHeading + valeurTourne) % 360
+
+            return self.avion.Id, self.valeur, heading
 
     def checkScrolled(self, event):
         """

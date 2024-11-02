@@ -243,6 +243,10 @@ class AvionPacket:
 
         self.speedPx = self.speedGS / gameMap['mapScale'] * heureEnRefresh
 
+        self.directionVent = 0
+        self.forceVent = 0
+        self.findWind(gameMap['vent'])
+
     def findNextPoint(self, carte):
 
         self.nextPoint = findClosestSegment(self.route['points'], (self.x, self.y), carte['points'])[1]
@@ -350,7 +354,33 @@ class AvionPacket:
             else:
                 self.evolution = self.perfos['initialClimbROC']
 
+    def findWind(self, listeVent):
+
+        liste_lvl = list(listeVent.keys())
+        liste_lvl.sort()
+        lowLvL = liste_lvl[0]
+        hiLvL = liste_lvl[-1]
+        for lvl in liste_lvl:
+            if lowLvL <= lvl < self.altitude/100:
+                lowLvL = lvl
+            elif self.altitude/100 < lvl <= hiLvL:
+                hiLvL = lvl
+
+        if self.altitude >= hiLvL:
+            self.directionVent = listeVent[hiLvL][0]
+            self.forceVent = listeVent[hiLvL][1]
+
+        elif self.altitude <= lowLvL:
+            self.directionVent = listeVent[lowLvL][0]
+            self.forceVent = listeVent[lowLvL][1]
+
+        else:
+            self.directionVent = listeVent[lowLvL][0] + listeVent[hiLvL][0] * (hiLvL - self.altitude/100) / (hiLvL - lowLvL)
+            self.forceVent = listeVent[lowLvL][1] + listeVent[hiLvL][1] * (hiLvL - self.altitude/100) / (hiLvL - lowLvL)
+
     def move(self, gameMap):
+
+        self.findWind(gameMap['vent'])
 
         # frequence update
         if self.etatFrequence == 'inFreq':
@@ -438,7 +468,7 @@ class AvionPacket:
             self.speedIAS = vitesses.TAS_to_IAS(self.speedTAS, self.altitude)
 
         self.speedTAS = vitesses.mach_to_TAS(self.mach, self.altitude)
-        self.speedGS = self.speedTAS
+        self.speedGS = self.speedTAS + self.forceVent * math.cos((self.heading - self.directionVent + 180) * math.pi / 180)
 
     def changeSpeed(self) -> None:
         """

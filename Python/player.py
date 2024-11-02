@@ -282,7 +282,9 @@ class Avion:
         if (self.startPressTime != 0 and self.startPressTime + dragDelay <= pygame.time.get_ticks()
                 and pygame.mouse.get_pressed()[0]):
             self.etiquetteDrag()
-            self.drag = True
+            if not self.drag:
+                self.etiquetteExtended = True
+                self.drag = True
         elif not pygame.mouse.get_pressed()[0]:  # si le bouton n'est plus pressé entre temps alors on drag pas
             self.startPressTime = 0
 
@@ -341,11 +343,11 @@ class Avion:
         coord = [points[point][0] * zoom + scroll[0], points[point][1] * zoom + scroll[1]]
         pygame.draw.line(win, (0, 206, 209), (self.affX + plotSize, self.affY + plotSize), coord)
 
-    def drawEstimatedRoute(self, points, temps, color, win, zoom, scroll):
+    def drawEstimatedRoute(self, carte, temps, color, win, zoom, scroll):
         """
         Dessine la route future de l'avion jusuq'à un certain point défini par une valeur de temps
         C'est une bonne approximation de la future position de l'avion, à vitesse constante
-        :param points: la liste des points récupérer les coords
+        :param carte: la carte du jeu
         :param temps: combien de temps doit faire la route dessinée en sec
         :param color: La couleur du tracé
         :param win: l'écran pygame
@@ -353,6 +355,8 @@ class Avion:
         :param scroll: le scroll format [x, y]
         :return:
         """
+
+        points = carte['points']
 
         if not self.conflitSelected:
             return None
@@ -363,16 +367,19 @@ class Avion:
 
         route = route[route.index(nextPoint):]  # on ne considère que la route devant l'avion
         pointUn = [self.papa.x, self.papa.y]  # on commence à dessiner à partir de l'avion
-        distance = temps * self.papa.speedPx / radarRefresh  # on établit la distance de la route avec notre vitesse
 
         for point in route:
             pointDeux = [points[point['name']][0], points[point['name']][1]]
 
             # on calcule la distance de la branche
             legDistance = geometry.calculateDistance(pointUn[0], pointUn[1], pointDeux[0], pointDeux[1])
+            legHeading = geometry.calculateHeading(pointUn[0], pointUn[1], pointDeux[0], pointDeux[1])
+            legSpeed = self.papa.speedTAS + self.papa.forceVent * math.cos((legHeading - self.papa.directionVent + 180) * math.pi / 180)
+            legSpeed = legSpeed * carte['mapScale'] / 60
+            legTemps = legDistance / legSpeed
 
-            if legDistance > distance:  # si le trajet restant est plus petit que la prochaine branche
-                ratio = distance/legDistance  # on regarde le pourcentage de recouvrement
+            if legTemps > temps:  # si le trajet restant est plus petit que la prochaine branche
+                ratio = temps/legTemps  # on regarde le pourcentage de recouvrement
 
                 # on détermine le point final du dessin avec ce ratio
                 pointDeux = [pointUn[0] + (pointDeux[0] - pointUn[0]) * ratio,
@@ -392,7 +399,7 @@ class Avion:
                                  (pointUn[0] * zoom + scroll[0], pointUn[1] * zoom + scroll[1]),
                                  (pointDeux[0] * zoom + scroll[0], pointDeux[1] * zoom + scroll[1]), 2)
 
-            distance -= legDistance  # on enlève la distance de la branche parcourue à la distance à parcourir
+            temps -= legTemps  # on enlève le temps de la branche parcourue à la distance à parcourir
             pointUn = pointDeux  # on passe au prochain point
 
     def drawRoute(self, points: dict, win, zoom: float, scroll: tuple[float, float] | list[float, float], temps: float):
@@ -579,7 +586,7 @@ class Avion:
     def checkStillHovered(self) -> bool:
 
         """
-        Vérifie si on doit ou non désétendre l'étiquette
+        Vérifie si on doit ou non désétendre l'étiquette, si on doit désétendre, renvoie True
         """
 
         mouse = pygame.mouse.get_pos()
