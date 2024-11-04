@@ -635,6 +635,16 @@ def main(server_ip: str):
             img = font.render("Sauvegardé", True, (70, 140, 240))
             win.blit(img, ((width - img.get_width())/2, (height - img.get_height())/2))
 
+        img = font.render("UpperWinds       ", True, (255, 255, 255))
+        x = (width - img.get_width())
+        y = 30
+        win.blit(img, (x, y))
+
+        for niveau, vent in carte['vent'].items():
+            y += img.get_height() + 3
+            img = font.render("FL" + str(round(niveau)) + "    " + str(round(vent[0])) + "/" + str(round(vent[1])) + "KT", True, (255, 255, 255))
+            win.blit(img, ((width - img.get_width()), y))
+
         # prise des screenshots
         if pygame.time.get_ticks() >= dernierScreen + delaiScreen and replayMode and not pilote:
             capture.saveScreenshot(win, dossierScreen / (horloge.heureXML(game.heure) + '.png'))
