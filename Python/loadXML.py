@@ -74,7 +74,7 @@ def loadSegmentsXML(listeXML) -> dict:
 def loadAvionXML(avionXML, carte: dict, perfos: dict, heure: float, planeId: int) -> tuple[float, object]:
 
     """
-    Prends une balise XML en entrée et retourne une liste d'avion à faire spawn
+    Prends une balise XML en entrée et retourne un objet avion à faire spawn
     :param planeId: l'Id de l'avion
     :param heure: l'heure de début de simu
     :param perfos: la liste des perfos avions
@@ -153,4 +153,19 @@ def loadAvionXML(avionXML, carte: dict, perfos: dict, heure: float, planeId: int
             avionPack.selectedIAS = vitesse
 
     return heureSpawn, avionPack
+
+
+def loadWindXML(WindXML):
+
+    windDict = {}
+
+    for baliseNiveau in WindXML:
+
+        niveau = float(baliseNiveau.tag[2:])
+        direction = float(baliseNiveau.text)
+        force = float(baliseNiveau.attrib['kt'])
+
+        windDict.update({niveau: (direction, force)})
+
+    return windDict
 

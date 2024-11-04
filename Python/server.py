@@ -273,6 +273,10 @@ try:
 
     avionsXML = simuTree.find('avions')
 
+    if simuTree.find("vent") is not None:
+        gameMap.update({"vent": loadXML.loadWindXML(simuTree.find("vent"))})
+        print(gameMap['vent'])
+
     if simuTree.find('zones') is not None:
         for zone in simuTree.find('zones'):
             heureDebut = zone.find('debut').text

@@ -8,7 +8,12 @@ from scipy.optimize import minimize
 
 
 def calculateHeading(x: int, y: int, xPoint: int, yPoint: int):
-    if y > yPoint:
+    if x == xPoint:
+        if y > yPoint:
+            heading = 360
+        else:
+            heading = 180
+    elif y > yPoint:
         if x > xPoint:
             heading = (math.atan(abs(y - yPoint) / (abs(x - xPoint)))) * 180 / math.pi
             heading += 270

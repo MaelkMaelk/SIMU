@@ -517,12 +517,11 @@ def main(server_ip: str):
         # Gestion des avions
         if survol_etiquette:  # on regarde si on doit dés étendre une étiquette ici
             for avion in dictAvionsAff.values():
-
-                if avion.etiquetteExtended and not avion.drag:
+                if avion.etiquetteExtended:
                     if avion.checkStillHovered():
                         avion.extendEtiquette()
                         survol_etiquette = False
-                    break
+                        break
 
         for avion in dictAvionsAff.values():
             avion.change_color()
@@ -591,7 +590,7 @@ def main(server_ip: str):
                 elif color[2] <= 255 - 40:
                     color[1] = 255
                     color[2] += 70
-                avion.drawEstimatedRoute(carte['points'], conflitGen.temps, color, win, zoom, scroll)
+                avion.drawEstimatedRoute(carte, conflitGen.temps, color, win, zoom, scroll)
 
         avionSurvol = None
         for avion in dictAvionsAff.values():
@@ -635,6 +634,16 @@ def main(server_ip: str):
         if pygame.time.get_ticks() - temps_affichage_text <= save_text_timing:
             img = font.render("Sauvegardé", True, (70, 140, 240))
             win.blit(img, ((width - img.get_width())/2, (height - img.get_height())/2))
+
+        img = font.render("UpperWinds       ", True, (255, 255, 255))
+        x = (width - img.get_width())
+        y = 30
+        win.blit(img, (x, y))
+
+        for niveau, vent in carte['vent'].items():
+            y += img.get_height() + 3
+            img = font.render("FL" + str(round(niveau)) + "    " + str(round(vent[0])) + "/" + str(round(vent[1])) + "KT", True, (255, 255, 255))
+            win.blit(img, ((width - img.get_width()), y))
 
         # prise des screenshots
         if pygame.time.get_ticks() >= dernierScreen + delaiScreen and replayMode and not pilote:

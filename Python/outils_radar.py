@@ -149,27 +149,39 @@ class conflictGenerator:
 
         points = carte['points']
         route = self.avion.route['points']
-        distance = self.temps * self.avion.speedPx / radarRefresh  # quelle distance va parcourir l'avion en ce temps
-        distance_calcule = 0
+        temps_calcule = 0
+
+        segment = geometry.findClosestSegment(self.avion.route['points'], pos, carte['points'])
+        pos = geometry.calculateShortestPoint(points[segment[0]['name']], points[segment[1]['name']], pos)
+        p = segment[0]
 
         point2 = points[route[0]['name']]
-
-        p = geometry.findClosestSegment(self.avion.route['points'], pos, carte['points'])[0]
 
         for index in range(len(route[:route.index(p)])):
             point1 = points[route[index]['name']]
             point2 = points[route[index + 1]['name']]
-            distance_calcule += geometry.calculateDistance(point1[0], point1[1], point2[0], point2[1])
+            legDistance = geometry.calculateDistance(point1[0], point1[1], point2[0], point2[1])
+            legHeading = geometry.calculateHeading(point1[0], point1[1], point2[0], point2[1])
+            legSpeed = self.avion.speedTAS + self.avion.forceVent * math.cos(
+                (legHeading - self.avion.directionVent + 180) * math.pi / 180)
+            legSpeed = legSpeed * carte['mapScale'] / 60
+            legTemps = legDistance / legSpeed
+            temps_calcule += legTemps
 
-        offroadDistance = geometry.calculateDistance(pos[0], pos[1], point2[0], point2[1])
-        distance_calcule += offroadDistance
+        legDistance = geometry.calculateDistance(pos[0], pos[1], point2[0], point2[1])
+        legHeading = geometry.calculateHeading(point2[0], point2[1], pos[0], pos[1])
+        legSpeed = self.avion.speedTAS + self.avion.forceVent * math.cos(
+            (legHeading - self.avion.directionVent + 180) * math.pi / 180)
+        legSpeed = legSpeed * carte['mapScale'] / 60
+        legTemps = legDistance / legSpeed
+        temps_calcule += legTemps
 
         a = list(range(len(route[:route.index(p) + 1])))
         self.drawListe = []
 
-        if distance_calcule <= distance:  # si on doit parcourir plus que ce qu'on a calculé au spawn
+        if temps_calcule <= self.temps:  # si on doit parcourir plus que ce qu'on a calculé au spawn
             #  alors on delay le spawn, temps ici en sec
-            self.spawnDelay = int((distance - distance_calcule) / self.avion.speedPx * radarRefresh)
+            self.spawnDelay = int(self.temps - temps_calcule)
             self.x = points[route[0]['name']][0]
             self.y = points[route[0]['name']][1]
 
@@ -178,19 +190,24 @@ class conflictGenerator:
 
         else:  # si on doit parcourir moins, alors on fait apparaître l'avion plus proche du secteur
             self.spawnDelay = None
-            distanceAparcourir = distance_calcule - distance
+            tempsAparcourir = temps_calcule - self.temps
             index = 0
             found = False
             for index in a:
                 point1 = points[route[index]['name']]
                 point2 = points[route[index + 1]['name']]
                 legDistance = geometry.calculateDistance(point1[0], point1[1], point2[0], point2[1])
+                legHeading = geometry.calculateHeading(point1[0], point1[1], point2[0], point2[1])
+                legSpeed = self.avion.speedTAS + self.avion.forceVent * math.cos(
+                    (legHeading - self.avion.directionVent + 180) * math.pi / 180)
+                legSpeed = legSpeed * carte['mapScale'] / 60
+                legTemps = legDistance / legSpeed
 
                 if found:
                     self.drawListe.append(point1)
 
-                elif legDistance >= distanceAparcourir:  # si on doit faire apparaître sur cette branche
-                    ratio = distanceAparcourir / legDistance
+                elif legTemps >= tempsAparcourir:  # si on doit faire apparaître sur cette branche
+                    ratio = tempsAparcourir / legTemps
                     self.x = ratio * (point2[0] - point1[0]) + point1[0]
                     self.y = ratio * (point2[1] - point1[1]) + point1[1]
                     self.drawListe.append((self.x, self.y))
@@ -199,7 +216,7 @@ class conflictGenerator:
                     found = True
 
                 else:
-                    distanceAparcourir -= legDistance
+                    tempsAparcourir -= legTemps
 
         self.drawListe.append(pos)
 
@@ -232,7 +249,7 @@ class conflictGenerator:
         delay = 0
         if self.spawnDelay:
             delay = self.spawnDelay
-        distance = (self.temps - delay) * self.avion.speedPx / radarRefresh  # quelle distance va parcourir l'avion en ce temps
+        temps = self.temps - delay
 
         startPlot = geometry.findClosestSegment(self.avion.route['points'], (self.x, self.y), points)[1]
         liste = self.avion.route['points'][self.avion.route['points'].index(startPlot):]
@@ -244,8 +261,13 @@ class conflictGenerator:
             point2 = points[liste[index]['name']]
 
             legDistance = geometry.calculateDistance(point1[0], point1[1], point2[0], point2[1])
-            if distance - legDistance <= 0:
-                ratio = distance / legDistance
+            legHeading = geometry.calculateHeading(point1[0], point1[1], point2[0], point2[1])
+            legSpeed = self.avion.speedTAS + self.avion.forceVent * math.cos(
+                (legHeading - self.avion.directionVent + 180) * math.pi / 180)
+            legSpeed = legSpeed * carte['mapScale'] / 60
+            legTemps = legDistance / legSpeed
+            if temps - legTemps <= 0:
+                ratio = temps / legTemps
                 x = ratio * (point2[0] - point1[0]) + point1[0]
                 y = ratio * (point2[1] - point1[1]) + point1[1]
                 self.drawListe.append(point1)
@@ -253,7 +275,7 @@ class conflictGenerator:
                 break
 
             else:
-                distance -= legDistance
+                temps -= legTemps
                 self.drawListe.append(point2)
             point1 = point2
 
